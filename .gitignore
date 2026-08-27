@@ -20,3 +20,4 @@ demo/.embedding_cache/
 dist/
 .vercel/
 .vercel
+*.iml

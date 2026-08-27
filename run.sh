@@ -144,7 +144,13 @@ PYCHK
                                 || { bad "slides/data.js missing"; fail=1; }
 
   echo
-  if [ "$fail" -eq 0 ]; then bold "Ready to record."; else bold "Fix the above, then re-run."; fi
+  if [ "$fail" -eq 0 ]; then
+    bold "All good."
+    info "Next:  ./run.sh follow      the eight demos, in order"
+    info "       ./run.sh slides      the deck, in your browser"
+  else
+    bold "Fix the above, then run ./run.sh check again."
+  fi
   return "$fail"
 }
 
