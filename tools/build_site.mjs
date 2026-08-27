@@ -76,6 +76,8 @@ function nav(active) {
 </div></nav>`;
 }
 
+const SITE = 'https://ragverse.diy';
+
 function page({ title, desc, active, body, extraCss = '' }) {
   return `<!doctype html>
 <html lang="en">
@@ -84,8 +86,20 @@ function page({ title, desc, active, body, extraCss = '' }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${SITE}${active}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${SITE}${active}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${SITE}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${SITE}/og.png">
+<meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
 ${FAVICON}
 ${FONTS}
 <script>(function(){try{var m=localStorage.getItem("ragverse.theme");
@@ -96,8 +110,11 @@ if(m)document.documentElement.setAttribute("data-theme",m);}catch(e){}})();</scr
 ${extraCss}
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 ${nav(active)}
+<main id="main">
 ${body}
+</main>
 <footer><div class="wrap row">
   <span>Built as a work-along lesson. Every claim executed, not asserted.</span>
   <span class="sp"><a href="/deck/">Lesson</a> &middot; <a href="/play/">Playgrounds</a>
@@ -395,6 +412,11 @@ fs.writeFileSync(path.join(DIST, 'deck', 'short', 'index.html'), buildShortDeck(
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
+fs.copyFileSync(path.join(ROOT, 'site', 'og.html'), path.join(DIST, 'og.html'));
+fs.copyFileSync(path.join(ROOT, 'site', '404.html'), path.join(DIST, '404.html'));
+if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
+  fs.copyFileSync(path.join(ROOT, 'site', 'og.png'), path.join(DIST, 'og.png'));
+}
 fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(DIST, 'index.html'));
 
 fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });

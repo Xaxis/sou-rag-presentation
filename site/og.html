@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>card</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/deck/tokens.css">
+<style>
+  html,body{margin:0;padding:0;width:1200px;height:630px;overflow:hidden;background:var(--paper)}
+  .card{position:relative;width:1200px;height:630px;isolation:isolate;
+        font-family:var(--body);color:var(--ink)}
+  #hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-2}
+  .veil{position:absolute;inset:0;z-index:-1;
+        background:linear-gradient(96deg,var(--paper) 0%,var(--paper) 36%,transparent 66%),
+                   linear-gradient(to bottom,var(--paper) 0%,transparent 20%,transparent 80%,var(--paper) 100%)}
+  .inner{position:absolute;left:74px;top:0;height:630px;width:660px;
+         display:flex;flex-direction:column;justify-content:center}
+  .kicker{font-family:var(--mono);font-size:15px;letter-spacing:.22em;text-transform:uppercase;
+          color:var(--ink-faint);margin-bottom:26px}
+  .kicker b{color:var(--accent-text);font-weight:700}
+  h1{font-family:var(--display);font-weight:800;font-size:74px;line-height:1.02;
+     letter-spacing:-.025em;margin:0 0 22px}
+  p{font-size:23px;line-height:1.5;color:var(--ink-soft);margin:0 0 34px;max-width:26ch}
+  .row{display:flex;gap:34px;border-top:1px solid var(--rule);padding-top:22px}
+  .s .n{font-family:var(--mono);font-size:28px;color:var(--accent);line-height:1}
+  .s .l{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--ink-faint);margin-top:7px}
+  .url{position:absolute;right:64px;bottom:44px;font-family:var(--display);font-weight:800;
+       font-size:26px;letter-spacing:-.02em;color:var(--ink)}
+  .url span{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="card">
+  <canvas id="hero-canvas"></canvas>
+  <div class="veil"></div>
+  <div class="inner">
+    <div class="kicker"><b>Retrieval track</b> &nbsp;·&nbsp; interactive lesson</div>
+    <h1>RAG, built in<br>front of you.</h1>
+    <p>Five playgrounds, eight runnable demos, and every number on screen is real output.</p>
+    <div class="row">
+      <div class="s"><div class="n">54</div><div class="l">slides</div></div>
+      <div class="s"><div class="n">5</div><div class="l">playgrounds</div></div>
+      <div class="s"><div class="n">8</div><div class="l">demos</div></div>
+      <div class="s"><div class="n">&lt;$0.01</div><div class="l">to build</div></div>
+    </div>
+  </div>
+  <div class="url">ragverse<span>.diy</span></div>
+</div>
+<script src="/hero.js"></script>
+</body>
+</html>

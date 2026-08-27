@@ -1,4 +1,8 @@
-/* One palette, two themes. Loaded first by the deck and by every site page,
+/* One palette, two themes.
+
+   Contrast is measured, not eyeballed. --ink-faint and --accent-text both
+   clear WCAG AA (4.5:1) for small text against --paper and --card in both
+   themes; --accent is kept brighter for fills and large figures. Loaded first by the deck and by every site page,
    so the deck, the widgets and the site can never drift apart.
 
    Light is the default. Dark comes from prefers-color-scheme unless the
@@ -8,11 +12,13 @@
 :root {
   --ink:        #14181f;
   --ink-soft:   #4d5a68;
-  --ink-faint:  #8b97a3;
+  --ink-faint:  #616c78;
   --paper:      #f6f6f4;
   --card:       #ffffff;
   --rule:       #dfe0dc;
   --accent:     #e8590c;
+  --accent-text:#b84408;
+  --on-accent:  #ffffff;
   --accent-ink: #8a3503;
   --accent-soft:#fde3d1;
   --teal:       #146b5f;
@@ -37,11 +43,13 @@
   :root:not([data-theme="light"]) {
     --ink:        #eef1f4;
     --ink-soft:   #a6b2be;
-    --ink-faint:  #6b7785;
+    --ink-faint:  #84919d;
     --paper:      #0f1216;
     --card:       #171b21;
     --rule:       #272d35;
     --accent:     #ff7a33;
+    --accent-text:#ff7a33;
+    --on-accent:  #1a0d05;
     --accent-ink: #ffb287;
     --accent-soft:#37200f;
     --teal:       #4fd1b8;
@@ -50,7 +58,7 @@
 
     --term-bg:    #0a0d10;
     --term-fg:    #e6e9ec;
-    --term-dim:   #6b7785;
+    --term-dim:   #808d9a;
     --term-hi:    #ff9a5c;
     --term-ok:    #6fd3bf;
 
@@ -62,11 +70,13 @@
 :root[data-theme="dark"] {
   --ink:        #eef1f4;
   --ink-soft:   #a6b2be;
-  --ink-faint:  #6b7785;
+  --ink-faint:  #84919d;
   --paper:      #0f1216;
   --card:       #171b21;
   --rule:       #272d35;
   --accent:     #ff7a33;
+  --accent-text:#ff7a33;
+  --on-accent:  #1a0d05;
   --accent-ink: #ffb287;
   --accent-soft:#37200f;
   --teal:       #4fd1b8;
@@ -75,7 +85,7 @@
 
   --term-bg:    #0a0d10;
   --term-fg:    #e6e9ec;
-  --term-dim:   #6b7785;
+  --term-dim:   #808d9a;
   --term-hi:    #ff9a5c;
   --term-ok:    #6fd3bf;
 

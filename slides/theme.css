@@ -36,7 +36,7 @@
 }
 
 .reveal p { line-height: 1.5; margin: 0 0 0.7em 0; }
-.reveal strong { color: var(--accent); font-weight: 600; }
+.reveal strong { color: var(--accent-text); font-weight: 600; }
 .reveal em { color: var(--teal); font-style: italic; }
 
 /* --- the eyebrow that numbers every slide ---------------------------- */
@@ -49,7 +49,7 @@
   margin-bottom: 1.4em;
   display: block;
 }
-.eyebrow b { color: var(--accent); font-weight: 500; }
+.eyebrow b { color: var(--accent-text); font-weight: 600; }
 
 /* --- lists ----------------------------------------------------------- */
 .reveal ul, .reveal ol { display: block; margin-left: 1.1em; }
@@ -130,7 +130,7 @@
   font-weight: 700;
 }
 .callout.warn { border-left-color: var(--accent); }
-.callout.warn .label { color: var(--accent); }
+.callout.warn .label { color: var(--accent-text); }
 
 .definition {
   background: var(--teal-soft);
@@ -165,7 +165,7 @@
 }
 .pipe .box small {
   display: block; font-family: var(--mono); font-weight: 400;
-  font-size: 0.72em; color: var(--ink-faint); margin-top: 0.25em;
+  font-size: 0.72em; color: var(--ink-soft); margin-top: 0.25em;
 }
 .pipe .box.hot { border-color: var(--accent); background: var(--accent-soft); }
 .pipe .box.cool { border-color: var(--teal); background: var(--teal-soft); }
@@ -174,7 +174,7 @@
   font-family: var(--mono); font-size: 0.42em; margin-top: 0.9em; text-transform: uppercase;
   letter-spacing: 0.14em; color: var(--ink-faint); margin: 0.5em 0 0.3em;
 }
-.pipe .tag b { color: var(--accent); font-weight: 600; }
+.pipe .tag b { color: var(--accent-text); font-weight: 700; }
 
 /* --- terminal output blocks ------------------------------------------ */
 .term {
@@ -246,7 +246,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 }
 .ix-title {
   font-family: var(--mono); font-size: 0.78em; letter-spacing: 0.13em;
-  text-transform: uppercase; color: var(--accent); font-weight: 700;
+  text-transform: uppercase; color: var(--accent-text); font-weight: 700;
 }
 .ix-hint { font-size: 0.8em; color: var(--ink-faint); }
 
@@ -259,7 +259,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   font-family: var(--mono); font-size: 0.8em; color: var(--ink-soft);
   margin-bottom: 0.18em;
 }
-.ix-ctl label b { color: var(--accent); font-weight: 700; }
+.ix-ctl label b { color: var(--accent-text); font-weight: 700; }
 
 .ix input[type=range] {
   width: 100%; accent-color: var(--accent); height: 1.1em; margin: 0;
@@ -282,7 +282,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   user-select: none;
 }
 .ix-chip:hover { border-color: var(--accent); color: var(--accent); }
-.ix-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ix-chip.on { background: var(--accent-text); border-color: var(--accent-text); color: var(--on-accent); }
 
 /* --- stat strip -------------------------------------------------------- */
 .ix-stats {
@@ -291,7 +291,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   border-top: 1px solid var(--rule);
 }
 .ix-stat .v {
-  font-family: var(--mono); font-size: 1.35em; color: var(--accent);
+  font-family: var(--mono); font-size: 1.35em; color: var(--accent-text);
   font-weight: 500; line-height: 1.1;
 }
 .ix-stat .k {
@@ -312,7 +312,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   display: flex; gap: 0.6em; align-items: flex-start;
 }
 .ix-row:last-child { border-bottom: none; }
-.ix-row .idx { color: var(--ink-faint); flex: 0 0 2.2em; }
+.ix-row .idx { color: var(--ink-soft); flex: 0 0 2.2em; }
 .ix-row .body { flex: 1; word-break: break-word; }
 .ix-row .sc { flex: 0 0 3.2em; text-align: right; color: var(--ink-faint); }
 .ix-row.hit { background: var(--accent-soft); }
@@ -343,14 +343,14 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   border: 1px solid var(--rule); border-radius: 4px; background: var(--paper);
   color: var(--ink-soft); cursor: pointer; transition: all .12s;
 }
-.ix-toggle button.on { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
+.ix-toggle button.on { border-color: var(--accent-text); background: var(--accent-text); color: var(--on-accent); font-weight: 700; }
 .ix-toggle button.on.bad { border-color: #c0400f; background: #c0400f; }
 
 .ix-note {
   margin-top: 0.55em; font-size: 0.82em; color: var(--ink-soft);
   border-left: 3px solid var(--rule); padding-left: 0.7em;
 }
-.ix-note b { color: var(--accent); }
+.ix-note b { color: var(--accent-text); }
 
 .ix-prompt {
   margin-top: 0.6em; background: var(--term-bg); color: var(--term-fg); border-radius: 4px;
@@ -377,12 +377,12 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   transition: border-color .12s, color .12s, background .12s;
 }
 .deck-btn b {
-  font-weight: 700; color: var(--accent); border: 1px solid var(--rule);
+  font-weight: 700; color: var(--accent-text); border: 1px solid var(--rule);
   border-radius: 3px; padding: 2px 5px; font-size: 10px;
 }
 .deck-btn:hover { border-color: var(--accent); color: var(--ink); }
-.deck-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-.deck-btn.on b { color: #fff; border-color: rgba(255,255,255,.5); }
+.deck-btn.on { background: var(--accent-text); border-color: var(--accent-text); color: var(--on-accent); }
+.deck-btn.on b { color: var(--on-accent); border-color: currentColor; }
 
 .deck-notes {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
@@ -410,7 +410,7 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
 }
 .deck-notes-title {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--accent); font-weight: 700;
+  text-transform: uppercase; color: var(--accent-text); font-weight: 700;
 }
 .deck-notes-close {
   border: none; background: none; font-size: 22px; line-height: 1;
@@ -441,3 +441,8 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
 }
 .deck-nudge b { color: var(--term-hi); font-weight: 700; }
 @media (min-width: 821px) { .deck-nudge { display: none; } }
+
+/* keyboard focus inside the deck and its widgets */
+.reveal :focus-visible, .deck-btn:focus-visible, .ix :focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
+}

@@ -84,6 +84,7 @@ vendored reveal, tokens and widget code rather than duplicating them.
 | `tools/build_script.py` | Regenerates `SCRIPT.md` and the README tables. |
 | `tools/export_slide_data.py` | Recomputes the real vectors in `slides/data.js`. |
 | `tools/build_site.mjs` | Assembles `dist/` for deployment. No dependencies. |
+| `tools/make_og.mjs` | Re-renders the social card to `site/og.png`. Needs playwright. |
 
 `fetch_docs.py` does one non-obvious thing. Wikipedia's plain-text export
 separates paragraphs with a single newline, and the lesson's splitter splits on
@@ -121,6 +122,34 @@ Two things that will bite you if you change the config:
   upload.
 
 Neither shows up locally. Check the deployed URL, not just localhost.
+
+---
+
+## Colour and contrast
+
+`slides/tokens.css` is the only place colours are defined. Four tokens do the
+work that one usually does, and mixing them up is how contrast regressions get
+in:
+
+| Token | Use it for |
+|---|---|
+| `--accent` | fills, rules, large figures, chart marks |
+| `--accent-text` | **any accent-coloured text below 24px** |
+| `--on-accent` | text sitting *on* an accent fill (buttons, active chips) |
+| `--ink-faint` | de-emphasised text — already at the AA floor, do not lighten |
+
+Every text/background pair on the site and in the deck clears WCAG AA (4.5:1
+for body, 3:1 for large) in **both** themes. That was measured, not eyeballed —
+an earlier palette failed at 2.75:1 on the eyebrow labels that appear on every
+slide. If you change a colour, re-measure rather than trusting your eye.
+
+The social card is a real render of the site's own hero:
+
+```bash
+node tools/build_site.mjs
+npx serve dist -l 8912          # or python3 -m http.server 8912 -d dist
+node tools/make_og.mjs          # -> site/og.png, commit it
+```
 
 ---
 
