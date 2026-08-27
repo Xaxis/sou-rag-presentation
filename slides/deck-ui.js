@@ -20,6 +20,11 @@
   try { open = localStorage.getItem(KEY) === '1'; } catch (e) {}
 
   var deck, drawer, body, toggle;
+  // which edition this file was built as; read once, used in several places
+  var editAttr = (document.querySelector('.reveal') || { getAttribute: function () {} })
+                   .getAttribute('data-edit') || '';
+  var isShort = /short/.test(editAttr);
+  var isTalk = /talk/.test(editAttr);
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -62,22 +67,33 @@
         ? 'dark' : 'light');
     theme.textContent = start === 'dark' ? 'Light' : 'Dark';
 
-    // swap between the short edit and the full one, keeping your place in
-    // spirit if not in index - the two have different slide counts
-    var isShort = !!document.querySelector('.reveal[data-edit="short"]');
-    var edit = el('button', 'deck-btn deck-edit',
-      isShort ? 'Full lesson' : 'Short edit');
-    edit.title = isShort
-      ? 'Switch to the complete 54-slide lesson'
-      : 'Switch to the 33-slide short edit';
-    edit.addEventListener('click', function () {
-      window.location.href = isShort ? '/deck/' : '/deck/short/';
-    });
+    // two axes: how long, and whether you run the code live.
+    // absent data-edit means the default deck: full, work-along.
+    var URLS = {
+      'full-workalong': '/deck/',
+      'short-workalong': '/deck/short/',
+      'full-talk': '/deck/talk/',
+      'short-talk': '/deck/talk-short/',
+    };
+    function go(short, talk) {
+      window.location.href = URLS[(short ? 'short' : 'full') + '-' + (talk ? 'talk' : 'workalong')];
+    }
+
+    var lenBtn = el('button', 'deck-btn', isShort ? 'Full lesson' : 'Short edit');
+    lenBtn.title = isShort ? 'Switch to the complete lesson' : 'Switch to the short edit';
+    lenBtn.addEventListener('click', function () { go(!isShort, isTalk); });
+
+    var modeBtn = el('button', 'deck-btn', isTalk ? 'Work-along' : 'Talk only');
+    modeBtn.title = isTalk
+      ? 'Switch to the work-along narration, where you run the demos live'
+      : 'Switch to the talk narration, where the output is shown rather than run';
+    modeBtn.addEventListener('click', function () { go(isShort, !isTalk); });
 
     bar.appendChild(toggle);
     bar.appendChild(present);
     bar.appendChild(theme);
-    bar.appendChild(edit);
+    bar.appendChild(lenBtn);
+    bar.appendChild(modeBtn);
     document.body.appendChild(bar);
 
     drawer = el('aside', 'deck-notes');
@@ -134,8 +150,8 @@
     if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
       var nudge = el('a', 'deck-nudge',
         '<b>Small screen?</b> The lesson reads better as a document &rarr;');
-      nudge.href = document.querySelector('.reveal[data-edit="short"]')
-        ? '/read/short/' : '/read/';
+      nudge.href = '/read/' +
+        (isTalk && isShort ? 'talk-short/' : isTalk ? 'talk/' : isShort ? 'short/' : '');
       document.body.appendChild(nudge);
     }
     if (window.Reveal && Reveal.on) {

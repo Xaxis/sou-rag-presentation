@@ -7,10 +7,16 @@ A deck teaches Retrieval Augmented Generation; this repo is the code that goes
 with it. You end up with a working ingestion pipeline: five documents in, a
 searchable vector database out, in about sixty lines of Python.
 
-It comes in **two edits** — a 33-slide short version (~45 min) and the full
-54-slide lesson (~78 min). Same rigour, the same eight demos below, the same
-code; the short edit simply carries fewer slides around them. Either works on
-its own.
+It comes in **four editions** — long or short, and work-along or talk-only:
+
+| | Work-along (you run the demos) | Talk only (no terminal) |
+|---|---|---|
+| **Full** · 54 slides | [~78 min](https://ragverse.diy/read/) | [~78 min](https://ragverse.diy/read/talk/) |
+| **Short** · 33 slides | [~45 min](https://ragverse.diy/read/short/) | [~45 min](https://ragverse.diy/read/talk-short/) |
+
+Same slides, same output, same rigour — what changes is the narration and how
+much of it there is. The talk editions explain output that is already on the
+slide, so there is nothing to set up and nothing that can fail on camera.
 
 Every number in the lesson is real output from these scripts. Nothing is an
 illustration.

@@ -48,18 +48,41 @@ hand-written table.
 
 ---
 
-## The two edits
+## The four editions
 
-Every slide carries a track marker in `slides/index.html`:
+Two independent axes, so four complete lessons out of one source file.
+
+**Length** — every slide carries a track marker:
 
 ```html
-<section data-track="core">   <!-- in both edits -->
+<section data-track="core">   <!-- in the short edit too -->
 <section>                     <!-- full lesson only -->
 ```
 
-The build reads that and emits both: `/deck/` and `/deck/short/`, `/read/` and
-`/read/short/`. `SCRIPT.md` marks which slides are in the short edit, and
-`/present/` prints a cue sheet for each.
+**Mode** — work-along (you run the demos live) or talk-only (you explain output
+that is already on the slide). Slides whose narration changes carry a second
+narration block:
+
+```html
+<aside class="notes">…run it live: "let me run demo one"…</aside>
+<aside class="talk">…talk version: "here is what that produces"…</aside>
+```
+
+A slide with no `<aside class="talk">` uses the same narration in both modes,
+which is most of them — only the eleven slides with a demo cue needed a talk
+variant. `data-talk-title` on a section swaps the heading too, used where a
+title assumes a live terminal.
+
+In talk builds the demo cue bar is relabelled from "Demo 01" to "Output of" and
+restyled as quiet provenance rather than an instruction.
+
+| | Work-along | Talk only |
+|---|---|---|
+| **Full** | `/deck/` · `/read/` | `/deck/talk/` · `/read/talk/` |
+| **Short** | `/deck/short/` · `/read/short/` | `/deck/talk-short/` · `/read/talk-short/` |
+
+The deck's control bar carries both toggles. `/present/` prints a cue sheet per
+length, and `SCRIPT.md` marks which slides are in the short edit.
 
 To move a slide between edits, add or remove that one attribute and re-run
 `./run.sh script` (for the docs) and `node tools/build_site.mjs` (for the site).

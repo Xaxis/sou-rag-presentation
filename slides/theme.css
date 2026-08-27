@@ -446,3 +446,16 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
 .reveal :focus-visible, .deck-btn:focus-visible, .ix :focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
 }
+
+/* --- talk mode: the demo cue is provenance, not an instruction ----------- */
+body[data-mode="talk"] .cue {
+  background: transparent;
+  border-left: 2px solid var(--rule);
+  padding: 0.35em 0 0.35em 0.9em;
+  font-size: 0.46em;
+  color: var(--ink-faint);
+}
+body[data-mode="talk"] .cue .label {
+  color: var(--ink-faint); font-weight: 500; letter-spacing: 0.14em;
+}
+body[data-mode="talk"] .cue .cmd { color: var(--ink-soft); font-weight: 400; }

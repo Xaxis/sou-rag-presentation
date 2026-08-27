@@ -356,3 +356,13 @@ table.cues td:nth-child(2) { width: 40%; }
   outline-offset: 2px;
   border-radius: 3px;
 }
+
+/* talk mode in the reading view: the command is provenance, not an instruction */
+body[data-mode="talk"] .read .cue {
+  background: transparent;
+  border-left: 2px solid var(--rule);
+  padding: 0.4em 0 0.4em 0.9em;
+  color: var(--ink-faint);
+}
+body[data-mode="talk"] .read .cue .label { color: var(--ink-faint); font-weight: 500; }
+body[data-mode="talk"] .read .cue .cmd { color: var(--ink-soft); font-weight: 400; }

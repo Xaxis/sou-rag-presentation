@@ -73,7 +73,7 @@ And last, you will know the one mistake that silently breaks most first builds. 
 </section>
 
 <!-- ==================================================== 03 -->
-<section data-track="core">
+<section data-talk-title="How this session runs" data-track="core">
   <span class="eyebrow"><b>00</b> &nbsp;·&nbsp; How this session runs</span>
   <h2>Two windows, eight demos</h2>
   <p class="tight">Slides on one side, a terminal on the other. Whenever you see an orange
@@ -102,6 +102,13 @@ The demo folder has eight numbered scripts, one per concept, and ingestion under
 If you are working along, pause whenever you need to. The scripts are all independent except that six, seven and eight need the database that six builds.
 
 Let me run the check, and we will begin.
+  </aside>
+  <aside class="talk">
+This is a lesson, not a live build. I am going to talk you through Retrieval Augmented Generation, and everything on these slides is genuine output from real code — I ran it, and you are seeing exactly what came back. Nothing here is a mock-up or an illustration.
+
+If you want to run it yourself, you can. The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline. There is a link at the end. But you do not need to touch a terminal to follow this, and I am not going to make you watch me type.
+
+So: sit back for this one. Every command I reference is in the repo if you want it later.
   </aside>
 </section>
 
@@ -189,6 +196,19 @@ Let me run demo one and show you.
 Look at that. The sentence "Retrieval augmented generation is powerful" is five words. The model counts seven tokens. And look at how it split: "Retrieval" — a fairly ordinary English word — got broken into three pieces, R-e-t, r-i-e, v-a-l. Whereas "augmented", "generation", "powerful" each survived as a single token.
 
 That is the rule in action. Common words are one token. Rarer or longer words get split into several. And notice the underscores in that output — those are spaces. Spaces travel with the token that follows them, which is why it is "underscore augmented" rather than "augmented".
+
+The rule of thumb worth memorising: one token is roughly three quarters of an English word. So a thousand words is roughly thirteen hundred tokens.
+  </aside>
+  <aside class="talk">
+First piece of vocabulary: the token.
+
+A token is the unit of text a model processes. Sometimes it is a whole word. Often it is a fragment of one. Models do not read letters, and they do not read words — they read tokens. This matters because every limit and every price you will ever meet is denominated in tokens, not words.
+
+Here is what a real tokenizer does with a five-word sentence.
+
+Look at that. "Retrieval augmented generation is powerful" is five words. The model counts seven tokens. And look at how it split: "Retrieval" — a fairly ordinary English word — got broken into three pieces, R-e-t, r-i-e, v-a-l. Whereas "augmented", "generation" and "powerful" each survived as a single token.
+
+That is the rule in action. Common words are one token. Rarer or longer words get split into several. And those underscores are spaces — spaces travel with the token that follows them.
 
 The rule of thumb worth memorising: one token is roughly three quarters of an English word. So a thousand words is roughly thirteen hundred tokens.
   </aside>
@@ -458,6 +478,17 @@ The property that matters is the fixed length. One word in or nine hundred words
 
 That is the trick. Everything downstream depends on it.
   </aside>
+  <aside class="talk">
+Next box in the diagram: the embedding model. And the first thing to say, because it trips everybody up, is that this is not an LLM. Different model, different job. It does not generate text. It does not chat. You give it text, and it gives you back a list of numbers. That is all it does.
+
+Look at the three rows on screen. One word in. An eight-word sentence in. A three-hundred-and-thirty-seven-word paragraph in. And every single time, what came back was fifteen hundred and thirty-six numbers. Not more for the paragraph. Not fewer for the single word. Always exactly fifteen thirty-six.
+
+Underneath you can see the first few actual numbers. They are small, they are signed, and — this is worth saying plainly — no individual number there means anything you can name. Nobody knows what dimension four hundred and twelve represents. That is fine. It is not how they are used.
+
+The property that matters is the fixed length. One word in or nine hundred words in, the vector is the same size. That is the property the entire system is built on: any two pieces of text, however different in length, become two lists of the same size — and two lists of the same size can be compared with simple arithmetic.
+
+That is the trick. Everything downstream depends on it.
+  </aside>
 </section>
 
 <!-- ==================================================== 15 -->
@@ -532,6 +563,21 @@ But look at the bottom two lines, because that is where the claim really holds. 
 That is a neighbourhood. And the crucial part — nobody labelled any of this. No human told the model that coffee and tea are related. It came out of arithmetic over fifteen hundred numbers.
 
 This drawing would have two dimensions. Real embeddings have fifteen hundred and thirty-six. You cannot picture that, and you do not need to — the arithmetic of distance works identically no matter how many dimensions there are.
+  </aside>
+  <aside class="talk">
+So does that claim actually hold? I did not want to assert it and move on, so here it is measured.
+
+This takes eight ordinary words, embeds each one with a real OpenAI model, and measures how close every pair is. One point zero would be identical.
+
+Top of the list: cat to dog, zero point six oh three. Then cat to kitten at zero point five seven. Then a clear drop — coffee, tea, apple, elephant, mango, all down in the threes and twos.
+
+Now, I want to point at something honest here, because it contradicts the tidy table on the previous slide. That table said kitten should be closest to cat. The real model puts dog first, with kitten second. So the toy intuition was directionally right and specifically wrong.
+
+Why? Because bare single words are a weak signal. "Cat" and "dog" co-occur in text constantly — they are the two canonical pets — whereas "kitten" is a narrower word. Real systems almost never embed single words; they embed whole paragraphs, where there is far more meaning to work with. So do not over-read the ordering inside a cluster.
+
+But look at the bottom two lines, because that is where the claim really holds. Domestic animals: average similarity inside that group is zero point five three, and to everything outside it, zero point three two. Drinks: zero point six one inside, zero point three one outside. Every group is meaningfully tighter inside than out.
+
+That is a neighbourhood. And the crucial part — nobody labelled any of this. No human told the model that coffee and tea are related. It fell out of arithmetic over fifteen hundred numbers.
   </aside>
 </section>
 
@@ -944,6 +990,15 @@ Any five text files will work — use your own if you have something you actuall
 
 One detail in that script worth mentioning. Wikipedia's plain-text export separates paragraphs with a single newline. Our splitter is going to split on blank lines. So the script normalises every paragraph onto its own blank-line-separated block. Without that step the splitter finds almost no break points and produces eight-thousand-character chunks, which are useless units of retrieval. That is a real-world data-cleaning step, and it is the kind of thing that quietly ruins a RAG pipeline if you skip it.
   </aside>
+  <aside class="talk">
+You need documents. For this walkthrough I used the Wikipedia articles for Google, Microsoft, Nvidia, SpaceX and Tesla, saved as plain text — about three hundred and fifty thousand characters across five files.
+
+Any five text files work. Company articles are convenient for teaching because they are long, factual, and full of specific names and numbers you can test the retriever against. When you ask "who founded SpaceX" you know what the right answer is, so you can tell immediately whether retrieval worked.
+
+One detail worth mentioning, because it is the kind of thing that quietly ruins a pipeline. Wikipedia's plain-text export separates paragraphs with a single newline. The splitter we are about to use splits on blank lines. So the fetch script normalises every paragraph onto its own blank-line-separated block. Skip that step and the splitter finds almost no break points and produces eight-thousand-character chunks, which are useless units of retrieval.
+
+That is a real data-cleaning step, and it is invisible until you look at your chunk sizes.
+  </aside>
 </section>
 
 <!-- ==================================================== 29 -->
@@ -1024,6 +1079,17 @@ Notice the two guard clauses, and notice they are doing different jobs. The firs
 Let me run it.
 
 [RUN DEMO 04]
+  </aside>
+  <aside class="talk">
+Step one. Load the files. And this is where I depart from most tutorials, so let me be explicit about why.
+
+Every RAG tutorial reaches for DirectoryLoader from langchain-community here. That package was archived in May twenty twenty-six. And look at what it actually did for a folder of text files: glob for a pattern, read each file, wrap the text in a Document with the path as metadata. That is the whole job.
+
+So that is what this code does directly — six lines, using pathlib from the standard library and the Document class. Same objects out, one fewer dependency, and nothing hidden. When somebody says "the loader", this is what they mean.
+
+Notice the two guard clauses, and notice they do different jobs. The first checks the directory exists. The second checks we actually loaded something. Without that second check, pointing at an empty folder gives you a pipeline that runs happily all the way through, embeds nothing, stores nothing, and reports success.
+
+Fail loudly and early rather than silently loading nothing. That principle will save you more debugging time in RAG than almost anything else, because so much of this stack fails quietly.
   </aside>
 </section>
 
@@ -1122,6 +1188,15 @@ Now, the thing I want to flag hardest on this slide. Chunk size equals eight hun
 Let me run it.
 
 [RUN DEMO 05]
+  </aside>
+  <aside class="talk">
+Step two. Chunk them.
+
+Five documents of sixty to ninety thousand characters each are far too large to be useful units of retrieval. Nobody wants an entire Wikipedia article returned because one sentence in it matched.
+
+Three arguments. Chunk size. Chunk overlap — which we will come to, and which is zero here deliberately so you can see what goes wrong. And separator, set to a blank line, so we prefer to break at paragraph boundaries.
+
+And the thing I want to flag hardest: chunk size equals eight hundred means eight hundred characters. Not eight hundred tokens. Roughly two hundred tokens. Different splitters in different libraries count in different units, and getting this wrong by a factor of four is a very easy mistake to make. Always check which unit you are in.
   </aside>
 </section>
 
@@ -1278,6 +1353,15 @@ Let me run it.
 
 [RUN DEMO 06]
   </aside>
+  <aside class="talk">
+Step three. Embed and store.
+
+These are two conceptual steps — two separate boxes in the diagram — and one line of code. Chroma dot from underscore documents embeds every chunk and writes the results to disk in a single call. It is doing a great deal more than it looks like it is doing.
+
+This is also the one step in the whole pipeline that costs money and takes real time. Every chunk is a call to OpenAI. For five hundred and forty-seven chunks, expect thirty seconds to a couple of minutes, and a fraction of a cent.
+
+Everything before this point is free and local. Everything after it is free and local. This single call is where the bill comes from — which is why it matters that ingestion runs once, and not per question.
+  </aside>
 </section>
 
 <!-- ==================================================== 37 -->
@@ -1371,6 +1455,17 @@ And every single result comes from spacex dot txt. Not one Tesla chunk, not one 
 Look at the top hit: "In early 2002, Elon Musk started to look for staff for his company, soon to be named SpaceX." That answers the question. Score zero point six six two.
 
 If your results come back from the right file, your ingestion pipeline is finished and correct. That is the test.
+
+One thing to note about the scores. Zero point six six is the top match, and that might feel low if you were expecting something near one. It is not low. Cosine similarity between a short question and a long paragraph rarely goes above zero point seven, because they are different shapes of text. What matters is the gap between the top results and everything else, not the absolute number. Do not go hunting for a universal threshold — calibrate against your own corpus.
+  </aside>
+  <aside class="talk">
+So does it work? Here is the store being asked a real question.
+
+The question is "who founded SpaceX". The collection has five hundred and forty-seven vectors in it, covering five different companies.
+
+And every single result comes from spacex dot txt. Not one Tesla chunk, not one Microsoft chunk — despite Elon Musk appearing prominently in the Tesla article, which is exactly the kind of near-miss that would trip a keyword search.
+
+Look at the top hit: "In early 2002, Elon Musk started to look for staff for his company, soon to be named SpaceX." That answers the question. Score zero point six six two.
 
 One thing to note about the scores. Zero point six six is the top match, and that might feel low if you were expecting something near one. It is not low. Cosine similarity between a short question and a long paragraph rarely goes above zero point seven, because they are different shapes of text. What matters is the gap between the top results and everything else, not the absolute number. Do not go hunting for a universal threshold — calibrate against your own corpus.
   </aside>
@@ -1497,6 +1592,15 @@ While you are experimenting, delete the db_chroma folder before each run. My dem
 
 In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it. But for learning, delete the folder.
   </aside>
+  <aside class="talk">
+One trap before we move on, and it is one I have watched people fall into more than once.
+
+From documents adds to an existing collection. It does not replace it. So if you run your ingestion script twice — which you will, because you will tweak the chunk size and re-run — you end up with one thousand and ninety-four vectors, half of them exact duplicates. And you paid to embed all of them twice.
+
+The symptom is subtle rather than dramatic. Retrieval still works. But your top-k results start coming back as pairs of identical chunks, so asking for five results gets you two or three distinct pieces of information instead of five. Your context is half wasted and the quality quietly drops.
+
+While you are experimenting, delete the database folder before each run. In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it.
+  </aside>
 </section>
 
 <!-- ==================================================== 42 -->
@@ -1585,6 +1689,27 @@ Bottom block. Same database. Same question. Same number of results. The only thi
 Look at the scores. Zero point zero six four. Zero point zero five five. Zero point zero five two. They have collapsed by a factor of ten — the retriever is finding nothing it considers a good match, because every stored vector is effectively noise to it now.
 
 And look at the third result. Microsoft dot txt. "Microsoft became the third publicly traded U.S. company..." — returned as a top-three answer to "who founded SpaceX".
+
+Now notice what did not happen. Nothing crashed. No exception. No warning. No log line. The retriever returned exactly three results, ranked, formatted identically to the correct run. If you were not printing the source filenames — and most people do not, in a first build — this looks completely healthy.
+
+And then an LLM takes those three chunks and writes a fluent, confident, sourced-looking, wrong answer.
+
+That is why this is the mistake that breaks most first builds. Not because it is subtle to fix, but because it is invisible until someone checks an answer by hand.
+  </aside>
+  <aside class="talk">
+So let us break it deliberately, and see what that looks like.
+
+This builds a store the right way — documents embedded with text-embedding-3-small — and then queries it the wrong way.
+
+One detail so you know it is a fair test. The wrong model is text-embedding-3-large, but asked for fifteen hundred and thirty-six dimensions instead of its default three thousand. So the vector is exactly the same shape as the ones in the database. Chroma has no dimension mismatch to complain about. It has no way whatsoever to know it is being handed a different language.
+
+Top block, the right model. Zero point six six, zero point six three, zero point six three. All from spacex dot txt.
+
+Bottom block. Same database. Same question. Same number of results. The only thing that changed is which model embedded the question.
+
+Look at the scores. Zero point zero six four. Zero point zero five five. Zero point zero five two. They have collapsed by a factor of ten — the retriever is finding nothing it considers a good match, because every stored vector is effectively noise to it now.
+
+And look at the third result. Microsoft dot txt, returned as a top-three answer to "who founded SpaceX".
 
 Now notice what did not happen. Nothing crashed. No exception. No warning. No log line. The retriever returned exactly three results, ranked, formatted identically to the correct run. If you were not printing the source filenames — and most people do not, in a first build — this looks completely healthy.
 

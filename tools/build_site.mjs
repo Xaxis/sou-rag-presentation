@@ -27,8 +27,15 @@ function parseDeck() {
     const raw = m[2];
     const ai = raw.indexOf('<aside class="notes">');
     const body = ai === -1 ? raw : raw.slice(0, ai);
+    // a slide may carry a second <aside class="talk">, so stop at our own close
     const notes = ai === -1 ? ''
-      : raw.slice(ai + '<aside class="notes">'.length, raw.lastIndexOf('</aside>')).trim();
+      : raw.slice(ai + '<aside class="notes">'.length,
+                  raw.indexOf('</aside>', ai)).trim();
+    const ti = raw.indexOf('<aside class="talk">');
+    const talkNotes = ti === -1 ? ''
+      : raw.slice(ti + '<aside class="talk">'.length,
+                  raw.indexOf('</aside>', ti)).trim();
+    const talkTitle = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1] || '';
 
     const h = body.match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/);
     const eb = body.match(/<span class="eyebrow">([\s\S]*?)<\/span>/);
@@ -37,6 +44,8 @@ function parseDeck() {
 
     out.push({
       core: /data-track="core"/.test(attrs),
+      talkNotes,
+      talkTitle,
       titleHtml: h ? h[1].trim() : '',
       title: strip(h ? h[1] : '(untitled)'),
       eyebrow: strip(eb ? eb[1] : ''),
@@ -78,7 +87,7 @@ function nav(active) {
 
 const SITE = 'https://ragverse.diy';
 
-function page({ title, desc, active, body, extraCss = '' }) {
+function page({ title, desc, active, body, extraCss = '', bodyAttr = '' }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -109,7 +118,7 @@ if(m)document.documentElement.setAttribute("data-theme",m);}catch(e){}})();</scr
 <link rel="stylesheet" href="/site.css">
 ${extraCss}
 </head>
-<body>
+<body${bodyAttr}>
 <a class="skip" href="#main">Skip to content</a>
 ${nav(active)}
 <main id="main">
@@ -179,12 +188,13 @@ function buildPlay(slides) {
    This renders the same slides as a flowing document - real headings, real
    type, the widgets inline, and the narration woven in where it belongs. */
 function buildRead(all, edit) {
-  const short = edit === 'short';
+  const short = /short/.test(edit);
+  const talk = /talk/.test(edit);
   const slides = short ? all.filter((s) => s.core) : all;
-  const base = short ? '/read/short/' : '/read/';
+  const base = '/read/' + (talk && short ? 'talk-short/' : talk ? 'talk/' : short ? 'short/' : '');
   const other = short
-    ? '<a href="/read/">Switch to the full lesson &rarr;</a>'
-    : '<a href="/read/short/">Prefer the short version? &rarr;</a>';
+    ? `<a href="/read/${talk ? 'talk/' : ''}">Switch to the full lesson &rarr;</a>`
+    : `<a href="/read/${talk ? 'talk-short/' : 'short/'}">Prefer the short version? &rarr;</a>`;
   const stage = /^\[[A-Z0-9][^\]]*\]$/;
   const parts = [];
   const chapters = [];
@@ -199,7 +209,15 @@ function buildRead(all, edit) {
       .replace(/<div class="rule"><\/div>\s*/, '')
       .trim();
 
-    const notes = s.notes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+    if (talk) {
+      // the command is provenance for the output above it, not an instruction
+      body = body
+        .replace(/<span class="label">Demo&nbsp;\d+<\/span>/g, '<span class="label">Output of</span>')
+        .replace(/<span class="label">Demo<\/span>/g, '<span class="label">Output of</span>');
+    }
+
+    const useNotes = talk && s.talkNotes ? s.talkNotes : s.notes;
+    const notes = useNotes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
       .map((p) => {
         const line = p.replace(/\s+/g, ' ');
         return stage.test(line)
@@ -207,12 +225,14 @@ function buildRead(all, edit) {
           : `<p>${esc(line)}</p>`;
       }).join('\n');
 
+    const heading = talk && s.talkTitle ? esc(s.talkTitle) : s.titleHtml;
+
     if (isDivider) {
       const id = 'c' + (chapters.length + 1);
       chapters.push({ id, title: s.title, n: i + 1 });
       parts.push(`<section class="read-chapter" id="${id}">
   <span class="read-chapter-k">${esc(s.eyebrow || 'Part')}</span>
-  <h2>${s.titleHtml}</h2>
+  <h2>${heading}</h2>
   ${body}
   <div class="read-narration">${notes}</div>
 </section>`);
@@ -221,7 +241,7 @@ function buildRead(all, edit) {
 
     parts.push(`<section class="read-slide" id="s${i + 1}">
   <div class="read-meta"><span class="n">${i + 1}</span>${s.eyebrow ? esc(s.eyebrow) : ''}</div>
-  <h3>${s.titleHtml}</h3>
+  <h3>${heading}</h3>
   ${body ? `<div class="read-visual">${body}</div>` : ''}
   ${notes ? `<div class="read-narration">${notes}</div>` : ''}
 </section>`);
@@ -230,18 +250,21 @@ function buildRead(all, edit) {
   const toc = chapters.map((c) =>
     `<a href="#${c.id}"><b>${String(c.n).padStart(2, '0')}</b> ${esc(c.title)}</a>`).join('\n');
 
-  const words = slides.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0);
+  const words = slides.reduce((a, s) =>
+    a + ((talk && s.talkNotes ? s.talkNotes : s.notes).split(/\s+/).filter(Boolean).length), 0);
 
   const body = `<div class="wrap read">
   <header class="read-head">
-    <span class="eyebrow"><b>${short ? 'The short lesson' : 'The whole lesson'}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
+    <span class="eyebrow"><b>${talk ? (short ? 'Short talk' : 'The talk') : (short ? 'The short lesson' : 'The whole lesson')}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
     <h1>${short ? 'RAG, the short way.' : 'RAG, end to end.'}</h1>
-    <p class="read-lede">${short
+    <p class="read-lede">${talk
+      ? 'Narrated as a talk: the code is shown and explained, not typed live. Every terminal block is genuine output. Follow along in the repo if you want to, or just read.'
+      : short
       ? 'The spine of the lesson: every demo, the two strongest playgrounds, and none of the asides. Same depth, fewer detours.'
       : 'Every slide, with what the presenter says underneath it, and the playgrounds where they belong. Nothing to install.'}</p>
     <p class="read-alt">${other}</p>
     <nav class="read-toc">${toc}</nav>
-    <p class="read-alt">Presenting instead? <a href="${short ? '/deck/short/' : '/deck/'}">Open the deck &rarr;</a></p>
+    <p class="read-alt">Presenting instead? <a href="/deck/${talk && short ? 'talk-short/' : talk ? 'talk/' : short ? 'short/' : ''}">Open the deck &rarr;</a></p>
   </header>
   ${parts.join('\n')}
   <p class="read-end"><a class="btn primary" href="/play/">Play with the five widgets &rarr;</a></p>
@@ -255,6 +278,7 @@ function buildRead(all, edit) {
       : 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
     active: base,
     body,
+    bodyAttr: talk ? ' data-mode="talk"' : '',
     extraCss: '<script defer src="/deck/data.js"></script>\n' +
               '<script defer src="/deck/interactive.js"></script>',
   });
@@ -302,23 +326,42 @@ function buildPresent(all) {
   Slides, live playgrounds and the terminal output are all on screen — you only need a
   second window for your notes.</p>
 
-  <h2 style="margin-top:1.8em">Pick an edit</h2>
-  <p style="color:var(--ink-soft)">Two cuts of the same lesson. Same rigour, same eight
-  terminal demos, same code — the short edit simply carries fewer slides around them.
-  Either one works on its own.</p>
+  <h2 style="margin-top:1.8em">Pick an edition</h2>
+  <p style="color:var(--ink-soft)">Two questions: how long, and do you run the code live?
+  Every combination is a complete lesson — the slides and the output are identical, only
+  the narration and the slide count change.</p>
+
   <div class="cards" style="margin:1.2em 0 0">
-    <a class="card" href="/deck/short/" style="border-left:4px solid var(--teal)">
-      <span class="k">Short edit</span>
-      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
-      <p>The spine: why RAG, both pipelines, what an embedding is, the build, and the
-      silent failure. All eight demos, two playgrounds.</p>
-    </a>
     <a class="card" href="/deck/" style="border-left:4px solid var(--accent)">
-      <span class="k">Full lesson</span>
+      <span class="k">Work-along &middot; full</span>
       <h3>${all.length} slides &middot; ~${fullMin} min &rarr;</h3>
-      <p>Everything: the reference tables, the gotchas, the re-run trap, troubleshooting,
-      the check-yourself drills and all five playgrounds.</p>
+      <p>You build it live. Narration cues you to switch to the terminal at each demo.
+      Everything, including the reference tables and all five playgrounds.</p>
     </a>
+    <a class="card" href="/deck/short/" style="border-left:4px solid var(--accent)">
+      <span class="k">Work-along &middot; short</span>
+      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
+      <p>The same build, tightened to the spine. All eight demos, two playgrounds,
+      none of the asides.</p>
+    </a>
+    <a class="card" href="/deck/talk/" style="border-left:4px solid var(--teal)">
+      <span class="k">Talk only &middot; full</span>
+      <h3>${all.length} slides &middot; ~${fullMin} min &rarr;</h3>
+      <p><strong>No terminal.</strong> You teach; the output is already on the slide and
+      the narration explains it. Viewers can run the code themselves afterwards.</p>
+    </a>
+    <a class="card" href="/deck/talk-short/" style="border-left:4px solid var(--teal)">
+      <span class="k">Talk only &middot; short</span>
+      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
+      <p>The shortest complete version. A single-sitting lecture with nothing to set up
+      and nothing that can fail on camera.</p>
+    </a>
+  </div>
+
+  <div class="callout" style="margin:1.2em 0 0">
+    <span class="label">Switching mid-flight</span>
+    The deck's control bar carries both toggles — <strong>Short/Full</strong> and
+    <strong>Talk/Work-along</strong> — so you can try a section each way before committing.
   </div>
 
   <h2 style="margin-top:1.8em">Setup</h2>
@@ -329,9 +372,9 @@ function buildPresent(all) {
       and a preview of the next slide. Put it on your second monitor. Allow the popup the
       first time.</li>
     <li><strong>Record the deck window only</strong>, not the speaker window.</li>
-    <li>If you are also running the demos in a terminal, run
-      <code>./run.sh check</code> first — it makes a real API call and catches a dead key
-      before you are on camera.</li>
+    <li><strong>Work-along editions only:</strong> run <code>./run.sh check</code> first —
+      it makes a real API call and catches a dead key before you are on camera. In a talk
+      edition there is nothing to set up; the output is already on the slides.</li>
   </ol>
 
   <div class="callout" style="margin:1.6em 0">
@@ -380,14 +423,49 @@ function buildPresent(all) {
 /* The short deck is the same file with the non-core sections removed and
    its relative asset paths lifted one level, so /deck/short/ still loads
    /deck/'s vendored reveal, tokens and widget code. */
-function buildShortDeck(rawHtml) {
-  let out = rawHtml.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
-    (whole, attrs) => (/data-track="core"/.test(attrs) ? whole : ''));
+function buildDeckVariant(rawHtml, { short, talk }) {
+  let out = rawHtml;
+
+  if (short) {
+    out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
+      (whole, attrs) => (/data-track="core"/.test(attrs) ? whole : ''));
+  }
+
+  out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
+    const ti = body.indexOf('<aside class="talk">');
+    if (ti === -1) return whole;
+    const talkText = body.slice(ti + '<aside class="talk">'.length,
+                                body.indexOf('</aside>', ti));
+    let b = body.slice(0, ti) + body.slice(body.indexOf('</aside>', ti) + 8);
+
+    if (talk) {
+      // the talk narration replaces the work-along narration
+      const ai = b.indexOf('<aside class="notes">');
+      if (ai !== -1) {
+        b = b.slice(0, ai) + '<aside class="notes">' + talkText + '</aside>' +
+            b.slice(b.indexOf('</aside>', ai) + 8);
+      }
+      const t = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1];
+      if (t) b = b.replace(/(<h[12][^>]*>)[\s\S]*?(<\/h[12]>)/, `$1${t}$2`);
+    }
+    return `<section${attrs}>${b}</section>`;
+  });
 
   out = out.replace(/\b(href|src)="(?!https?:|\/|data:|#)([^"]+)"/g,
                     (m, attr, url) => `${attr}="../${url}"`);
-  out = out.replace('<div class="reveal">', '<div class="reveal" data-edit="short">');
-  out = out.replace('<title>', '<title>Short edit — ');
+
+  if (talk) {
+    out = out.replace(/<span class="label">Demo&nbsp;\d+<\/span>/g,
+                      '<span class="label">Output of</span>');
+    out = out.replace(/<span class="label">Demo<\/span>/g,
+                      '<span class="label">Output of</span>');
+  }
+
+  const edit = [short ? 'short' : 'full', talk ? 'talk' : 'workalong'].join('-');
+  out = out.replace('<div class="reveal">', `<div class="reveal" data-edit="${edit}">`);
+  if (talk) out = out.replace('<body>', '<body data-mode="talk">');
+  const label = (talk ? 'Talk' : 'Work-along') + (short ? ', short' : '');
+  out = out.replace('<title>', `<title>${label} — `);
   return out;
 }
 
@@ -407,8 +485,19 @@ fs.mkdirSync(DIST, { recursive: true });
 copyDir(path.join(ROOT, 'slides'), path.join(DIST, 'deck'));
 
 const rawDeck = read('slides', 'index.html');
-fs.mkdirSync(path.join(DIST, 'deck', 'short'), { recursive: true });
-fs.writeFileSync(path.join(DIST, 'deck', 'short', 'index.html'), buildShortDeck(rawDeck));
+const DECK_VARIANTS = [
+  ['short',      { short: true,  talk: false }],
+  ['talk',       { short: false, talk: true  }],
+  ['talk-short', { short: true,  talk: true  }],
+];
+for (const [dir, opts] of DECK_VARIANTS) {
+  fs.mkdirSync(path.join(DIST, 'deck', dir), { recursive: true });
+  fs.writeFileSync(path.join(DIST, 'deck', dir, 'index.html'),
+                   buildDeckVariant(rawDeck, opts));
+}
+// the default deck still needs its talk asides stripped out
+fs.writeFileSync(path.join(DIST, 'deck', 'index.html'),
+  rawDeck.replace(/\s*<aside class="talk">[\s\S]*?<\/aside>/g, ''));
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
@@ -424,8 +513,10 @@ fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 
 fs.mkdirSync(path.join(DIST, 'read'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides, 'full'));
-fs.mkdirSync(path.join(DIST, 'read', 'short'), { recursive: true });
-fs.writeFileSync(path.join(DIST, 'read', 'short', 'index.html'), buildRead(slides, 'short'));
+for (const v of ['short', 'talk', 'talk-short']) {
+  fs.mkdirSync(path.join(DIST, 'read', v), { recursive: true });
+  fs.writeFileSync(path.join(DIST, 'read', v, 'index.html'), buildRead(slides, v));
+}
 
 // /script/ was the narration-only page; /read/ supersedes it. Keep the old
 // URL working rather than breaking anyone's link.
