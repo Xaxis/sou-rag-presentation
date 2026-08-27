@@ -10,6 +10,26 @@ embeddings, there is a script that measures it.
 
 ---
 
+## Quickstart
+
+```bash
+./run.sh setup      # venv, packages, documents, .env  (once, ~2 min)
+./run.sh slides     # opens the deck in your browser
+```
+
+Then press **S** for the speaker window — narration, timer, next-slide preview.
+That is the window to keep on your second monitor while recording.
+
+To run a demo in the terminal beside it:
+
+```bash
+./run.sh demo 5     # or: ./run.sh demo all
+```
+
+`./run.sh check` verifies everything is wired up before you hit record.
+
+---
+
 ## The three pieces
 
 | | |
@@ -17,11 +37,13 @@ embeddings, there is a script that measures it.
 | **`slides/index.html`** | The deck. Reveal.js, vendored — no network needed to present. |
 | **`slides/interactive.js`** | The five in-slide playgrounds: sliders, query boxes, live re-chunking. |
 | **`demo/`** | Eight numbered scripts, one per concept, plus the finished pipeline. |
-| **`SCRIPT.md`** | Word-for-word narration for all 54 slides. ~77 minutes of speaking. |
+| **`SCRIPT.md`** | Word-for-word narration for all 54 slides. ~78 minutes of speaking. |
 
 ---
 
 ## Setup
+
+`./run.sh setup` does all of this for you. The long way, if you prefer:
 
 ```bash
 # 1. documents (five Wikipedia articles, normalised for the splitter)
@@ -40,18 +62,41 @@ cp .env.example .env              # then paste your key into .env
 The API is prepaid and separate from any ChatGPT subscription. Embedding the
 five documents costs **well under one cent**.
 
+Check it before you record:
+
+```bash
+./run.sh check
+```
+
+```
+Preflight
+  ✓ virtual environment
+  ✓ packages import
+  ✓ documents (5 files)
+  ✓ API key present in demo/.env
+  ✓ vector store built (demos 07 and 08 will work)
+  ✓ deck present (54 slides)
+  ✓ interactive slide data
+
+Ready to record.
+```
+
 ## Present
 
 ```bash
-./present.sh                      # serves slides at http://localhost:8000
+./run.sh slides                   # serves on :8000 and opens your browser
 ```
 
-Press **S** in the deck for the speaker window — narration, timer, and a
-preview of the next slide. That is the view to keep on your second monitor
-while recording.
+Press **S** for the speaker window — narration, timer, and a preview of the
+next slide. That is the window to keep on your second monitor while recording.
 
 Keys: `→ / ←` navigate · `S` speaker view · `F` fullscreen · `O` overview ·
 `B` blank the screen.
+
+> **You can also just open `slides/index.html` directly.** Every slide and all
+> five interactive widgets work over `file://` — the *only* thing that needs the
+> server is Reveal's speaker window, because it opens a second page. If you want
+> the notes on screen while you record, use `./run.sh slides`.
 
 ---
 
@@ -60,13 +105,15 @@ Keys: `→ / ←` navigate · `S` speaker view · `F` fullscreen · `O` overview
 Five slides are live playgrounds you drive with the mouse during the talk. They
 run entirely in the browser — no API key, no network.
 
+<!-- BEGIN:ix-table -->
 | Slide | Widget | What you do on camera |
 |---|---|---|
-| 10 | **Corpus scale explorer** | Drag from 1 MB to 1 PB; watch tokens, embedding cost and "how many context windows" |
-| 18 | **Neighbourhood map** | Click any word; similarity bars and a 2-D projection re-rank live |
-| 38 | **Chunking playground** | Drag `chunk_size` and `chunk_overlap`; chunks re-cut, overlap highlighted |
-| 44 | **Retrieval playground** | Type a question, move top *k*, watch the prompt assemble itself |
-| 49 | **Mismatch toggle** | Flip the query model and watch retrieval break with zero errors raised |
+| **10** | Corpus scale explorer | Drag 1 MB to 1 PB; watch tokens, embedding cost and context windows needed |
+| **18** | Neighbourhood map | Click any word; similarity bars and a 2-D projection re-rank live |
+| **38** | Chunking playground | Drag `chunk_size` and `chunk_overlap`; chunks re-cut, overlap highlighted |
+| **44** | Retrieval playground | Type a question, move top *k*, watch the prompt assemble itself |
+| **49** | Mismatch toggle | Flip the query model and watch retrieval break with zero errors raised |
+<!-- END:ix-table -->
 
 **Two of them use real OpenAI vectors.** The neighbourhood map and the mismatch
 toggle are driven by `slides/data.js`, precomputed by
@@ -88,16 +135,19 @@ loud. Demo 07 does the same thing with real embeddings.
 
 Run them in order. `06` builds the database that `07` and `08` read.
 
-| Demo | Command | Slide | Shows |
+<!-- BEGIN:demo-table -->
+| Demo | Slide | Command | What it shows |
 |---|---|---|---|
-| 01 | `python 01_tokens.py` | 7, 9 | Tokens ≠ words; the corpus-vs-context-window scale gap |
-| 02 | `python 02_embedding_shape.py` | 14 | Any length of text in, always 1,536 numbers out |
-| 03 | `python 03_similar_meaning.py` | 16 | Similar meaning really does give similar numbers |
-| 04 | `python 04_load.py` | 30–32 | `DirectoryLoader`, the `Document` object, metadata |
-| 05 | `python 05_chunk.py` | 33–35 | Chunking, why 800 is a target, what overlap buys |
-| 06 | `python 06_embed_store.py` | 36–38 | `Chroma.from_documents` embeds **and** stores |
-| 07 | `python 07_query.py "Who founded SpaceX?"` | 39–40 | Retrieval, and the real prompt that reaches the LLM |
-| 08 | `python 08_model_mismatch.py` | 44 | The silent failure: wrong model, no error, wrong chunks |
+| 01 | **7** | `python 01_tokens.py` | Tokens are not words; the corpus-vs-context-window scale gap |
+| 02 | **15** | `python 02_embedding_shape.py` | Any length of text in, always 1,536 numbers out |
+| 03 | **17** | `python 03_similar_meaning.py` | Similar meaning really does give similar numbers |
+| 04 | **32** | `python 04_load.py` | `DirectoryLoader`, the `Document` object, metadata |
+| 05 | **35** | `python 05_chunk.py` | Chunking, why 800 is a target, what overlap buys you |
+| 06 | **39, 45** | `python 06_embed_store.py` | `Chroma.from_documents` embeds **and** stores |
+| 07 | **42** | `python 07_query.py "Who founded SpaceX?"` | Retrieval, and the real prompt that reaches the LLM |
+| 08 | **48** | `python 08_model_mismatch.py` | The silent failure: wrong model, no error, wrong chunks |
+| — | **30** | `python3 tools/fetch_docs.py` | Downloads and normalises the five source articles |
+<!-- END:demo-table -->
 
 Two flags worth knowing on camera:
 

@@ -7,8 +7,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 | | |
 |---|---|
 | Slides | 54 |
-| Narration | ~10,460 words |
-| Estimated runtime | ~77 minutes of speaking, plus demo time |
+| Narration | ~10,517 words |
+| Estimated runtime | ~78 minutes of speaking, plus demo time |
 | Live demos | 11 slides carry a command |
 
 
@@ -54,18 +54,20 @@ And last, you will know the one mistake that silently breaks most first builds. 
 ## Slide 3 — Two windows, eight demos
 
 **Section:** 00 · How this session runs  
-**Run:** `cd demo && source venv/bin/activate`
+**Run:** `./run.sh check`
 
 
 A word on how this runs, so you can follow along rather than just watch.
 
 I have two windows: these slides, and a terminal. Whenever an orange bar appears on a slide, that is my cue to stop talking and run the command written in it. The output you then see on the slide is the genuine output of that command — I have not typed nice numbers into a slide anywhere.
 
-Everything lives in the repository. The demo folder has eight numbered scripts, one per concept. The docs folder has our five source articles. And ingestion underscore pipeline dot py is the finished sixty-line file that all of this builds toward.
+Everything lives in the repository, behind one entry point. Run dot s h setup once, and then run dot s h slides for this deck, or run dot s h demo five for any demo. There is a check command too, which is what I am running now — it verifies the environment, the packages, the documents and the API key before we start, so nothing surprises us on camera.
+
+The demo folder has eight numbered scripts, one per concept, and ingestion underscore pipeline dot py is the finished sixty-line file that all of this builds toward.
 
 If you are working along, pause whenever you need to. The scripts are all independent except that six, seven and eight need the database that six builds.
 
-Let me activate the environment and we will begin.
+Let me run the check, and we will begin.
 
 
 ## Slide 4 — Why RAG exists

@@ -16,6 +16,33 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DECK = ROOT / "slides" / "index.html"
 OUT = ROOT / "SCRIPT.md"
+README = ROOT / "README.md"
+
+# What each demo is for. Slide numbers are derived from the deck, never typed.
+DEMO_SHOWS = {
+    "01_tokens.py": "Tokens are not words; the corpus-vs-context-window scale gap",
+    "02_embedding_shape.py": "Any length of text in, always 1,536 numbers out",
+    "03_similar_meaning.py": "Similar meaning really does give similar numbers",
+    "04_load.py": "`DirectoryLoader`, the `Document` object, metadata",
+    "05_chunk.py": "Chunking, why 800 is a target, what overlap buys you",
+    "06_embed_store.py": "`Chroma.from_documents` embeds **and** stores",
+    "07_query.py": "Retrieval, and the real prompt that reaches the LLM",
+    "08_model_mismatch.py": "The silent failure: wrong model, no error, wrong chunks",
+    "fetch_docs.py": "Downloads and normalises the five source articles",
+}
+
+IX_SHOWS = {
+    "ix-scale": ("Corpus scale explorer",
+                 "Drag 1 MB to 1 PB; watch tokens, embedding cost and context windows needed"),
+    "ix-embed": ("Neighbourhood map",
+                 "Click any word; similarity bars and a 2-D projection re-rank live"),
+    "ix-chunk": ("Chunking playground",
+                 "Drag `chunk_size` and `chunk_overlap`; chunks re-cut, overlap highlighted"),
+    "ix-retr": ("Retrieval playground",
+                "Type a question, move top *k*, watch the prompt assemble itself"),
+    "ix-mismatch": ("Mismatch toggle",
+                    "Flip the query model and watch retrieval break with zero errors raised"),
+}
 
 WORDS_PER_MINUTE = 135  # unhurried presenting pace
 
@@ -40,13 +67,54 @@ def parse(deck_html):
         eyebrow = re.search(r'<span class="eyebrow">(.*?)</span>', body, re.S)
         cues = re.findall(r'<span class="cmd">(.*?)</span>', body, re.S)
 
+        widgets = re.findall(r'id="(ix-[a-z]+)"', body)
+
         slides.append({
             "title": strip_tags(heading.group(1)) if heading else "(untitled)",
             "eyebrow": strip_tags(eyebrow.group(1)) if eyebrow else "",
             "cues": [strip_tags(c) for c in cues],
+            "widgets": widgets,
             "notes": notes,
         })
     return slides
+
+
+def render_tables(slides):
+    """Build the two README tables from the deck, so they cannot go stale."""
+    demo_rows = {}
+    for i, s in enumerate(slides, 1):
+        for cue in s["cues"]:
+            for script, shows in DEMO_SHOWS.items():
+                if script in cue:
+                    demo_rows.setdefault(script, {"cue": cue, "slides": [],
+                                                  "shows": shows})
+                    demo_rows[script]["slides"].append(i)
+
+    demo = ["| Demo | Slide | Command | What it shows |", "|---|---|---|---|"]
+    for script in sorted(demo_rows, key=lambda k: (k == "fetch_docs.py", k)):
+        r = demo_rows[script]
+        num = script[:2] if script[:2].isdigit() else "—"
+        where = ", ".join(str(n) for n in r["slides"])
+        demo.append(f"| {num} | **{where}** | `{r['cue']}` | {r['shows']} |")
+
+    ix = ["| Slide | Widget | What you do on camera |", "|---|---|---|"]
+    for i, s in enumerate(slides, 1):
+        for w in s["widgets"]:
+            if w in IX_SHOWS:
+                name, what = IX_SHOWS[w]
+                ix.append(f"| **{i}** | {name} | {what} |")
+
+    return "\n".join(demo), "\n".join(ix)
+
+
+def splice(text, marker, block):
+    start = f"<!-- BEGIN:{marker} -->"
+    end = f"<!-- END:{marker} -->"
+    if start not in text or end not in text:
+        return text, False
+    head = text[: text.index(start) + len(start)]
+    tail = text[text.index(end):]
+    return head + "\n" + block + "\n" + tail, True
 
 
 def main():
@@ -91,6 +159,19 @@ def main():
     OUT.write_text("\n".join(out), encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)}")
     print(f"  {len(slides)} slides, ~{total_words:,} words, ~{minutes} min of speaking")
+
+    # keep the README's two tables in step with the deck
+    if README.exists():
+        demo_tbl, ix_tbl = render_tables(slides)
+        text = README.read_text(encoding="utf-8")
+        text, ok1 = splice(text, "demo-table", demo_tbl)
+        text, ok2 = splice(text, "ix-table", ix_tbl)
+        text = re.sub(r"A \d+-slide deck", f"A {len(slides)}-slide deck", text)
+        text = re.sub(r"narration for all \d+ slides\. ~\d+ minutes",
+                      f"narration for all {len(slides)} slides. ~{minutes} minutes", text)
+        README.write_text(text, encoding="utf-8")
+        print(f"  README tables: demo={'ok' if ok1 else 'MARKER MISSING'}, "
+              f"interactive={'ok' if ok2 else 'MARKER MISSING'}")
 
 
 if __name__ == "__main__":
