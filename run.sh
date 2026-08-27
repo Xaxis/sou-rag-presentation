@@ -79,12 +79,56 @@ cmd_check() {
   [ "$n" -ge 1 ] && ok "documents ($n files)" \
                  || { bad "no documents - run: python3 tools/fetch_docs.py"; fail=1; }
 
-  if [ -f "$DEMO/.env" ] && grep -q '^OPENAI_API_KEY=sk-' "$DEMO/.env" 2>/dev/null; then
-    ok "API key present in demo/.env"
+  # A key can be missing, still the placeholder, invalid, or valid but with no
+  # credit. All four look different on camera, so test the real thing.
+  local keysrc=""
+  if [ -f "$DEMO/.env" ] && grep -qE '^OPENAI_API_KEY=sk-[A-Za-z0-9_-]{20,}$' "$DEMO/.env" 2>/dev/null \
+     && ! grep -q 'xxxx' "$DEMO/.env"; then
+    keysrc="demo/.env"
   elif [ -n "${OPENAI_API_KEY:-}" ]; then
-    ok "API key present in the environment"
+    keysrc="the environment"
+  fi
+
+  if [ -z "$keysrc" ]; then
+    if [ -f "$DEMO/.env" ] && grep -q 'xxxx' "$DEMO/.env" 2>/dev/null; then
+      bad "demo/.env still has the placeholder key - paste your real one in"
+    else
+      bad "no OpenAI key - put one in demo/.env"
+    fi
+    fail=1
+  elif [ -x "$PY" ]; then
+    local probe
+    probe=$("$PY" - <<'PYCHK' 2>/dev/null
+import os, sys
+sys.path.insert(0, "demo")
+try:
+    from dotenv import load_dotenv
+    load_dotenv("demo/.env")
+    from openai import OpenAI
+    OpenAI().embeddings.create(model="text-embedding-3-small", input="ping")
+    print("OK")
+except Exception as e:
+    name = type(e).__name__
+    msg = str(e).lower()
+    if "quota" in msg or "billing" in msg:
+        print("NOCREDIT")
+    elif "api_key" in msg or "authentication" in name.lower() or "401" in msg:
+        print("BADKEY")
+    elif "connect" in msg or "timeout" in msg or "network" in msg:
+        print("OFFLINE")
+    else:
+        print("ERR:" + name)
+PYCHK
+)
+    case "$probe" in
+      OK)       ok "API key works ($keysrc) - a live call succeeded" ;;
+      NOCREDIT) bad "key is valid but the account has no credit - add funds in Billing"; fail=1 ;;
+      BADKEY)   bad "key was rejected by OpenAI - check demo/.env"; fail=1 ;;
+      OFFLINE)  info "key present ($keysrc); could not reach OpenAI to verify it" ;;
+      *)        info "key present ($keysrc); could not verify it ($probe)" ;;
+    esac
   else
-    bad "no OpenAI key - put one in demo/.env"; fail=1
+    ok "API key present in $keysrc"
   fi
 
   if [ -d "$DEMO/db_chroma" ]; then
