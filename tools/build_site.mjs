@@ -317,6 +317,16 @@ fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 fs.mkdirSync(path.join(DIST, 'read'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides));
 
+// /script/ was the narration-only page; /read/ supersedes it. Keep the old
+// URL working rather than breaking anyone's link.
+fs.mkdirSync(path.join(DIST, 'script'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'script', 'index.html'),
+  '<!doctype html><meta charset="utf-8">' +
+  '<title>Moved to /read/</title>' +
+  '<link rel="canonical" href="/read/">' +
+  '<meta http-equiv="refresh" content="0; url=/read/">' +
+  '<p>This page is now at <a href="/read/">/read/</a>.</p>\n');
+
 fs.mkdirSync(path.join(DIST, 'present'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'present', 'index.html'), buildPresent(slides));
 

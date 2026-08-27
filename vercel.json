@@ -5,16 +5,10 @@
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": true,
-  "redirects": [
-    { "source": "/script", "destination": "/read", "permanent": true }
-  ],
   "headers": [
     {
       "source": "/deck/vendor/(.*)",
-      "redirects": [
-    { "source": "/script", "destination": "/read", "permanent": true }
-  ],
-  "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     }
   ]
 }

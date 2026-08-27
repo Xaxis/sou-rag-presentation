@@ -291,3 +291,8 @@ table.cues td.n {
   font-family: var(--mono); color: var(--accent); font-weight: 700; width: 4em;
 }
 table.cues code { font-size: 0.82em; }
+
+/* the cue sheet's command column can outrun a narrow screen */
+table.cues { table-layout: fixed; }
+table.cues td, table.cues th { overflow-wrap: anywhere; }
+table.cues td:nth-child(2) { width: 40%; }
