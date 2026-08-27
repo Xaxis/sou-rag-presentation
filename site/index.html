@@ -12,6 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<script>(function(){try{var m=localStorage.getItem("ragverse.theme");if(m)document.documentElement.setAttribute("data-theme",m);}catch(e){}})();</script>
+<link rel="stylesheet" href="/deck/tokens.css">
 <link rel="stylesheet" href="/deck/theme.css">
 <link rel="stylesheet" href="/site.css">
 </head>
@@ -24,25 +26,32 @@
   <a class="link hide-s" href="/deck/">Deck</a>
   <a class="link hide-s" href="/present/">Present</a>
   <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
+  <button class="theme-btn" type="button" aria-label="Toggle theme"></button>
 </div></nav>
 
-<header class="hero"><div class="wrap">
-  <span class="eyebrow"><b>Retrieval track</b> &nbsp;·&nbsp; Lessons 01 &amp; 02</span>
-  <h1>RAG, built in<br>front of you.</h1>
-  <p class="lede">How to give a language model access to a hundred thousand documents
-  without ever putting a hundred thousand documents in the prompt.
-  <b>Every number on screen is real output</b> — nothing here is an illustration.</p>
-  <div class="cta">
-    <a class="btn primary" href="/read/">Start the lesson →</a>
-    <a class="btn ghost" href="/play/">Just let me play</a>
+<header class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-veil" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <span class="eyebrow"><b>Retrieval track</b> &nbsp;·&nbsp; Lessons 01 &amp; 02</span>
+    <h1>RAG, built in<br>front of you.</h1>
+    <p class="lede">How to give a language model access to a hundred thousand documents
+    without ever putting a hundred thousand documents in the prompt.
+    <b>Every number on screen is real output</b> — nothing here is an illustration.</p>
+    <div class="cta">
+      <a class="btn primary" href="/read/">Start the lesson →</a>
+      <a class="btn ghost" href="/play/">Just let me play</a>
+    </div>
+    <div class="facts">
+      <div class="fact"><div class="n">54</div><div class="l">slides</div></div>
+      <div class="fact"><div class="n">5</div><div class="l">interactive playgrounds</div></div>
+      <div class="fact"><div class="n">8</div><div class="l">runnable demos</div></div>
+      <div class="fact"><div class="n">&lt;$0.01</div><div class="l">to build it yourself</div></div>
+    </div>
+    <p class="hero-caption">Behind this: an embedding space. Every few seconds one point becomes
+    a query and reaches for its nearest neighbours — which is all retrieval is.</p>
   </div>
-  <div class="facts">
-    <div class="fact"><div class="n">54</div><div class="l">slides</div></div>
-    <div class="fact"><div class="n">5</div><div class="l">interactive playgrounds</div></div>
-    <div class="fact"><div class="n">8</div><div class="l">runnable demos</div></div>
-    <div class="fact"><div class="n">&lt;$0.01</div><div class="l">to build it yourself</div></div>
-  </div>
-</div></header>
+</header>
 
 <section class="band"><div class="wrap">
   <span class="eyebrow">Two ways in</span>
@@ -201,5 +210,7 @@
   &nbsp;·&nbsp; <a href="https://github.com/Xaxis/sou-rag-presentation">Source</a></span>
 </div></footer>
 
+<script src="/theme.js"></script>
+<script src="/hero.js"></script>
 </body>
 </html>

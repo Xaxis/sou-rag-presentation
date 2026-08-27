@@ -44,8 +44,27 @@
       document.dispatchEvent(ev);
     });
 
+    // same key as the site, so the deck matches whatever the visitor chose
+    var theme = el('button', 'deck-btn deck-theme', 'Theme');
+    theme.title = 'Light or dark';
+    theme.addEventListener('click', function () {
+      var root = document.documentElement;
+      var cur = root.getAttribute('data-theme') ||
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('ragverse.theme', next); } catch (e) {}
+      theme.textContent = next === 'dark' ? 'Light' : 'Dark';
+    });
+    var start = document.documentElement.getAttribute('data-theme') ||
+      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark' : 'light');
+    theme.textContent = start === 'dark' ? 'Light' : 'Dark';
+
     bar.appendChild(toggle);
     bar.appendChild(present);
+    bar.appendChild(theme);
     document.body.appendChild(bar);
 
     drawer = el('aside', 'deck-notes');

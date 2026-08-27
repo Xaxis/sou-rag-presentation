@@ -70,6 +70,7 @@ function nav(active) {
   ${item('/deck/', 'Deck', 'hide-s')}
   ${item('/present/', 'Present', 'hide-s')}
   <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
+  <button class="theme-btn" type="button" aria-label="Toggle theme"></button>
 </div></nav>`;
 }
 
@@ -85,6 +86,9 @@ function page({ title, desc, active, body, extraCss = '' }) {
 <meta property="og:description" content="${esc(desc)}">
 ${FAVICON}
 ${FONTS}
+<script>(function(){try{var m=localStorage.getItem("ragverse.theme");
+if(m)document.documentElement.setAttribute("data-theme",m);}catch(e){}})();</script>
+<link rel="stylesheet" href="/deck/tokens.css">
 <link rel="stylesheet" href="/deck/theme.css">
 <link rel="stylesheet" href="/site.css">
 ${extraCss}
@@ -98,6 +102,7 @@ ${body}
   &middot; <a href="/script/">Transcript</a>
   &middot; <a href="https://github.com/Xaxis/sou-rag-presentation">Source</a></span>
 </div></footer>
+<script src="/theme.js"></script>
 </body>
 </html>`;
 }
@@ -309,6 +314,8 @@ fs.mkdirSync(DIST, { recursive: true });
 
 copyDir(path.join(ROOT, 'slides'), path.join(DIST, 'deck'));
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
+fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
+fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(DIST, 'index.html'));
 
 fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });

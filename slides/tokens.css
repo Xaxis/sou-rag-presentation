@@ -1,0 +1,90 @@
+/* One palette, two themes. Loaded first by the deck and by every site page,
+   so the deck, the widgets and the site can never drift apart.
+
+   Light is the default. Dark comes from prefers-color-scheme unless the
+   viewer has made an explicit choice, which is stamped on <html> as
+   data-theme and wins in both directions. */
+
+:root {
+  --ink:        #14181f;
+  --ink-soft:   #4d5a68;
+  --ink-faint:  #8b97a3;
+  --paper:      #f6f6f4;
+  --card:       #ffffff;
+  --rule:       #dfe0dc;
+  --accent:     #e8590c;
+  --accent-ink: #8a3503;
+  --accent-soft:#fde3d1;
+  --teal:       #146b5f;
+  --teal-soft:  #d5e8e4;
+  --violet:     #7a6fd3;
+
+  --term-bg:    #14181f;
+  --term-fg:    #e6e6e3;
+  --term-dim:   #8b97a3;
+  --term-hi:    #ff9a5c;
+  --term-ok:    #6fd3bf;
+
+  --shadow:     rgba(20, 24, 31, .14);
+  --glass:      rgba(246, 246, 244, .86);
+
+  --display: "Bricolage Grotesque", "Helvetica Neue", system-ui, sans-serif;
+  --body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:        #eef1f4;
+    --ink-soft:   #a6b2be;
+    --ink-faint:  #6b7785;
+    --paper:      #0f1216;
+    --card:       #171b21;
+    --rule:       #272d35;
+    --accent:     #ff7a33;
+    --accent-ink: #ffb287;
+    --accent-soft:#37200f;
+    --teal:       #4fd1b8;
+    --teal-soft:  #0f2f2a;
+    --violet:     #9d92f0;
+
+    --term-bg:    #0a0d10;
+    --term-fg:    #e6e9ec;
+    --term-dim:   #6b7785;
+    --term-hi:    #ff9a5c;
+    --term-ok:    #6fd3bf;
+
+    --shadow:     rgba(0, 0, 0, .5);
+    --glass:      rgba(15, 18, 22, .84);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ink:        #eef1f4;
+  --ink-soft:   #a6b2be;
+  --ink-faint:  #6b7785;
+  --paper:      #0f1216;
+  --card:       #171b21;
+  --rule:       #272d35;
+  --accent:     #ff7a33;
+  --accent-ink: #ffb287;
+  --accent-soft:#37200f;
+  --teal:       #4fd1b8;
+  --teal-soft:  #0f2f2a;
+  --violet:     #9d92f0;
+
+  --term-bg:    #0a0d10;
+  --term-fg:    #e6e9ec;
+  --term-dim:   #6b7785;
+  --term-hi:    #ff9a5c;
+  --term-ok:    #6fd3bf;
+
+  --shadow:     rgba(0, 0, 0, .5);
+  --glass:      rgba(15, 18, 22, .84);
+}
+
+html { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+}

@@ -1,21 +1,7 @@
 /* Theme for the RAG presentation. Light "paper" palette, chosen to read
    cleanly on a screen recording rather than a projector. */
 
-:root {
-  --ink: #14181f;
-  --ink-soft: #4d5a68;
-  --ink-faint: #8b97a3;
-  --paper: #f6f6f4;
-  --card: #ffffff;
-  --rule: #dfe0dc;
-  --accent: #e8590c;
-  --accent-soft: #fde3d1;
-  --teal: #146b5f;
-  --teal-soft: #d5e8e4;
-  --display: "Bricolage Grotesque", "Helvetica Neue", system-ui, sans-serif;
-  --body: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
+/* palette lives in tokens.css */
 
 .reveal-viewport { background: var(--paper); }
 
@@ -92,7 +78,7 @@
 .reveal code { font-family: var(--mono); font-variant-ligatures: none; }
 .reveal p code, .reveal li code, .reveal td code {
   background: var(--accent-soft);
-  color: #8a3503;
+  color: var(--accent-ink);
   padding: 0.08em 0.32em;
   border-radius: 3px;
   font-size: 0.82em;
@@ -114,7 +100,7 @@
 }
 .cue .label {
   font-weight: 700;
-  color: #8a3503;
+  color: var(--accent-ink);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-size: 0.8em;
@@ -192,15 +178,15 @@
 
 /* --- terminal output blocks ------------------------------------------ */
 .term {
-  background: #14181f; color: #e6e6e3; border-radius: 6px;
+  background: var(--term-bg); color: var(--term-fg); border-radius: 6px;
   font-family: var(--mono); font-size: 0.4em; line-height: 1.55;
   /* terminal output must render literally: no "===" -> ligature */
   font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
   padding: 0.9em 1.1em; margin: 0.5em 0; white-space: pre; overflow-x: auto;
 }
-.term .dim { color: #8b97a3; }
-.term .hi { color: #ff9a5c; }
-.term .ok { color: #6fd3bf; }
+.term .dim { color: var(--term-dim); }
+.term .hi { color: var(--term-hi); }
+.term .ok { color: var(--term-ok); }
 
 /* --- layout helpers --------------------------------------------------- */
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1em; align-items: start; }
@@ -330,7 +316,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 .ix-row .body { flex: 1; word-break: break-word; }
 .ix-row .sc { flex: 0 0 3.2em; text-align: right; color: var(--ink-faint); }
 .ix-row.hit { background: var(--accent-soft); }
-.ix-row.hit .sc { color: #8a3503; font-weight: 700; }
+.ix-row.hit .sc { color: var(--accent-ink); font-weight: 700; }
 .ix-row mark { background: var(--teal-soft); color: var(--teal); border-radius: 2px; }
 
 /* --- similarity bars ---------------------------------------------------- */
@@ -341,7 +327,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 .ix-bar .fill { display: block; height: 100%; background: var(--ink-faint); }
 .ix-bar .fill.animals { background: var(--accent); }
 .ix-bar .fill.fruit   { background: var(--teal); }
-.ix-bar .fill.drinks  { background: #7a6fd3; }
+.ix-bar .fill.drinks  { background: var(--violet); }
 .ix-bar .n { flex: 0 0 3em; text-align: right; color: var(--ink-soft); }
 
 /* --- scatter ------------------------------------------------------------ */
@@ -358,7 +344,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   color: var(--ink-soft); cursor: pointer; transition: all .12s;
 }
 .ix-toggle button.on { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
-.ix-toggle button.on.bad { border-color: #b3300a; background: #b3300a; }
+.ix-toggle button.on.bad { border-color: #c0400f; background: #c0400f; }
 
 .ix-note {
   margin-top: 0.55em; font-size: 0.82em; color: var(--ink-soft);
@@ -367,13 +353,13 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 .ix-note b { color: var(--accent); }
 
 .ix-prompt {
-  margin-top: 0.6em; background: #14181f; color: #e6e6e3; border-radius: 4px;
+  margin-top: 0.6em; background: var(--term-bg); color: var(--term-fg); border-radius: 4px;
   padding: 0.6em 0.8em; font-family: var(--mono); font-size: 0.78em;
   line-height: 1.5; max-height: 180px; overflow-y: auto; white-space: pre-wrap;
   font-variant-ligatures: none;
 }
-.ix-prompt .lbl { color: #ff9a5c; }
-.ix-prompt .q { color: #6fd3bf; }
+.ix-prompt .lbl { color: var(--term-hi); }
+.ix-prompt .q { color: var(--term-ok); }
 
 /* ======================================================================
    Deck chrome: narration drawer + controls
@@ -402,7 +388,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
   height: 34vh; min-height: 220px;
   background: var(--card); border-top: 2px solid var(--accent);
-  box-shadow: 0 -10px 34px rgba(20, 24, 31, .1);
+  box-shadow: 0 -10px 34px var(--shadow);
   transform: translateY(101%); transition: transform .2s ease;
   display: flex; flex-direction: column;
 }
@@ -448,10 +434,10 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
 /* --- pointer to the reading view on small screens ----------------------- */
 .deck-nudge {
   position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 70;
-  background: var(--ink); color: var(--paper); text-decoration: none;
+  background: var(--term-bg); color: var(--term-fg); text-decoration: none;
   border-radius: 6px; padding: 12px 14px; text-align: center;
   font-family: var(--mono); font-size: 13px; line-height: 1.4;
-  box-shadow: 0 6px 24px rgba(20,24,31,.24);
+  box-shadow: 0 6px 24px var(--shadow);
 }
-.deck-nudge b { color: #ff9a5c; font-weight: 700; }
+.deck-nudge b { color: var(--term-hi); font-weight: 700; }
 @media (min-width: 821px) { .deck-nudge { display: none; } }
