@@ -62,9 +62,22 @@
         ? 'dark' : 'light');
     theme.textContent = start === 'dark' ? 'Light' : 'Dark';
 
+    // swap between the short edit and the full one, keeping your place in
+    // spirit if not in index - the two have different slide counts
+    var isShort = !!document.querySelector('.reveal[data-edit="short"]');
+    var edit = el('button', 'deck-btn deck-edit',
+      isShort ? 'Full lesson' : 'Short edit');
+    edit.title = isShort
+      ? 'Switch to the complete 54-slide lesson'
+      : 'Switch to the 33-slide short edit';
+    edit.addEventListener('click', function () {
+      window.location.href = isShort ? '/deck/' : '/deck/short/';
+    });
+
     bar.appendChild(toggle);
     bar.appendChild(present);
     bar.appendChild(theme);
+    bar.appendChild(edit);
     document.body.appendChild(bar);
 
     drawer = el('aside', 'deck-notes');
@@ -121,7 +134,8 @@
     if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
       var nudge = el('a', 'deck-nudge',
         '<b>Small screen?</b> The lesson reads better as a document &rarr;');
-      nudge.href = '/read/';
+      nudge.href = document.querySelector('.reveal[data-edit="short"]')
+        ? '/read/short/' : '/read/';
       document.body.appendChild(nudge);
     }
     if (window.Reveal && Reveal.on) {

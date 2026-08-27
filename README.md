@@ -3,9 +3,14 @@
 **[ragverse.diy](https://ragverse.diy)** — slides, five interactive playgrounds,
 and eight demos you run yourself.
 
-A 54-slide deck teaches Retrieval Augmented Generation; this repo is the code
-that goes with it. You end up with a working ingestion pipeline: five documents
-in, a searchable vector database out, in about sixty lines of Python.
+A deck teaches Retrieval Augmented Generation; this repo is the code that goes
+with it. You end up with a working ingestion pipeline: five documents in, a
+searchable vector database out, in about sixty lines of Python.
+
+It comes in **two edits** — a 33-slide short version (~45 min) and the full
+54-slide lesson (~78 min). Same rigour, the same eight demos below, the same
+code; the short edit simply carries fewer slides around them. Either works on
+its own.
 
 Every number in the lesson is real output from these scripts. Nothing is an
 illustration.
@@ -57,7 +62,8 @@ Want the slides on screen at the same time? In a second terminal:
 <!-- END:demo-table -->
 
 Run any one on its own with `./run.sh demo 5`, or all of them with
-`./run.sh demo all`.
+`./run.sh demo all`. **All eight are in both edits** — only the slides differ,
+so the terminal half of the session is identical either way.
 
 Two flags worth knowing:
 

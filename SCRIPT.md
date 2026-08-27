@@ -6,9 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Slides | 54 |
-| Narration | ~10,517 words |
-| Estimated runtime | ~78 minutes of speaking, plus demo time |
+| Full lesson | 54 slides · ~10,517 words · ~78 min |
+| Short edit | 33 slides · ~46 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -17,7 +16,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 ---
 
 
-## Slide 1 — Retrieval Augmented Generation
+## Slide 1 — Retrieval Augmented Generation · **in the short edit**
 
 
 Welcome. Over the next hour or so we are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
@@ -51,7 +50,7 @@ You will have built a working ingestion pipeline — real code, on your machine,
 And last, you will know the one mistake that silently breaks most first builds. Silently is the important word there. We will break it on purpose at the end so you know what it looks like.
 
 
-## Slide 3 — Two windows, eight demos
+## Slide 3 — Two windows, eight demos · **in the short edit**
 
 **Section:** 00 · How this session runs  
 **Run:** `./run.sh check`
@@ -70,7 +69,7 @@ If you are working along, pause whenever you need to. The scripts are all indepe
 Let me run the check, and we will begin.
 
 
-## Slide 4 — Why RAG exists
+## Slide 4 — Why RAG exists · **in the short edit**
 
 **Section:** Part one
 
@@ -82,7 +81,7 @@ I want to frame this carefully, because the framing matters. The problem RAG sol
 Let's make that concrete.
 
 
-## Slide 5 — Several hundred internal documents
+## Slide 5 — Several hundred internal documents · **in the short edit**
 
 **Section:** 01 · The problem
 
@@ -94,7 +93,7 @@ Somebody asks a question, and exactly one of those documents contains the answer
 That does not work. And the reason it does not work is the whole reason this lesson exists. So let me give you the definition to hold on to, and then we will take apart why the obvious approach fails.
 
 
-## Slide 6 — Retrieval Augmented Generation
+## Slide 6 — Retrieval Augmented Generation · **in the short edit**
 
 **Section:** 01 · Definition
 
@@ -108,7 +107,7 @@ So the model does not get everything. It gets the right few pages.
 That is the entire idea. I mean that literally — everything else in this session is mechanics for how you find the right few pages quickly. If you leave with only one sentence, leave with that one.
 
 
-## Slide 7 — Models do not read words
+## Slide 7 — Models do not read words · **in the short edit**
 
 **Section:** 02 · Tokens  
 **Run:** `python 01_tokens.py`
@@ -145,7 +144,7 @@ I want to flag something about that figure: verify it before you quote it. These
 So — two million tokens. That sounds like it should be plenty. Let's see how it compares to how much text an actual company holds.
 
 
-## Slide 9 — Read the scale carefully
+## Slide 9 — Read the scale carefully · **in the short edit**
 
 **Section:** 02 · The scale gap
 
@@ -190,7 +189,7 @@ Watch the cost figure while you drag, because that is the one people do not thin
 The threshold where RAG stops being optional is lower than people expect. Somewhere around a few megabytes, this stops being a choice.
 
 
-## Slide 11 — You also pay per token
+## Slide 11 — You also pay per token · **in the short edit**
 
 **Section:** 02 · The second reason
 
@@ -208,7 +207,7 @@ So: sending five hundred thousand tokens of irrelevant context to answer one que
 That is the case for RAG, complete. Now let's look at how it is actually built.
 
 
-## Slide 12 — The shape of the system
+## Slide 12 — The shape of the system · **in the short edit**
 
 **Section:** Part two
 
@@ -220,7 +219,7 @@ If there is one slide in this whole session to photograph, it is the next one. A
 So: two pipelines. Learn them separately, and everything after this is easy.
 
 
-## Slide 13 — Two pipelines
+## Slide 13 — Two pipelines · **in the short edit**
 
 **Section:** 03 · The whole system in one picture
 
@@ -236,7 +235,7 @@ Now look at the two orange boxes. The embedding model appears in both rows. That
 Keep this diagram. Every RAG system you will ever build, from a weekend project to production, is this diagram with more engineering around each box.
 
 
-## Slide 14 — A chunk is a slice, not a section
+## Slide 14 — A chunk is a slice, not a section · **in the short edit**
 
 **Section:** 04 · Chunking
 
@@ -252,7 +251,7 @@ So why cut at all? Why not keep whole documents? Because the chunk is your unit 
 Chunk size is therefore a real design decision, and there are techniques for cutting more intelligently. Those come later in the track. For today we cut simply, and I will show you exactly what that costs.
 
 
-## Slide 15 — This is not an LLM
+## Slide 15 — This is not an LLM · **in the short edit**
 
 **Section:** 04 · The embedding model  
 **Run:** `python 02_embedding_shape.py`
@@ -291,7 +290,7 @@ Cat and kitten sit almost on top of each other on every dimension — thirty-fou
 That is the intuition. Now let's check whether it survives contact with a real embedding model, because I do not want you taking a made-up table on faith.
 
 
-## Slide 17 — Does that actually hold?
+## Slide 17 — Does that actually hold? · **in the short edit**
 
 **Section:** 05 · Measured, not asserted  
 **Run:** `python 03_similar_meaning.py`
@@ -359,7 +358,7 @@ Same caveat as the context windows: check current pricing and dimension options 
 There is a trade-off underneath all of this. More dimensions capture more meaning, and also cost more to compute and more to store. Most production systems reduce dimensions deliberately.
 
 
-## Slide 20 — The vector database stores both
+## Slide 20 — The vector database stores both · **in the short edit**
 
 **Section:** 07 · Where the vectors live
 
@@ -377,7 +376,7 @@ The fourth column, source, is metadata. That is what lets you tell a user "this 
 For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector databases. We are using Chroma today because it runs locally, on disk, with no account and no server. FAISS is a library from Meta rather than a hosted service. And if you already run Postgres, the pgvector extension turns it into a vector database, which is often the right answer in a real company.
 
 
-## Slide 21 — Retrieval, in principle
+## Slide 21 — Retrieval, in principle · **in the short edit**
 
 **Section:** Part three
 
@@ -389,7 +388,7 @@ We have walked the whole top row of the diagram now — documents, chunks, embed
 Now someone asks a question. This is the bottom row.
 
 
-## Slide 22 — The question takes the same road
+## Slide 22 — The question takes the same road · **in the short edit**
 
 **Section:** 08 · Retrieval, step by step
 
@@ -449,7 +448,7 @@ Once that clicks, a lot of RAG stops being mysterious. The clever part is the se
 Right. That is all the theory. Let's build it.
 
 
-## Slide 25 — Build the ingestion pipeline
+## Slide 25 — Build the ingestion pipeline · **in the short edit**
 
 **Section:** Part four
 
@@ -505,7 +504,7 @@ If you are in this repo rather than typing from scratch, there is a requirements
 One note for later: langchain-community now prints a deprecation warning about being sunset. It still works fine, and the migration path is toward standalone integration packages. I have silenced that warning in the demo scripts so it does not clutter the screen, but you will see it if you write this from scratch.
 
 
-## Slide 29 — One secret, in one place
+## Slide 29 — One secret, in one place · **in the short edit**
 
 **Section:** 02 · The API key
 
@@ -560,7 +559,7 @@ That step looks pointless and it is not. It confirms three separate things befor
 Get in the habit. Prove the skeleton runs before you fill it in.
 
 
-## Slide 32 — Load the files
+## Slide 32 — Load the files · **in the short edit**
 
 **Section:** 05 · Step one  
 **Run:** `python 04_load.py`
@@ -607,7 +606,7 @@ Second gotcha. Other file types need other loaders. PyPDFLoader for PDFs, CSVLoa
 And a specific trap in there: if you leave loader class out entirely, LangChain does not fail. It falls back to a default loader that needs the unstructured package, which is a large dependency you probably have not installed. The error you get points at the missing package rather than at the missing argument, so it takes a while to work out what actually went wrong.
 
 
-## Slide 35 — Chunk them
+## Slide 35 — Chunk them · **in the short edit**
 
 **Section:** 06 · Step two  
 **Run:** `python 05_chunk.py`
@@ -644,7 +643,7 @@ Those warnings are warnings, not errors. I have suppressed them in the demo and 
 Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles this better — it tries a sequence of separators, falling back to smaller ones — and it is what you would reach for in a real project. We are staying on the simple one today so that the mechanics stay visible.
 
 
-## Slide 37 — What chunk_overlap actually does
+## Slide 37 — What chunk_overlap actually does · **in the short edit**
 
 **Section:** 06 · Overlap
 
@@ -664,7 +663,7 @@ Rule of thumb: set overlap to roughly ten to twenty percent of chunk size. For e
 So we change the default to a hundred, and re-run.
 
 
-## Slide 38 — Try it: watch the chunks re-cut
+## Slide 38 — Try it: watch the chunks re-cut · **in the short edit**
 
 **Section:** 06 · Interactive
 
@@ -688,7 +687,7 @@ And that is the trade. At zero you pay nothing extra and sentences on the seam g
 There is no correct answer on this slide. There is a shape of answer: chunks big enough to stand alone, small enough to be about one thing, with enough overlap that the seams do not eat your sentences.
 
 
-## Slide 39 — Embed and store — one call does both
+## Slide 39 — Embed and store — one call does both · **in the short edit**
 
 **Section:** 07 · Step three  
 **Run:** `python 06_embed_store.py`
@@ -723,7 +722,7 @@ Underneath, the folder structure. Chroma dot sqlite three holds the text, the me
 And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
 
 
-## Slide 41 — The three arguments that matter
+## Slide 41 — The three arguments that matter · **in the short edit**
 
 **Section:** 07 · The three arguments
 
@@ -739,7 +738,7 @@ Collection metadata, hnsw colon space, cosine. That sets the distance measure us
 HNSW, by the way, stands for hierarchical navigable small world, which is the indexing algorithm. That is the thing making the search fast.
 
 
-## Slide 42 — Ask it something
+## Slide 42 — Ask it something · **in the short edit**
 
 **Section:** 08 · Confirm it worked  
 **Run:** `python 07_query.py "Who founded SpaceX?"`
@@ -760,7 +759,7 @@ If your results come back from the right file, your ingestion pipeline is finish
 One thing to note about the scores. Zero point six six is the top match, and that might feel low if you were expecting something near one. It is not low. Cosine similarity between a short question and a long paragraph rarely goes above zero point seven, because they are different shapes of text. What matters is the gap between the top results and everything else, not the absolute number. Do not go hunting for a universal threshold — calibrate against your own corpus.
 
 
-## Slide 43 — This is what reaches the model
+## Slide 43 — This is what reaches the model · **in the short edit**
 
 **Section:** 08 · The actual prompt
 
@@ -820,7 +819,7 @@ While you are experimenting, delete the db_chroma folder before each run. My dem
 In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it. But for learning, delete the folder.
 
 
-## Slide 46 — The mistake that breaks most first builds
+## Slide 46 — The mistake that breaks most first builds · **in the short edit**
 
 **Section:** Part five
 
@@ -832,7 +831,7 @@ The mistake that breaks most first RAG builds. I have been foreshadowing it all 
 Here is what makes it dangerous. Nothing crashes. There is no error message. Let me show you the rule, and then we will break it on purpose.
 
 
-## Slide 47 — The consistency rule
+## Slide 47 — The consistency rule · **in the short edit**
 
 **Section:** 09 · The consistency rule
 
@@ -848,7 +847,7 @@ The two systems cannot understand each other. And neither one will tell you.
 Let's break it and watch.
 
 
-## Slide 48 — Same store. Same question. Nothing crashes.
+## Slide 48 — Same store. Same question. Nothing crashes. · **in the short edit**
 
 **Section:** 09 · Break it on purpose  
 **Run:** `python 08_model_mismatch.py`
@@ -875,7 +874,7 @@ And then an LLM takes those three chunks and writes a fluent, confident, sourced
 That is why this is the mistake that breaks most first builds. Not because it is subtle to fix, but because it is invisible until someone checks an answer by hand.
 
 
-## Slide 49 — Try it: flip the model, break the system
+## Slide 49 — Try it: flip the model, break the system · **in the short edit**
 
 **Section:** 09 · Interactive
 
@@ -904,7 +903,7 @@ This is what a silent failure looks like. The difference between a working RAG s
 That is why the rule is absolute. One embedding model, one dimension count, everywhere.
 
 
-## Slide 50 — What this means in practice
+## Slide 50 — What this means in practice · **in the short edit**
 
 **Section:** 09 · In practice
 
@@ -964,7 +963,7 @@ Seven. Leave out persist directory and Chroma runs in memory — everything vani
 Eight. Documents with model A, queries with model B. The symptom is that there is no symptom. No error, collapsed scores, and confidently wrong chunks.
 
 
-## Slide 53 — The whole session in ten lines
+## Slide 53 — The whole session in ten lines · **in the short edit**
 
 **Section:** 10 · Summary
 
@@ -990,7 +989,7 @@ Set chunk overlap so sentences on the seam survive, and set persist directory or
 And the last one, which is the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking this fails silently.
 
 
-## Slide 54 — Next: the retrieval pipeline
+## Slide 54 — Next: the retrieval pipeline · **in the short edit**
 
 
 That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.

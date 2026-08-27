@@ -57,7 +57,7 @@ def strip_tags(fragment):
 def parse(deck_html):
     slides = []
     # Sections are not nested in this deck, so a non-greedy split is safe.
-    for raw in re.findall(r"<section\b[^>]*>(.*?)</section>", deck_html, re.S):
+    for attrs, raw in re.findall(r"<section\b([^>]*)>(.*?)</section>", deck_html, re.S):
         notes_match = re.search(r'<aside class="notes">(.*?)</aside>', raw, re.S)
         notes = html.unescape(notes_match.group(1)).strip() if notes_match else ""
 
@@ -68,12 +68,14 @@ def parse(deck_html):
         cues = re.findall(r'<span class="cmd">(.*?)</span>', body, re.S)
 
         widgets = re.findall(r'id="(ix-[a-z]+)"', body)
+        core = 'data-track="core"' in attrs
 
         slides.append({
             "title": strip_tags(heading.group(1)) if heading else "(untitled)",
             "eyebrow": strip_tags(eyebrow.group(1)) if eyebrow else "",
             "cues": [strip_tags(c) for c in cues],
             "widgets": widgets,
+            "core": core,
             "notes": notes,
         })
     return slides
@@ -124,6 +126,8 @@ def main():
 
     total_words = sum(len(s["notes"].split()) for s in slides)
     minutes = round(total_words / WORDS_PER_MINUTE)
+    core = [s for s in slides if s["core"]]
+    core_minutes = round(sum(len(s["notes"].split()) for s in core) / WORDS_PER_MINUTE)
 
     out = []
     out.append("# Recording script\n")
@@ -134,10 +138,8 @@ def main():
     )
     out.append(
         f"| | |\n|---|---|\n"
-        f"| Slides | {len(slides)} |\n"
-        f"| Narration | ~{total_words:,} words |\n"
-        f"| Estimated runtime | ~{minutes} minutes of speaking, "
-        f"plus demo time |\n"
+        f"| Full lesson | {len(slides)} slides · ~{total_words:,} words · ~{minutes} min |\n"
+        f"| Short edit | {len(core)} slides · ~{core_minutes} min |\n"
         f"| Live demos | {sum(1 for s in slides if s['cues'])} slides carry a command |\n"
     )
     out.append(
@@ -146,7 +148,8 @@ def main():
     )
 
     for i, s in enumerate(slides, 1):
-        out.append(f"\n## Slide {i} — {s['title']}\n")
+        mark = " · **in the short edit**" if s["core"] else ""
+        out.append(f"\n## Slide {i} — {s['title']}{mark}\n")
         meta = []
         if s["eyebrow"]:
             meta.append(f"**Section:** {s['eyebrow']}")
@@ -158,7 +161,8 @@ def main():
 
     OUT.write_text("\n".join(out), encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)}")
-    print(f"  {len(slides)} slides, ~{total_words:,} words, ~{minutes} min of speaking")
+    print(f"  full  {len(slides)} slides, ~{total_words:,} words, ~{minutes} min")
+    print(f"  short {len(core)} slides, ~{core_minutes} min")
 
     # keep the README's two tables in step with the deck
     if README.exists():

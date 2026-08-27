@@ -19,7 +19,7 @@
 <div class="reveal"><div class="slides">
 
 <!-- ==================================================== 01 -->
-<section class="title-slide">
+<section data-track="core" class="title-slide">
   <h1>Retrieval Augmented<br>Generation</h1>
   <p class="sub">How to give a language model access to a hundred thousand documents
   without ever putting a hundred thousand documents in the prompt.</p>
@@ -73,7 +73,7 @@ And last, you will know the one mistake that silently breaks most first builds. 
 </section>
 
 <!-- ==================================================== 03 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>00</b> &nbsp;·&nbsp; How this session runs</span>
   <h2>Two windows, eight demos</h2>
   <p class="tight">Slides on one side, a terminal on the other. Whenever you see an orange
@@ -106,7 +106,7 @@ Let me run the check, and we will begin.
 </section>
 
 <!-- ==================================================== 04 -->
-<section class="divider">
+<section data-track="core" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part one</b></span>
   <h2>Why RAG exists</h2>
@@ -121,7 +121,7 @@ Let's make that concrete.
 </section>
 
 <!-- ==================================================== 05 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; The problem</span>
   <h2>Several hundred internal documents</h2>
   <p>Policy guidelines. Technical specs. Customer support logs. Contracts.</p>
@@ -139,7 +139,7 @@ That does not work. And the reason it does not work is the whole reason this les
 </section>
 
 <!-- ==================================================== 06 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; Definition</span>
   <h2>Retrieval Augmented Generation</h2>
   <div class="definition">
@@ -162,7 +162,7 @@ That is the entire idea. I mean that literally — everything else in this sessi
 </section>
 
 <!-- ==================================================== 07 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; Tokens</span>
   <h2>Models do not read words</h2>
   <p class="tight">A <em>token</em> is the unit of text a model processes. Sometimes a whole
@@ -221,7 +221,7 @@ So — two million tokens. That sounds like it should be plenty. Let's see how i
 </section>
 
 <!-- ==================================================== 09 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The scale gap</span>
   <h2>Read the scale carefully</h2>
   <div class="term">     How much text, in tokens — <span class="dim">logarithmic scale</span>
@@ -297,7 +297,7 @@ The threshold where RAG stops being optional is lower than people expect. Somewh
 </section>
 
 <!-- ==================================================== 10 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The second reason</span>
   <h2>You also pay per token</h2>
   <p>Even when everything <em>does</em> fit, sending it all is the wrong move.</p>
@@ -340,7 +340,7 @@ That is the case for RAG, complete. Now let's look at how it is actually built.
 </section>
 
 <!-- ==================================================== 11 -->
-<section class="divider">
+<section data-track="core" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part two</b></span>
   <h2>The shape of the system</h2>
@@ -355,7 +355,7 @@ So: two pipelines. Learn them separately, and everything after this is easy.
 </section>
 
 <!-- ==================================================== 12 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>03</b> &nbsp;·&nbsp; The whole system in one picture</span>
   <h2>Two pipelines</h2>
   <div class="pipe">
@@ -395,7 +395,7 @@ Keep this diagram. Every RAG system you will ever build, from a weekend project 
 </section>
 
 <!-- ==================================================== 13 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; Chunking</span>
   <h2>A chunk is a slice, not a section</h2>
   <p class="tight">Chunking is breaking large documents into small pieces. You choose the size.
@@ -423,7 +423,7 @@ Chunk size is therefore a real design decision, and there are techniques for cut
 </section>
 
 <!-- ==================================================== 14 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; The embedding model</span>
   <h2>This is not an LLM</h2>
   <p class="tight">Different model, different job. It <strong>does not generate text</strong>.
@@ -491,7 +491,7 @@ That is the intuition. Now let's check whether it survives contact with a real e
 </section>
 
 <!-- ==================================================== 16 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Measured, not asserted</span>
   <h2>Does that actually hold?</h2>
   <div class="cue">
@@ -609,7 +609,7 @@ There is a trade-off underneath all of this. More dimensions capture more meanin
 </section>
 
 <!-- ==================================================== 18 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; Where the vectors live</span>
   <h2>The vector database stores both</h2>
   <table>
@@ -641,7 +641,7 @@ For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector dat
 </section>
 
 <!-- ==================================================== 19 -->
-<section class="divider">
+<section data-track="core" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part three</b></span>
   <h2>Retrieval, in principle</h2>
@@ -656,7 +656,7 @@ Now someone asks a question. This is the bottom row.
 </section>
 
 <!-- ==================================================== 20 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; Retrieval, step by step</span>
   <h2>The question takes the same road</h2>
   <ol class="tight">
@@ -766,7 +766,7 @@ Right. That is all the theory. Let's build it.
 </section>
 
 <!-- ==================================================== 23 -->
-<section class="divider">
+<section data-track="core" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part four</b></span>
   <h2>Build the ingestion pipeline</h2>
@@ -874,7 +874,7 @@ One note for later: langchain-community now prints a deprecation warning about b
 </section>
 
 <!-- ==================================================== 27 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The API key</span>
   <h2>One secret, in one place</h2>
   <pre><code class="language-bash">OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxx</code></pre>
@@ -974,7 +974,7 @@ Get in the habit. Prove the skeleton runs before you fill it in.
 </section>
 
 <!-- ==================================================== 30 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Step one</span>
   <h2>Load the files</h2>
   <pre><code class="language-python">def load_documents(docs_path):
@@ -1071,7 +1071,7 @@ And a specific trap in there: if you leave loader class out entirely, LangChain 
 </section>
 
 <!-- ==================================================== 33 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Step two</span>
   <h2>Chunk them</h2>
   <pre><code class="language-python">def split_documents(documents, chunk_size=800, chunk_overlap=0):
@@ -1141,7 +1141,7 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 </section>
 
 <!-- ==================================================== 35 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Overlap</span>
   <h2>What <code>chunk_overlap</code> actually does</h2>
   <div class="term"><span class="dim">chunk_overlap = 0</span>
@@ -1175,7 +1175,7 @@ So we change the default to a hundred, and re-run.
 </section>
 
 <!-- =========================================== INTERACTIVE · chunking -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Interactive</span>
   <h2>Try it: watch the chunks re-cut</h2>
   <div class="ix" id="ix-chunk">
@@ -1224,7 +1224,7 @@ There is no correct answer on this slide. There is a shape of answer: chunks big
 </section>
 
 <!-- ==================================================== 36 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; Step three</span>
   <h2>Embed and store — one call does both</h2>
   <pre><code class="language-python">def create_vector_store(chunks, db_path):
@@ -1291,7 +1291,7 @@ And the line to remember: the original text is not optional. Without it you have
 </section>
 
 <!-- ==================================================== 38 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; The three arguments</span>
   <h2>The three arguments that matter</h2>
   <table>
@@ -1322,7 +1322,7 @@ HNSW, by the way, stands for hierarchical navigable small world, which is the in
 </section>
 
 <!-- ==================================================== 39 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; Confirm it worked</span>
   <h2>Ask it something</h2>
   <div class="cue">
@@ -1357,7 +1357,7 @@ One thing to note about the scores. Zero point six six is the top match, and tha
 </section>
 
 <!-- ==================================================== 40 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; The actual prompt</span>
   <h2>This is what reaches the model</h2>
   <div class="term">     │ Answer the question using only the context below.
@@ -1480,7 +1480,7 @@ In production you would use a proper upsert with stable document IDs, so re-inge
 </section>
 
 <!-- ==================================================== 42 -->
-<section class="divider">
+<section data-track="core" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part five</b></span>
   <h2>The mistake that breaks<br>most first builds</h2>
@@ -1495,7 +1495,7 @@ Here is what makes it dangerous. Nothing crashes. There is no error message. Let
 </section>
 
 <!-- ==================================================== 43 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; The consistency rule</span>
   <h2>The consistency rule</h2>
   <div class="definition">
@@ -1531,7 +1531,7 @@ Let's break it and watch.
 </section>
 
 <!-- ==================================================== 44 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; Break it on purpose</span>
   <h2>Same store. Same question. Nothing crashes.</h2>
   <div class="cue">
@@ -1575,7 +1575,7 @@ That is why this is the mistake that breaks most first builds. Not because it is
 </section>
 
 <!-- =========================================== INTERACTIVE · mismatch -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; Interactive</span>
   <h2>Try it: flip the model, break the system</h2>
   <div class="ix" id="ix-mismatch">
@@ -1623,7 +1623,7 @@ That is why the rule is absolute. One embedding model, one dimension count, ever
 </section>
 
 <!-- ==================================================== 45 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; In practice</span>
   <h2>What this means in practice</h2>
   <ol>
@@ -1727,7 +1727,7 @@ Eight. Documents with model A, queries with model B. The symptom is that there i
 </section>
 
 <!-- ==================================================== 48 -->
-<section>
+<section data-track="core">
   <span class="eyebrow"><b>10</b> &nbsp;·&nbsp; Summary</span>
   <h2>The whole session in ten lines</h2>
   <ol class="tight">
@@ -1766,7 +1766,7 @@ And the last one, which is the one that will actually cost you an afternoon: one
 </section>
 
 <!-- ==================================================== 49 -->
-<section class="title-slide">
+<section data-track="core" class="title-slide">
   <h1>Next: the retrieval<br>pipeline</h1>
   <p class="sub">You take a question, embed it with that same model, pull the closest chunks
   out of <code>db_chroma/</code>, and hand them to an LLM to answer.</p>

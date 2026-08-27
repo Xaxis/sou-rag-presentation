@@ -23,6 +23,7 @@ function parseDeck() {
   const re = /<section\b([^>]*)>([\s\S]*?)<\/section>/g;
   let m;
   while ((m = re.exec(html))) {
+    const attrs = m[1] || '';
     const raw = m[2];
     const ai = raw.indexOf('<aside class="notes">');
     const body = ai === -1 ? raw : raw.slice(0, ai);
@@ -35,6 +36,7 @@ function parseDeck() {
     const widget = (body.match(/id="(ix-[a-z]+)"/) || [])[1] || null;
 
     out.push({
+      core: /data-track="core"/.test(attrs),
       titleHtml: h ? h[1].trim() : '',
       title: strip(h ? h[1] : '(untitled)'),
       eyebrow: strip(eb ? eb[1] : ''),
@@ -159,7 +161,13 @@ function buildPlay(slides) {
 /* The deck is a 1280x780 canvas; scaled into a phone it gives 15px headings.
    This renders the same slides as a flowing document - real headings, real
    type, the widgets inline, and the narration woven in where it belongs. */
-function buildRead(slides) {
+function buildRead(all, edit) {
+  const short = edit === 'short';
+  const slides = short ? all.filter((s) => s.core) : all;
+  const base = short ? '/read/short/' : '/read/';
+  const other = short
+    ? '<a href="/read/">Switch to the full lesson &rarr;</a>'
+    : '<a href="/read/short/">Prefer the short version? &rarr;</a>';
   const stage = /^\[[A-Z0-9][^\]]*\]$/;
   const parts = [];
   const chapters = [];
@@ -209,21 +217,26 @@ function buildRead(slides) {
 
   const body = `<div class="wrap read">
   <header class="read-head">
-    <span class="eyebrow"><b>The whole lesson</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
-    <h1>RAG, end to end.</h1>
-    <p class="read-lede">Every slide, with what the presenter says underneath it, and the
-    playgrounds where they belong. Nothing to install.</p>
+    <span class="eyebrow"><b>${short ? 'The short lesson' : 'The whole lesson'}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
+    <h1>${short ? 'RAG, the short way.' : 'RAG, end to end.'}</h1>
+    <p class="read-lede">${short
+      ? 'The spine of the lesson: every demo, the two strongest playgrounds, and none of the asides. Same depth, fewer detours.'
+      : 'Every slide, with what the presenter says underneath it, and the playgrounds where they belong. Nothing to install.'}</p>
+    <p class="read-alt">${other}</p>
     <nav class="read-toc">${toc}</nav>
-    <p class="read-alt">Presenting instead? <a href="/deck/">Open the deck &rarr;</a></p>
+    <p class="read-alt">Presenting instead? <a href="${short ? '/deck/short/' : '/deck/'}">Open the deck &rarr;</a></p>
   </header>
   ${parts.join('\n')}
   <p class="read-end"><a class="btn primary" href="/play/">Play with the five widgets &rarr;</a></p>
 </div>`;
 
   return page({
-    title: 'The lesson — RAG, built in front of you',
-    desc: 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
-    active: '/read/',
+    title: short ? 'The short lesson — RAG, built in front of you'
+                 : 'The lesson — RAG, built in front of you',
+    desc: short
+      ? 'The RAG lesson, tightened: every demo and the two strongest playgrounds, same depth, fewer detours.'
+      : 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
+    active: base,
     body,
     extraCss: '<script defer src="/deck/data.js"></script>\n' +
               '<script defer src="/deck/interactive.js"></script>',
@@ -231,7 +244,27 @@ function buildRead(slides) {
 }
 
 /* ------------------------------------------------------------- present */
-function buildPresent(slides) {
+function buildPresent(all) {
+  function cueRows(slides) {
+    const cues = [];
+    slides.forEach((s, i) => {
+      s.cues.forEach((c) => cues.push({ n: i + 1, cue: c, title: s.title }));
+      if (s.widget) cues.push({ n: i + 1, cue: null, title: s.title, widget: true });
+    });
+    return cues.map((c) =>
+      `<tr><td class="n">${c.n}</td><td>${esc(c.title)}</td><td>${
+        c.widget
+          ? '<em>interactive — drive it with the mouse</em>'
+          : '<code>' + esc(c.cue) + '</code>'
+      }</td></tr>`).join('\n');
+  }
+
+  const core = all.filter((s) => s.core);
+  const wordsOf = (ss) => ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0);
+  const fullMin = Math.round(wordsOf(all) / 135);
+  const shortMin = Math.round(wordsOf(core) / 135);
+  const slides = all;
+
   const cues = [];
   slides.forEach((s, i) => {
     s.cues.forEach((c) => cues.push({ n: i + 1, cue: c, title: s.title }));
@@ -251,6 +284,25 @@ function buildPresent(slides) {
   <p style="color:var(--ink-soft);font-size:1.08rem">The deck is the whole instrument.
   Slides, live playgrounds and the terminal output are all on screen — you only need a
   second window for your notes.</p>
+
+  <h2 style="margin-top:1.8em">Pick an edit</h2>
+  <p style="color:var(--ink-soft)">Two cuts of the same lesson. Same rigour, same eight
+  terminal demos, same code — the short edit simply carries fewer slides around them.
+  Either one works on its own.</p>
+  <div class="cards" style="margin:1.2em 0 0">
+    <a class="card" href="/deck/short/" style="border-left:4px solid var(--teal)">
+      <span class="k">Short edit</span>
+      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
+      <p>The spine: why RAG, both pipelines, what an embedding is, the build, and the
+      silent failure. All eight demos, two playgrounds.</p>
+    </a>
+    <a class="card" href="/deck/" style="border-left:4px solid var(--accent)">
+      <span class="k">Full lesson</span>
+      <h3>${all.length} slides &middot; ~${fullMin} min &rarr;</h3>
+      <p>Everything: the reference tables, the gotchas, the re-run trap, troubleshooting,
+      the check-yourself drills and all five playgrounds.</p>
+    </a>
+  </div>
 
   <h2 style="margin-top:1.8em">Setup</h2>
   <ol class="steps">
@@ -284,7 +336,15 @@ function buildPresent(slides) {
 
   <h2 style="margin-top:1.8em">Every cue, in order</h2>
   <p style="color:var(--ink-soft)">Where to switch to the terminal, and where to pick up the
-  mouse. Generated from the deck, so it stays in step.</p>
+  mouse. Generated from the deck, so it stays in step. Slide numbers are per edit.</p>
+
+  <h3 style="margin-top:1.4em">Short edit &middot; ${core.length} slides</h3>
+  <table class="cues">
+    <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
+    ${cueRows(core)}
+  </table>
+
+  <h3 style="margin-top:2em">Full lesson &middot; ${all.length} slides</h3>
   <table class="cues">
     <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
     ${rows}
@@ -297,6 +357,21 @@ function buildPresent(slides) {
     active: '/present/',
     body,
   });
+}
+
+/* ---------------------------------------------------------- deck edits */
+/* The short deck is the same file with the non-core sections removed and
+   its relative asset paths lifted one level, so /deck/short/ still loads
+   /deck/'s vendored reveal, tokens and widget code. */
+function buildShortDeck(rawHtml) {
+  let out = rawHtml.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
+    (whole, attrs) => (/data-track="core"/.test(attrs) ? whole : ''));
+
+  out = out.replace(/\b(href|src)="(?!https?:|\/|data:|#)([^"]+)"/g,
+                    (m, attr, url) => `${attr}="../${url}"`);
+  out = out.replace('<div class="reveal">', '<div class="reveal" data-edit="short">');
+  out = out.replace('<title>', '<title>Short edit — ');
+  return out;
 }
 
 /* --------------------------------------------------------------- build */
@@ -313,6 +388,10 @@ fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
 copyDir(path.join(ROOT, 'slides'), path.join(DIST, 'deck'));
+
+const rawDeck = read('slides', 'index.html');
+fs.mkdirSync(path.join(DIST, 'deck', 'short'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'deck', 'short', 'index.html'), buildShortDeck(rawDeck));
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
@@ -322,7 +401,9 @@ fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 
 fs.mkdirSync(path.join(DIST, 'read'), { recursive: true });
-fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides));
+fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides, 'full'));
+fs.mkdirSync(path.join(DIST, 'read', 'short'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'read', 'short', 'index.html'), buildRead(slides, 'short'));
 
 // /script/ was the narration-only page; /read/ supersedes it. Keep the old
 // URL working rather than breaking anyone's link.
@@ -338,8 +419,9 @@ fs.mkdirSync(path.join(DIST, 'present'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'present', 'index.html'), buildPresent(slides));
 
 const widgets = slides.filter((s) => s.widget).length;
+const coreN = slides.filter((s) => s.core).length;
 console.log(`built dist/`);
-console.log(`  deck    ${slides.length} slides`);
+console.log(`  deck    ${slides.length} slides   (short edit: ${coreN})`);
 console.log(`  play    ${widgets} playgrounds`);
 console.log(`  read    ${slides.length} slides as a document`);
 console.log(`  present cue sheet`);
