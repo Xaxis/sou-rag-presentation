@@ -118,6 +118,7 @@ ${FONTS}
 if(m)document.documentElement.setAttribute("data-theme",m);}catch(e){}})();</script>
 <link rel="stylesheet" href="/deck/tokens.css">
 <link rel="stylesheet" href="/deck/theme.css">
+<link rel="stylesheet" href="/deck/syntax.css">
 <link rel="stylesheet" href="/site.css">
 ${extraCss}
 </head>

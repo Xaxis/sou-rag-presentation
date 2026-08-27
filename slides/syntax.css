@@ -1,0 +1,69 @@
+/* Syntax colours drawn from the site palette, so code reads the same way the
+   prose does and clears contrast in both themes. Replaces reveal's bundled
+   zenburn, which is a dark theme and washed out to near-illegible on paper. */
+
+:root {
+  --syn-keyword: #a3358a;   /* def, if, return, import   */
+  --syn-string:  #146b5f;   /* "utf-8"                   */
+  --syn-comment: #6b7785;   /* # fail loudly             */
+  --syn-number:  #5b52c4;   /* 800, 0                    */
+  --syn-title:   #1d4ed8;   /* function and class names  */
+  --syn-builtin: #b84408;   /* len, print, Path          */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --syn-keyword: #f08ad0;
+    --syn-string:  #4fd1b8;
+    --syn-comment: #8d99a6;
+    --syn-number:  #b3a9ff;
+    --syn-title:   #7fb0ff;
+    --syn-builtin: #ff9a5c;
+  }
+}
+:root[data-theme="dark"] {
+  --syn-keyword: #f08ad0;
+  --syn-string:  #4fd1b8;
+  --syn-comment: #8d99a6;
+  --syn-number:  #b3a9ff;
+  --syn-title:   #7fb0ff;
+  --syn-builtin: #ff9a5c;
+}
+
+.hljs { color: var(--ink); background: transparent; }
+
+.hljs-comment,
+.hljs-quote          { color: var(--syn-comment); font-style: italic; }
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-doctag,
+.hljs-type,
+.hljs-name,
+.hljs-strong         { color: var(--syn-keyword); font-weight: 600; }
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string { color: var(--syn-string); }
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link           { color: var(--syn-number); }
+
+.hljs-title,
+.hljs-class .hljs-title,
+.hljs-title.function_ { color: var(--syn-title); font-weight: 600; }
+
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-params,
+.hljs-meta,
+.hljs-variable       { color: var(--syn-builtin); }
+
+.hljs-emphasis       { font-style: italic; }
+.hljs-deletion       { color: var(--accent-text); }

@@ -115,6 +115,7 @@ vendored reveal, tokens and widget code rather than duplicating them.
 | `tools/build_site.mjs` | Assembles `dist/` for deployment. No dependencies. |
 | `tools/make_og.mjs` | Re-renders the social card to `site/og.png`. Needs playwright. |
 | `tools/fetch_fonts.py` | Re-downloads the self-hosted webfonts into `slides/fonts/`. |
+| `tools/build_highlight.mjs` | Rebuilds the minimal syntax-highlighting bundle. |
 
 `fetch_docs.py` does one non-obvious thing. Wikipedia's plain-text export
 separates paragraphs with a single newline, and the lesson's splitter splits on
@@ -154,6 +155,25 @@ Two things that will bite you if you change the config:
 Neither shows up locally. Check the deployed URL, not just localhost.
 
 ---
+
+## Syntax highlighting
+
+Reveal vendors the whole of highlight.js — 918KB to colour three languages,
+plus a second 918KB ESM copy that is never loaded. The deck only uses python,
+bash and plaintext, so `tools/build_highlight.mjs` bundles highlight.js core
+with just those, wrapped together with reveal's plugin:
+
+```bash
+npm pack highlight.js && tar xzf highlight.js-*.tgz
+node tools/build_highlight.mjs ./package
+```
+
+918KB becomes 107KB, and the deck's payload drops from ~1.2MB to ~230KB.
+
+Colours live in `slides/syntax.css`, drawn from the site palette. Reveal's
+bundled zenburn is a *dark* theme and rendered pale yellow on white paper —
+close to illegible on the slides that matter most. Every syntax colour now
+clears AA in both themes.
 
 ## Colour and contrast
 
