@@ -1,0 +1,1002 @@
+# Recording script
+
+Word-for-word narration for every slide. Generated from the speaker notes
+in `slides/index.html` - **edit the deck, not this file**, then re-run
+`python3 tools/build_script.py`.
+
+| | |
+|---|---|
+| Slides | 54 |
+| Narration | ~10,460 words |
+| Estimated runtime | ~77 minutes of speaking, plus demo time |
+| Live demos | 11 slides carry a command |
+
+
+`[RUN DEMO n]` in the narration marks where to switch to the terminal.
+
+---
+
+
+## Slide 1 — Retrieval Augmented Generation
+
+
+Welcome. Over the next hour or so we are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
+
+Here is the one-line version of what RAG is for. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents into the prompt? That is the problem. Everything else is mechanics.
+
+This is a work-along session. I am going to switch between these slides and a terminal, and every number you see on a slide is something we actually run. Nothing here is asserted and left hanging — if I claim two pieces of text have similar embeddings, we measure it live.
+
+You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under ten cents in embeddings.
+
+Let's start with why this problem exists at all.
+
+
+## Slide 2 — What you will be able to do
+
+**Section:** 00 · Outcomes
+
+
+These are the outcomes. Six of them.
+
+By the end you will be able to explain why a bigger context window does not remove the need for RAG — that is the objection everyone raises first, and it has two answers.
+
+You will be able to define the vocabulary: token, chunk, embedding, dimension, vector database, retriever. These words get used loosely and that is where confusion comes from, so we will pin each one down.
+
+You will be able to draw both halves of a RAG system from memory. There are two halves and people routinely collapse them into one, which is where the mental model breaks.
+
+You will be able to look at a question and predict which chunks come back, and say why.
+
+You will have built a working ingestion pipeline — real code, on your machine, about sixty lines.
+
+And last, you will know the one mistake that silently breaks most first builds. Silently is the important word there. We will break it on purpose at the end so you know what it looks like.
+
+
+## Slide 3 — Two windows, eight demos
+
+**Section:** 00 · How this session runs  
+**Run:** `cd demo && source venv/bin/activate`
+
+
+A word on how this runs, so you can follow along rather than just watch.
+
+I have two windows: these slides, and a terminal. Whenever an orange bar appears on a slide, that is my cue to stop talking and run the command written in it. The output you then see on the slide is the genuine output of that command — I have not typed nice numbers into a slide anywhere.
+
+Everything lives in the repository. The demo folder has eight numbered scripts, one per concept. The docs folder has our five source articles. And ingestion underscore pipeline dot py is the finished sixty-line file that all of this builds toward.
+
+If you are working along, pause whenever you need to. The scripts are all independent except that six, seven and eight need the database that six builds.
+
+Let me activate the environment and we will begin.
+
+
+## Slide 4 — Why RAG exists
+
+**Section:** Part one
+
+
+Part one. Why RAG exists at all.
+
+I want to frame this carefully, because the framing matters. The problem RAG solves is not that language models are stupid. Modern models are extraordinarily capable. The problem is that they are small — not in intelligence, but in how much they can look at in one go.
+
+Let's make that concrete.
+
+
+## Slide 5 — Several hundred internal documents
+
+**Section:** 01 · The problem
+
+
+Picture a company with several hundred internal documents. Policy guidelines, technical specifications, customer support logs, contracts. Ordinary business documents.
+
+Somebody asks a question, and exactly one of those documents contains the answer. The obvious move — and this is genuinely what everyone tries first — is to paste all of them into the model and ask the question.
+
+That does not work. And the reason it does not work is the whole reason this lesson exists. So let me give you the definition to hold on to, and then we will take apart why the obvious approach fails.
+
+
+## Slide 6 — Retrieval Augmented Generation
+
+**Section:** 01 · Definition
+
+
+Here is the definition. Retrieval Augmented Generation is a language model combined with a retrieval system. The retrieval system searches external sources — documents, databases, knowledge bases — and it pulls only the relevant pieces into the prompt, at the moment the model needs them.
+
+Read that last part again, because it is the part people skip. At the moment the model needs them. Nothing is loaded in advance into the model. Nothing is trained into the model. The relevant text is fetched, per question, and placed in the prompt.
+
+So the model does not get everything. It gets the right few pages.
+
+That is the entire idea. I mean that literally — everything else in this session is mechanics for how you find the right few pages quickly. If you leave with only one sentence, leave with that one.
+
+
+## Slide 7 — Models do not read words
+
+**Section:** 02 · Tokens  
+**Run:** `python 01_tokens.py`
+
+
+First piece of vocabulary: the token.
+
+A token is the unit of text a model processes. Sometimes it is a whole word. Often it is a fragment of one. Models do not read letters, and they do not read words — they read tokens. This matters because every limit and every price you will ever meet is denominated in tokens, not words.
+
+Let me run demo one and show you.
+
+[RUN DEMO 01]
+
+Look at that. The sentence "Retrieval augmented generation is powerful" is five words. The model counts seven tokens. And look at how it split: "Retrieval" — a fairly ordinary English word — got broken into three pieces, R-e-t, r-i-e, v-a-l. Whereas "augmented", "generation", "powerful" each survived as a single token.
+
+That is the rule in action. Common words are one token. Rarer or longer words get split into several. And notice the underscores in that output — those are spaces. Spaces travel with the token that follows them, which is why it is "underscore augmented" rather than "augmented".
+
+The rule of thumb worth memorising: one token is roughly three quarters of an English word. So a thousand words is roughly thirteen hundred tokens.
+
+
+## Slide 8 — Everything has to fit inside one window
+
+**Section:** 02 · The context window
+
+
+Second piece of vocabulary: the context window.
+
+The context window is the total number of tokens a model can hold in a single request. And the critical detail is that everything counts toward it — everything you send in, and everything the model writes back out. They share one budget. Past that limit, the information is simply not there. Not summarised, not compressed. Not there.
+
+Right now, in 2026, frontier models sit somewhere between two hundred thousand and two million tokens depending on which one you pick. Two million tokens is a genuinely enormous number. It is several very long books.
+
+I want to flag something about that figure: verify it before you quote it. These numbers move every few months, and a slide deck is exactly the kind of place a stale number goes to live forever.
+
+So — two million tokens. That sounds like it should be plenty. Let's see how it compares to how much text an actual company holds.
+
+
+## Slide 9 — Read the scale carefully
+
+**Section:** 02 · The scale gap
+
+
+This is the same demo still running — the second half of demo one.
+
+Now, this is a logarithmic scale, and I need you to read it carefully, because logarithmic scales are quietly deceptive. Each step to the right is ten times larger than the last, not one step larger. The bars look comparable. The numbers are not.
+
+Start at the top. One chunk — that is a single retrievable piece of text, and we will define it properly in a moment — is about a thousand tokens.
+
+The five Wikipedia articles we are about to ingest come to seventy-two thousand tokens. That is our whole corpus for today, and notice, it comfortably fits inside a frontier model. For five documents you genuinely do not need RAG.
+
+A frontier model window: two million.
+
+Now watch what happens. A mid-sized company with one terabyte of documents: two hundred and fifty billion tokens. That is a hundred and twenty-five thousand times larger than the model window.
+
+An enterprise archive at one petabyte: two hundred and fifty trillion.
+
+So here is the thing to take away. That gap is not a gap you close by waiting for bigger models. If context windows got a thousand times bigger tomorrow — which they will not — you would still be three orders of magnitude short of the mid-sized company. This is a structural problem, not a temporary one.
+
+
+## Slide 10 — Try it: when do you actually need RAG?
+
+**Section:** 02 · Interactive
+
+
+Let's make that scale argument something you can feel rather than just read, because the numbers are so large they stop meaning anything.
+
+Drag the slider. It runs from one megabyte of text up to one petabyte.
+
+[DRAG TO ~1 MB]
+At a megabyte we are at about two hundred and fifty thousand tokens. That fits in a frontier window with room to spare, and the panel says so — you do not need RAG for this. Be honest about that. If your entire corpus is a handful of documents, retrieval is overhead, not architecture.
+
+[DRAG TO ~1 GB]
+One gigabyte. Two hundred and fifty million tokens. Now we need over a hundred context windows. There is no prompt you can write that holds this.
+
+[DRAG TO 1 TB]
+And a terabyte — a mid-sized company — needs a hundred and twenty-five thousand full context windows.
+
+Watch the cost figure while you drag, because that is the one people do not think about. Embedding a terabyte once costs about five thousand dollars. That is a one-off, not per question — but it is a real number, and it is why you choose your embedding model carefully before you start rather than after.
+
+The threshold where RAG stops being optional is lower than people expect. Somewhere around a few megabytes, this stops being a choice.
+
+
+## Slide 11 — You also pay per token
+
+**Section:** 02 · The second reason
+
+
+There is a second reason, and it matters just as much as the first, but people forget it because the first one is so dramatic.
+
+Even when everything does fit — even in the case where your documents are small enough — sending all of it is still the wrong move.
+
+Three reasons. One, you pay per token, so you are paying for every irrelevant word. Two, it is slow; latency scales with how much you send. And three — this is the one that surprises people — you get worse answers.
+
+That third point is counterintuitive so let me be explicit about it. If you bury the one relevant paragraph inside five hundred thousand tokens of unrelated material, the model has a harder job finding it than if you had simply handed it the paragraph. More context is not more helpful. Relevant context is helpful.
+
+So: sending five hundred thousand tokens of irrelevant context to answer one question is expensive, slow, and worse. Sending the five right paragraphs is cheap, fast, and better.
+
+That is the case for RAG, complete. Now let's look at how it is actually built.
+
+
+## Slide 12 — The shape of the system
+
+**Section:** Part two
+
+
+Part two. The shape of the system.
+
+If there is one slide in this whole session to photograph, it is the next one. A RAG system is two pipelines, not one. People collapse them into one in their heads, and that is precisely where the mental model breaks and the questions get confused.
+
+So: two pipelines. Learn them separately, and everything after this is easy.
+
+
+## Slide 13 — Two pipelines
+
+**Section:** 03 · The whole system in one picture
+
+
+Here it is. The whole system in one picture.
+
+The top row is the ingestion pipeline, and the thing to understand about it is that it runs once, ahead of time, before anybody asks anything. Source documents go in. They get chunked — cut into small pieces. Each piece goes through an embedding model, which turns it into a vector, a list of numbers. Those vectors get stored in a vector database. Done. That pipeline does not run again until your documents change.
+
+The bottom row is the retrieval pipeline, and it runs every single time someone asks a question. The question comes in. It goes through an embedding model and becomes a vector. A retriever compares that vector against everything in the database and ranks by closeness. The top matching chunks come back. And those chunks, plus the question, go to the LLM, which writes the answer.
+
+Now look at the two orange boxes. The embedding model appears in both rows. That is not me being lazy with the drawing. It is the same model, and it has to be the same model. If those two boxes ever contain different models, the entire system fails — and it fails silently, with no error message. We are going to break that rule deliberately in the last demo so you know exactly what it looks like.
+
+Keep this diagram. Every RAG system you will ever build, from a weekend project to production, is this diagram with more engineering around each box.
+
+
+## Slide 14 — A chunk is a slice, not a section
+
+**Section:** 04 · Chunking
+
+
+Vocabulary word three: the chunk.
+
+Chunking is breaking large documents into small pieces. You choose the size. If you set it to a thousand tokens, then ten million tokens of documents becomes ten thousand chunks. Simple arithmetic.
+
+Now, the word "chunk" is doing some work here and I want to be precise. A chunk is a slice, not a section. Chunks are cut by size, not by meaning. They do not respect chapter boundaries, headings, or the structure of an argument. A naive splitter will cut straight through the middle of a sentence, or a table, without hesitating. We are going to watch that happen live in demo five.
+
+So why cut at all? Why not keep whole documents? Because the chunk is your unit of retrieval — it is the smallest thing the system is able to hand back. If your chunks are whole Wikipedia articles, then a question about one sentence returns the entire article, and you are back to stuffing the context window with mostly-irrelevant text. Which is the problem we started with.
+
+Chunk size is therefore a real design decision, and there are techniques for cutting more intelligently. Those come later in the track. For today we cut simply, and I will show you exactly what that costs.
+
+
+## Slide 15 — This is not an LLM
+
+**Section:** 04 · The embedding model  
+**Run:** `python 02_embedding_shape.py`
+
+
+Next box in the diagram: the embedding model. And the first thing to say, because it trips everybody up, is that this is not an LLM. Different model, different job. It does not generate text. It does not chat. You give it text, and it gives you back a list of numbers. That is all it does.
+
+Let me run demo two.
+
+[RUN DEMO 02]
+
+Look at the three rows. I sent it one word. I sent it an eight-word sentence. I sent it a three-hundred-and-thirty-seven-word paragraph. And every single time, what came back was fifteen hundred and thirty-six numbers. Not more for the paragraph. Not fewer for the single word. Always exactly fifteen thirty-six.
+
+Underneath you can see the first few actual numbers. They are small, they are signed, and — this is worth saying plainly — no individual number there means anything you can name. Nobody knows what dimension four hundred and twelve represents. That is fine. It is not how they are used.
+
+The property that matters is the fixed length. One word in or nine hundred words in, the vector is the same size. And that is the property the entire system is built on, because it means any two pieces of text — however different in length — become two lists of the same size, and two lists of the same size can be compared with simple arithmetic.
+
+That is the trick. Everything downstream depends on it.
+
+
+## Slide 16 — Similar meaning, similar numbers
+
+**Section:** 05 · What an embedding is
+
+
+So what is an embedding, actually? This is the part people get stuck on, so we will slow down here.
+
+A vector embedding is a list of numbers that stands in for a piece of text. Each number in that list is called a dimension. That is the fourth vocabulary word — dimension just means one position in the list.
+
+And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers. That is the property. That is what an embedding model is trained to do.
+
+Now, this table is a teaching device and I want to be honest that it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
+
+Cat and kitten sit almost on top of each other on every dimension — thirty-four and thirty-three on size, both eight on domestication, seven point five and seven point one on sound. Because a kitten is a young cat. Dog shares the domestication value but sits further out on size. And elephant is far away from all three on everything — two hundred and ten on size against thirty-four.
+
+That is the intuition. Now let's check whether it survives contact with a real embedding model, because I do not want you taking a made-up table on faith.
+
+
+## Slide 17 — Does that actually hold?
+
+**Section:** 05 · Measured, not asserted  
+**Run:** `python 03_similar_meaning.py`
+
+
+Let's measure it. Demo three.
+
+[RUN DEMO 03]
+
+This takes eight words, embeds each one with a real OpenAI model, and measures how close every pair actually is. One point zero would be identical.
+
+Top of the list: cat to dog, zero point six oh three. Then cat to kitten at zero point five seven. Then a clear drop — coffee, tea, apple, elephant, mango, all down in the three-hundreds and two-hundreds.
+
+Now, I want to point at something honest here, because it contradicts the tidy table on the previous slide. Our made-up table said kitten should be closest to cat. The real model puts dog first, with kitten second. So the toy intuition was directionally right and specifically wrong.
+
+Why? Because bare single words are a weak signal. "Cat" and "dog" co-occur in text constantly — they are the two canonical pets — whereas "kitten" is a narrower, less common word. Real systems almost never embed single words; they embed whole paragraphs, where there is far more meaning to work with. So do not over-read the ordering within a cluster.
+
+But look at the bottom two lines, because that is where the claim really holds. Domestic animals: the average similarity inside that group is zero point five three, and to everything outside it, zero point three two. Drinks: zero point six one inside, zero point three one outside. Every group is meaningfully tighter inside than out.
+
+That is a neighbourhood. And the crucial part — nobody labelled any of this. No human told the model that coffee and tea are related. It came out of arithmetic over fifteen hundred numbers.
+
+This drawing would have two dimensions. Real embeddings have fifteen hundred and thirty-six. You cannot picture that, and you do not need to — the arithmetic of distance works identically no matter how many dimensions there are.
+
+
+## Slide 18 — Try it: the neighbourhood map
+
+**Section:** 05 · Interactive
+
+
+Now you can play with it yourself. These are real vectors — genuine fifteen-hundred-dimension OpenAI embeddings, computed ahead of time and shipped with the slide so it works without an API key.
+
+Click any word and it becomes the probe. Everything re-ranks against it.
+
+On the left, similarity as bars, coloured by category — orange for animals, green for fruit, purple for drinks. On the right, a two-dimensional projection of all fifteen hundred and thirty-six dimensions. That projection throws away most of the information, so treat it as a sketch rather than the truth — but the clustering it shows is real.
+
+[CLICK 'coffee']
+Look — tea comes straight to the top. Water is up there too. The animals fall away.
+
+[CLICK 'puppy']
+Puppy. Dog first, obviously. Then kitten, then cat. It has learned that puppy-dog and kitten-cat are the same relationship, without anybody telling it what a young animal is.
+
+[CLICK 'lion']
+And here is a nice one. Lion sits near cat and elephant but away from dog — it has picked up something about wild versus domestic that we never labelled.
+
+Try a few. The thing I want you to notice is that every ordering you see came out of arithmetic on numbers, and every one of them is defensible. That is what "similar meaning gives similar numbers" actually looks like in practice.
+
+
+## Slide 19 — The ones you will meet first
+
+**Section:** 06 · Choosing a model
+
+
+There are many embedding models. These are the ones you will meet first.
+
+Text-embedding-3-small from OpenAI, fifteen hundred and thirty-six dimensions. Cheap, and fine for most projects. That is the one we are using today, and I want you to notice that I am telling you the model and the dimension count in the same breath. That habit will make sense shortly.
+
+Text-embedding-3-large, three thousand and seventy-two dimensions. Better quality, costs more.
+
+Then Voyage, which is strong on technical and code text — worth knowing if you are indexing a codebase. Cohere, good multilingual support. And Mistral, which has open weights if you need to run it yourself.
+
+One genuinely useful thing at the bottom. Most of these models let you request fewer dimensions than the default. If you ask a three-thousand-dimension model for five hundred and twelve dimensions, you cut your storage by a factor of six and typically lose very little accuracy. That is a real lever in production and most people do not know it exists.
+
+Same caveat as the context windows: check current pricing and dimension options in the provider documentation before you commit. These move.
+
+There is a trade-off underneath all of this. More dimensions capture more meaning, and also cost more to compute and more to store. Most production systems reduce dimensions deliberately.
+
+
+## Slide 20 — The vector database stores both
+
+**Section:** 07 · Where the vectors live
+
+
+Last box in the ingestion row: the vector database.
+
+A vector database stores embeddings and finds the closest ones to a given vector, fast. That is its specialty — not storing things, but searching them by proximity across a huge number of dimensions.
+
+But here is the detail people miss, and it is the reason I put this table up. Crucially, it stores the original text alongside each vector. Look at the columns: an ID, the vector, the original text, and the source file. One row per chunk.
+
+The vector is how it gets found. The original text is what gets used. If you store only the numbers, you have a beautiful search index and absolutely nothing to send to a language model — because you cannot turn a vector back into English. It is a one-way trip.
+
+The fourth column, source, is metadata. That is what lets you tell a user "this answer came from policy dot pdf, page four". We will watch that column survive all the way through the pipeline.
+
+For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector databases. We are using Chroma today because it runs locally, on disk, with no account and no server. FAISS is a library from Meta rather than a hosted service. And if you already run Postgres, the pgvector extension turns it into a vector database, which is often the right answer in a real company.
+
+
+## Slide 21 — Retrieval, in principle
+
+**Section:** Part three
+
+
+Part three. Retrieval, in principle.
+
+We have walked the whole top row of the diagram now — documents, chunks, embedding model, vectors, database. Ingestion is finished. And I want to stress that word finished, because it is genuinely done: nothing in that top row runs again until your documents change.
+
+Now someone asks a question. This is the bottom row.
+
+
+## Slide 22 — The question takes the same road
+
+**Section:** 08 · Retrieval, step by step
+
+
+Here is the whole retrieval pipeline in four steps.
+
+Step one. The question goes through the same embedding model the documents went through. Same model. I am going to keep repeating that until it is annoying, because it is the thing that breaks.
+
+Step two. It comes out as a vector of the same length — fifteen hundred and thirty-six numbers, exactly like every chunk in the database.
+
+Step three. The retriever compares that one vector against every stored vector. Conceptually every one; in practice the database uses an index to avoid a brute-force scan, but the effect is the same.
+
+Step four. It ranks them by closeness and returns the top k.
+
+Look at the example. The question is "what were our sales in the first quarter". It becomes a vector. And then every chunk gets a score. Q1 revenue reached four point two million: zero point nine one. Quarterly sales by region: zero point eight eight. Revenue targets for the first quarter: zero point eight four. Those three go to the model.
+
+And then look at what did not make it. Annual headcount summary at zero point four two — related to business, not to the question. Refunds at zero point three one. Guest wifi at zero point one nine, which is about as unrelated as it gets.
+
+Notice something about that top result. The question says "sales". The winning chunk says "revenue". Those are different words. A keyword search for "sales" would have missed it entirely. That is what embeddings buy you — matching on meaning rather than on spelling.
+
+How closeness is actually calculated is a later topic. For now: it is distance between two points, measured with arithmetic.
+
+
+## Slide 23 — You choose how many come back
+
+**Section:** 08 · Top k
+
+
+The number of chunks that come back is called top k. That is the sixth and last vocabulary word. You choose it. Ask for the top five and you get five results.
+
+And now the important half of that sentence: whether or not all five are any good.
+
+A retriever always returns something. It has no concept of "there is no good match here". If your entire corpus contains nothing relevant to the question, you still get k results back, neatly ranked, looking perfectly respectable. They are simply the least-bad of a bad set.
+
+This catches people out constantly. Somebody builds their first RAG system, asks it a question the documents genuinely do not answer, gets five confident-looking chunks back, and concludes the retriever is broken. It is not broken. That is the expected shape of the output.
+
+So if a retriever returns ten chunks and four are irrelevant — that is normal. Filtering on a score threshold, or re-ranking, is how you handle it, and that is a later topic in the track. But knowing that it happens is not a later topic. That is today.
+
+
+## Slide 24 — Vectors find. Text is what gets sent.
+
+**Section:** 08 · The step everyone misreads
+
+
+This is the step everyone misreads, so I am giving it its own slide.
+
+There is a very common mental model in which the vectors somehow go to the language model — as if the LLM understands embeddings, or as if the numbers are a compressed form the model can read. That is wrong, and it is worth killing off explicitly.
+
+What is sent to the model: the user's question, and the original English text of the top chunks. That is it.
+
+What is not sent: the vectors. Anything numeric at all.
+
+Vectors are only used for finding. Their job is over the instant the matching is done. After retrieval you are back in plain English, and the prompt that reaches the model is the question plus a few paragraphs of perfectly ordinary text — the kind of thing you could have pasted in by hand.
+
+Once that clicks, a lot of RAG stops being mysterious. The clever part is the search. The prompt at the end is boring, and it is meant to be. We are going to print that exact prompt to the screen later so you can read every character of it.
+
+Right. That is all the theory. Let's build it.
+
+
+## Slide 25 — Build the ingestion pipeline
+
+**Section:** Part four
+
+
+Part four. Now we build it.
+
+Everything up to here has been the top half of the diagram explained. Now it is the top half of the diagram in code.
+
+Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under ten cents in embedding costs.
+
+By the end of this you will have a folder on disk holding the vector representation of every paragraph in your documents.
+
+
+## Slide 26 — You are here
+
+**Section:** 00 · Where this sits
+
+
+Orienting you before we start typing. This is the same two-row diagram, with the concrete numbers for today filled in.
+
+Five text files in a docs folder. They become five hundred and forty-seven chunks. Those go through OpenAI's embedding model and become five hundred and forty-seven vectors, which land in a Chroma database on disk.
+
+The bottom row — question, embed, retrieve, build a prompt, answer — is the next lesson. We will touch it briefly at the end today just to prove the database works, but building it properly is next time.
+
+And again: ingestion runs once. When we finish, you will not run this code again unless your documents change. That is worth internalising because it shapes how you think about cost. The expensive step happens once, up front, and every question after that is cheap.
+
+
+## Slide 27 — The project
+
+**Section:** 01 · Set up
+
+
+Make a folder, open it in your editor, and create one file. The layout is simple: ingestion pipeline dot py, where all the code goes. A dot-env file for your API key. A docs folder for your source documents. And a venv folder which we are about to create.
+
+A virtual environment keeps this project's packages separate from everything else on your machine. Create it with python three dash m venv venv, then activate it with source venv slash bin slash activate. On Windows that second command is venv backslash Scripts backslash activate.
+
+Now — check this before you go any further. The venv prefix on your prompt is how you know it worked. If you do not see that, you are installing into your system Python and nothing below will behave as expected. The single most common failure in this whole lesson is a virtual environment that was created but never activated.
+
+For bigger projects you would reach for Poetry or uv instead. For learning, venv is fine.
+
+
+## Slide 28 — Six packages, one line
+
+**Section:** 01 · Packages
+
+
+Six packages, one pip install line.
+
+And these map almost exactly onto the boxes in the diagram, which is a nice property. Langchain is the core abstractions the others build on. Langchain-community gives us the document loaders — that is the box that reads files off disk. Langchain-text-splitters is the chunking box. Langchain-openai is the embedding model client. Langchain-chroma is the vector database. And python-dotenv is the one that is not in the diagram — it just reads your API key out of a file so you never type a secret into your source code.
+
+If you are in this repo rather than typing from scratch, there is a requirements dot txt, so it is pip install dash r requirements dot txt.
+
+One note for later: langchain-community now prints a deprecation warning about being sunset. It still works fine, and the migration path is toward standalone integration packages. I have silenced that warning in the demo scripts so it does not clutter the screen, but you will see it if you write this from scratch.
+
+
+## Slide 29 — One secret, in one place
+
+**Section:** 02 · The API key
+
+
+The API key. Go to the OpenAI platform, open Settings, then API keys, and create one. Call it something you will recognise later. Copy it immediately — you cannot view it again.
+
+It goes in a file called dot env in the project root, as OPENAI underscore API underscore KEY equals your key. That name has to be exact, because that is the variable the OpenAI client looks for.
+
+Two things to do right now, and I mean now rather than later.
+
+First, add credit. The API is prepaid, and it is completely separate from any ChatGPT subscription you might have. Paying for ChatGPT Plus does not give you API credit — that catches a lot of people. The minimum top-up is around five US dollars. Embedding these five documents costs well under one cent, so that balance will last you months of learning.
+
+Second, add dot env to your gitignore. Do it before your first commit, not after. A leaked API key gets scraped off a public repository within minutes — there are bots doing nothing else. And once it is in your git history, removing it from the working tree does not remove it from the history.
+
+In this repo, dot env is already gitignored and there is a dot env dot example to copy.
+
+
+## Slide 30 — Five articles
+
+**Section:** 03 · The documents  
+**Run:** `python3 tools/fetch_docs.py`
+
+
+You need some documents. Create a docs folder and put five plain text files in it. This walkthrough uses the Wikipedia articles for Google, Microsoft, Nvidia, SpaceX and Tesla, saved as dot txt.
+
+In this repo that is scripted, so anyone who clones it gets exactly the same corpus and therefore roughly the same chunk counts you see on these slides. Let me run it.
+
+[RUN tools/fetch_docs.py]
+
+About three hundred and fifty thousand characters across five files. Tesla is the biggest at ninety-four thousand.
+
+Any five text files will work — use your own if you have something you actually want to ask questions about. Company articles are convenient for teaching because they are long, factual, and full of specific numbers and names you can test the retriever against. When you ask "who founded SpaceX" you know what the right answer is, so you can tell immediately whether retrieval worked.
+
+One detail in that script worth mentioning. Wikipedia's plain-text export separates paragraphs with a single newline. Our splitter is going to split on blank lines. So the script normalises every paragraph onto its own blank-line-separated block. Without that step the splitter finds almost no break points and produces eight-thousand-character chunks, which are useless units of retrieval. That is a real-world data-cleaning step, and it is the kind of thing that quietly ruins a RAG pipeline if you skip it.
+
+
+## Slide 31 — Imports first, prove it runs
+
+**Section:** 04 · The shell
+
+
+Open ingestion pipeline dot py and start with this. Imports, two constants, and an empty main.
+
+Each line of that import block maps to one box in the diagram, which is why I want you to type it all at once. DirectoryLoader and TextLoader read the files. CharacterTextSplitter chunks them. OpenAIEmbeddings turns chunks into vectors. Chroma stores them.
+
+Load dot env is the odd one out — it pulls your key out of the dot env file and into the environment, so the OpenAI client can find it without you ever typing a secret in code.
+
+Now run it. You should see "main function" printed, and nothing else.
+
+That step looks pointless and it is not. It confirms three separate things before you have written any real logic: your virtual environment is active, all six packages installed correctly, and your file has no syntax errors. If something is wrong with your setup, you find out here — in two seconds, with a clear error — rather than forty lines later in the middle of an API call.
+
+Get in the habit. Prove the skeleton runs before you fill it in.
+
+
+## Slide 32 — Load the files
+
+**Section:** 05 · Step one  
+**Run:** `python 04_load.py`
+
+
+Step one. Load the files.
+
+DirectoryLoader takes three things: a path, a glob, and a loader class. The glob is star dot txt, which means only text files — everything else in that folder is ignored. The loader class is TextLoader, which is how each matched file actually gets read.
+
+Notice the two guard clauses, and notice they are doing different jobs. The first one checks the directory exists. The second checks we actually loaded something. Without that second check, pointing at an empty folder gives you a pipeline that runs happily all the way through, embeds nothing, stores nothing, and reports success. Fail loudly and early rather than silently loading nothing — that principle will save you more debugging time in RAG than almost anything else, because so much of this stack fails quietly.
+
+Let me run it.
+
+[RUN DEMO 04]
+
+
+## Slide 33 — Five files in, five Documents out
+
+**Section:** 05 · What comes back
+
+
+Here is what comes back. Five files in, five Document objects out.
+
+That Document object shows up everywhere from here on, so learn its two attributes now — there are only two and they are both simple.
+
+Dot page underscore content is the entire text of the file as one long string. Not a list of lines, not a stream. One string, ninety-four thousand characters for Tesla.
+
+Dot metadata is a dictionary, filled in for you by the loader. Right now it holds one key, source, pointing at the file path. You can add your own keys later — page numbers, authors, dates, permissions — and that is how real systems do access control and citation.
+
+And here is the property that makes metadata worth caring about: metadata survives everything. When a document gets chunked in a moment, every single chunk inherits its parent's metadata. That is how a RAG system can tell a user which file an answer came from, even though the thing it retrieved was a four-hundred-character fragment.
+
+
+## Slide 34 — Two things that will bite you
+
+**Section:** 05 · Two gotchas
+
+
+Two gotchas, and the first one just demonstrated itself.
+
+Order is not guaranteed. Look back at that output — index zero was tesla dot txt, not google dot txt, even though google comes first alphabetically and I listed it first in the fetch script. The loader walks the directory in whatever order the filesystem hands it back. So never write code that assumes index zero is a particular file. If you need a specific document, filter on the metadata.
+
+Second gotcha. Other file types need other loaders. PyPDFLoader for PDFs, CSVLoader for CSVs, WebBaseLoader for web pages. You swap the loader class and change the glob to match.
+
+And a specific trap in there: if you leave loader class out entirely, LangChain does not fail. It falls back to a default loader that needs the unstructured package, which is a large dependency you probably have not installed. The error you get points at the missing package rather than at the missing argument, so it takes a while to work out what actually went wrong.
+
+
+## Slide 35 — Chunk them
+
+**Section:** 06 · Step two  
+**Run:** `python 05_chunk.py`
+
+
+Step two. Chunk them.
+
+Five documents of sixty to ninety thousand characters each are far too large to be useful units of retrieval. Nobody wants an entire Wikipedia article returned because one sentence in it matched.
+
+Three arguments. Chunk size, chunk overlap — which we will come to in a second, and which is set to zero here deliberately so you can see what goes wrong — and separator, which is set to a blank line so we prefer to break at paragraph boundaries.
+
+Now, the thing I want to flag hardest on this slide. Chunk size equals eight hundred means eight hundred characters. Not eight hundred tokens. Roughly two hundred tokens. Different splitters in different libraries count in different units, and getting this wrong by a factor of four is a very easy mistake to make. Always check which unit you are in.
+
+Let me run it.
+
+[RUN DEMO 05]
+
+
+## Slide 36 — 800 is a target, not a cap
+
+**Section:** 06 · The result
+
+
+Five hundred and thirty-nine chunks, from five documents.
+
+Now look at the spread, because this is where the mental model needs correcting. The smallest chunk is fifteen characters. The largest is one thousand seven hundred and nineteen. The average is six hundred and forty-three. We asked for eight hundred and got almost nothing that is actually eight hundred.
+
+Seventy-nine of the five hundred and thirty-nine came out longer than the target.
+
+Here is why. CharacterTextSplitter splits on the separator first — blank lines, in our case — and then merges the resulting pieces back together up to chunk size. What it will not do is break a paragraph in half to hit the number. So if a single paragraph is seventeen hundred characters, you get a seventeen-hundred-character chunk, and LangChain logs a warning for each one.
+
+Those warnings are warnings, not errors. I have suppressed them in the demo and counted them instead, because otherwise seventy-nine lines scroll past and you cannot see anything else. But you will see them if you write this yourself, and now you know they are expected.
+
+Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles this better — it tries a sequence of separators, falling back to smaller ones — and it is what you would reach for in a real project. We are staying on the simple one today so that the mechanics stay visible.
+
+
+## Slide 37 — What chunk_overlap actually does
+
+**Section:** 06 · Overlap
+
+
+This is the part of demo five I actually care about, and it is shown on a short passage with a small chunk size so the whole thing fits on one screen. The mechanism is identical at eight hundred characters.
+
+Top block, overlap zero. Read the seam between chunk zero and chunk one. Chunk zero ends with "its name is a tribute to the". Chunk one begins with "inventor Nikola Tesla". The sentence is cut clean in half.
+
+Think about what that costs you. Neither half carries the whole fact. If someone asks "who is Tesla named after", chunk zero has the question's subject but not the answer, and chunk one has the answer but has lost the subject. Neither one is a good match. The fact is in your database and it is unreachable.
+
+Bottom block, overlap forty. Now chunk one begins by repeating the tail of chunk zero — "Motors, its name is a tribute to the" — and then continues into "inventor Nikola Tesla". The sentence on the seam survives intact inside one chunk. It is retrievable again.
+
+That is all overlap does. Each chunk repeats the last n characters of the one before it.
+
+Rule of thumb: set overlap to roughly ten to twenty percent of chunk size. For eight hundred characters, one hundred is a reasonable default. You pay for that duplication in storage and in embedding cost — the same text gets embedded twice — and it is almost always worth it.
+
+So we change the default to a hundred, and re-run.
+
+
+## Slide 38 — Try it: watch the chunks re-cut
+
+**Section:** 06 · Interactive
+
+
+This is the same two numbers you just saw in code, except now you can move them and watch what they cost you.
+
+The document is the opening of the Tesla article — the same text demo five used.
+
+[DRAG chunk_size DOWN TO ~150]
+Small chunks. Look at the count climbing and the average dropping. These are precise — each one is about a single thing — but read them. They have lost their surroundings. A chunk that says "in 2008 he was named chief executive officer" does not say who "he" is. Retrieve that on its own and it is useless.
+
+[DRAG chunk_size UP TO ~1200]
+Now large chunks. Only a couple of them. Each one carries plenty of context — but now a question about the Roadster matches a chunk that is mostly about something else, and you are sending three times as many tokens to answer it. The match gets diluted.
+
+[DRAG chunk_overlap UP TO ~100]
+Now watch the highlight. That green text at the start of each chunk is repeated from the one before it. Look at the "duplicated" figure climbing — that is text you are storing twice and paying to embed twice.
+
+[SET overlap TO 0, THEN BACK TO 100]
+And that is the trade. At zero you pay nothing extra and sentences on the seam get cut in half. At a hundred you pay maybe fifteen percent more and they survive.
+
+There is no correct answer on this slide. There is a shape of answer: chunks big enough to stand alone, small enough to be about one thing, with enough overlap that the seams do not eat your sentences.
+
+
+## Slide 39 — Embed and store — one call does both
+
+**Section:** 07 · Step three  
+**Run:** `python 06_embed_store.py`
+
+
+Step three. Embed and store.
+
+These are two conceptual steps — two separate boxes in the diagram — and one line of code. Chroma dot from underscore documents embeds every chunk and writes the results to disk in a single call. It is doing a lot more than it looks like it is doing.
+
+This is also the one step in the whole pipeline that costs money and takes real time. Every chunk is a call to OpenAI. For five hundred and forty-seven chunks, expect thirty seconds to a couple of minutes.
+
+One thing about the demo script as opposed to the lesson file: my demo caches the embeddings on disk, keyed by the text and the model. The vectors are completely real — it is calling the actual API — but if I run this demo a second time while rehearsing, it does not pay twice. The finished ingestion pipeline dot py in the repo has no caching; it is the plain version from the lesson.
+
+Let me run it.
+
+[RUN DEMO 06]
+
+
+## Slide 40 — One row per chunk
+
+**Section:** 07 · What landed on disk
+
+
+Five hundred and forty-seven vectors stored. And a folder has appeared that was not there a moment ago.
+
+Look at what is stored per chunk, because this is the vector database table from earlier, now real. The vector: fifteen hundred and thirty-six numbers. The original text: the opening of the Tesla article. And the metadata: source, docs slash tesla dot txt.
+
+There is the metadata surviving, exactly as promised. It went in at the loader, came through the splitter untouched, and is now sitting in the database attached to a chunk.
+
+Underneath, the folder structure. Chroma dot sqlite three holds the text, the metadata and the ids — it is an ordinary SQLite database, you can open it. And then a folder named after the collection's UUID holds the binary files: data level zero dot bin is the vectors themselves, and link lists dot bin is the search index, which is what makes proximity search fast rather than a brute-force scan of half a million numbers.
+
+And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
+
+
+## Slide 41 — The three arguments that matter
+
+**Section:** 07 · The three arguments
+
+
+Three arguments in that call matter, and each one has a failure mode attached to it.
+
+Embedding is the model. We are using text-embedding-3-small, which returns fifteen hundred and thirty-six dimensions. Write that choice down. I am serious about that — write it in a comment, put it in your README. Next lesson you must embed the user's question with exactly the same model, or retrieval returns nonsense with no error message. That is the whole finale of today.
+
+Persist directory is where the database lives on disk. Leave it out and Chroma runs in memory only, which means everything disappears when the script ends and you pay to embed all over again. It is a quietly expensive mistake — the code looks like it worked, it printed success, and there is simply nothing on disk.
+
+Collection metadata, hnsw colon space, cosine. That sets the distance measure used to compare vectors. Cosine similarity is the standard choice for text, because it measures the angle between two vectors rather than their magnitude — which means a long document and a short one about the same topic still score as similar. Set it and move on; how it works is a later topic.
+
+HNSW, by the way, stands for hierarchical navigable small world, which is the indexing algorithm. That is the thing making the search fast.
+
+
+## Slide 42 — Ask it something
+
+**Section:** 08 · Confirm it worked  
+**Run:** `python 07_query.py "Who founded SpaceX?"`
+
+
+Let's confirm it worked. This is the top of the next lesson really, but we need to prove the store is queryable.
+
+[RUN DEMO 07]
+
+The question is "who founded SpaceX". The collection has five hundred and forty-seven vectors in it, covering five different companies.
+
+And every single result comes from spacex dot txt. Not one Tesla chunk, not one Microsoft chunk, despite Elon Musk appearing prominently in the Tesla article — which is exactly the kind of near-miss that would trip a keyword search.
+
+Look at the top hit: "In early 2002, Elon Musk started to look for staff for his company, soon to be named SpaceX." That answers the question. Score zero point six six two.
+
+If your results come back from the right file, your ingestion pipeline is finished and correct. That is the test.
+
+One thing to note about the scores. Zero point six six is the top match, and that might feel low if you were expecting something near one. It is not low. Cosine similarity between a short question and a long paragraph rarely goes above zero point seven, because they are different shapes of text. What matters is the gap between the top results and everything else, not the absolute number. Do not go hunting for a universal threshold — calibrate against your own corpus.
+
+
+## Slide 43 — This is what reaches the model
+
+**Section:** 08 · The actual prompt
+
+
+And here it is. The actual prompt. Every character of it, printed by the demo.
+
+I promised earlier we would look at this, because it is the step everyone misreads. Read what is on that screen. An instruction: "answer the question using only the context below." Then the word CONTEXT, and then three paragraphs of completely ordinary English lifted straight out of the Wikipedia article. Then the word QUESTION, and the user's question.
+
+That is it. That is the whole thing. Just under three thousand characters.
+
+There is nothing numeric anywhere in it. No vectors, no embeddings, no similarity scores. The model has no idea a vector database was involved. As far as it is concerned, somebody pasted three paragraphs and asked a question.
+
+Vectors are only used for finding. Their job finished the moment the matching was done, and then we went back to plain English.
+
+I think this is the single most clarifying thing in the whole lesson. All the machinery — the chunking, the embedding, the fifteen hundred dimensions, the HNSW index — exists to produce those three paragraphs. The clever part is the search. The prompt at the end is boring, and it is supposed to be.
+
+
+## Slide 44 — Try it: ask, and watch the prompt build
+
+**Section:** 08 · Interactive
+
+
+Last interactive one, and it puts the whole retrieval pipeline in your hands.
+
+Small policy document, cut into chunks. Type a question, and every chunk gets scored against it. The highlighted ones are the ones that would be sent.
+
+An honesty note before I start clicking: the scoring on this page uses character-trigram vectors, not neural embeddings, because the page has to run in a browser with no API key. The mechanism is identical — cut, vectorise, cosine, rank, take the top k — but the vectors are cruder. Demo seven does exactly this with real embeddings.
+
+[CLICK 'laptop budget']
+Watch the ranking jump. The equipment chunk goes to the top and the prompt underneath rebuilds itself in real time.
+
+[DRAG top k FROM 2 TO 6]
+Now raise top k. More chunks get highlighted, and look at the "sent to model" figure — we are now sending most of the document. That is the failure mode of a large k: you have reinvented pasting the whole thing in.
+
+[SET top k BACK TO 2, CLICK 'what is the capital of France']
+And here is the one I really want you to see. That question is not answerable from this document at all — there is nothing about France anywhere in it.
+
+The top score drops, and the panel underneath flags it: nothing here really answers that. But now look at the chunk list. You still got two results back. Highlighted. Neatly ranked. Ready to send.
+
+That is the point from earlier, made concrete. A retriever always returns k results. It has no concept of "I do not know". If you hand those two chunks to a language model with no score threshold, it will do its best with irrelevant text — and that is where a large share of RAG hallucinations actually come from.
+
+
+## Slide 45 — Run it twice, pay twice
+
+**Section:** 08 · The re-run trap  
+**Run:** `python 06_embed_store.py --append`
+
+
+One trap before we move on, and it is a trap I have watched people fall into more than once.
+
+From documents adds to an existing collection. It does not replace it. So if you run your ingestion script twice — which you will, because you will tweak the chunk size and re-run — you end up with one thousand and ninety-four vectors, half of them exact duplicates. And you paid to embed all of them twice.
+
+The symptom is subtle rather than dramatic. Retrieval still works. But your top-k results start coming back as pairs of identical chunks, so asking for five results gets you two or three distinct pieces of information instead of five. Your context is half wasted and the quality quietly drops.
+
+While you are experimenting, delete the db_chroma folder before each run. My demo script does that by default for exactly this reason — and the dash dash append flag opts back in to the mistake, so you can watch the count double if you want to see it.
+
+In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it. But for learning, delete the folder.
+
+
+## Slide 46 — The mistake that breaks most first builds
+
+**Section:** Part five
+
+
+Part five. And this is the one I most want you to leave with.
+
+The mistake that breaks most first RAG builds. I have been foreshadowing it all session — the two orange boxes in the diagram, "write that choice down", "the same model, every time".
+
+Here is what makes it dangerous. Nothing crashes. There is no error message. Let me show you the rule, and then we will break it on purpose.
+
+
+## Slide 47 — The consistency rule
+
+**Section:** 09 · The consistency rule
+
+
+The consistency rule. Use the same embedding model and the same dimension count for your documents and for your queries. Every time. No exceptions.
+
+The scenario that produces the failure is completely ordinary. You embed your documents in January with one model. Two months later you come back, you are writing the query side, and you reach for a model — maybe a cheaper one, maybe you just do not remember which you used. Different model. Now your documents and your questions are in two different systems.
+
+The way to hold this in your head: think of embedding models as separate languages. A vector written by one model means nothing to another. The numbers are the same shape, they are in the same range, they look completely normal — and they encode meaning in a totally different arrangement.
+
+The two systems cannot understand each other. And neither one will tell you.
+
+Let's break it and watch.
+
+
+## Slide 48 — Same store. Same question. Nothing crashes.
+
+**Section:** 09 · Break it on purpose  
+**Run:** `python 08_model_mismatch.py`
+
+
+Demo eight. This builds a store the right way, then queries it the wrong way.
+
+One detail so you know this is a fair test. The wrong model is text-embedding-3-large, but I have asked it for fifteen hundred and thirty-six dimensions instead of its default three thousand. So the vector is exactly the same shape as the ones in the database. Chroma has no dimension mismatch to complain about. It has no way whatsoever to know it is being handed a different language.
+
+[RUN DEMO 08]
+
+Top block, the right model. Zero point six six, zero point six three, zero point six three. All from spacex dot txt. That is our known-good result from a few minutes ago.
+
+Bottom block. Same database. Same question. Same number of results. The only thing that changed is which model embedded the question.
+
+Look at the scores. Zero point zero six four. Zero point zero five five. Zero point zero five two. They have collapsed by a factor of ten — the retriever is finding nothing it considers a good match, because every stored vector is effectively noise to it now.
+
+And look at the third result. Microsoft dot txt. "Microsoft became the third publicly traded U.S. company..." — returned as a top-three answer to "who founded SpaceX".
+
+Now notice what did not happen. Nothing crashed. No exception. No warning. No log line. The retriever returned exactly three results, ranked, formatted identically to the correct run. If you were not printing the source filenames — and most people do not, in a first build — this looks completely healthy.
+
+And then an LLM takes those three chunks and writes a fluent, confident, sourced-looking, wrong answer.
+
+That is why this is the mistake that breaks most first builds. Not because it is subtle to fix, but because it is invisible until someone checks an answer by hand.
+
+
+## Slide 49 — Try it: flip the model, break the system
+
+**Section:** 09 · Interactive
+
+
+And finally, the failure, as a switch you can flip.
+
+The documents on the left were embedded once, correctly, with text-embedding-3-small. The only thing this toggle changes is which model embeds the question.
+
+[CLICK 'SAME model']
+Same model. Top score zero point five five, and the right answer — Q1 revenue reached four point two million — is clearly first. Healthy.
+
+[CLICK 'DIFFERENT model']
+Different model. Same store, same question, same six facts.
+
+Top score, zero point zero two six. The signal has collapsed by a factor of twenty. The ordering is now essentially arbitrary — on six facts it happens to keep the right one near the top, which is exactly why this is so dangerous on a small test set. In demo eight, on five hundred and forty-seven real chunks, this same flip returned a Microsoft paragraph for a question about SpaceX.
+
+And now look at the bottom-right number, which is the whole point of this slide.
+
+Errors raised: zero.
+
+Not one exception. Not one warning. The retriever returned six results, ranked, formatted identically. Every piece of monitoring you have says the system is fine.
+
+[FLIP BACK AND FORTH A FEW TIMES]
+This is what a silent failure looks like. The difference between a working RAG system and a broken one, from the outside, is a number getting smaller. Nothing else changes.
+
+That is why the rule is absolute. One embedding model, one dimension count, everywhere.
+
+
+## Slide 50 — What this means in practice
+
+**Section:** 09 · In practice
+
+
+So what does that mean in practice? Four rules.
+
+One. Choose your embedding model before you ingest a single document. This is an architectural decision, not an implementation detail you get to defer.
+
+Two. Choose your dimension count at the same time, and write it down. In the README, in a config file, in a comment at the top of the script. Somewhere your future self will actually look.
+
+Three. If you switch model later, you re-embed the entire corpus. There is no partial migration. You cannot have half your documents in the new model and half in the old, because they cannot be compared. For a large corpus that is a real cost, which is why rule one matters.
+
+Four, and this one catches people who think they are being careful: changing dimensions within the same model breaks it too. Text-embedding-3-large at three thousand and text-embedding-3-large at fifteen hundred are not compatible with each other. Same model, different language.
+
+And then a suggestion that is not in the lesson but which I would put in any real build. Store the model name and the dimension count in the collection metadata when you create the store, and assert on them when you query. That is about ten lines of code, and it converts this entire category of silent failure into a loud one that fails on the first query. Given what we just watched, that is an extremely good trade.
+
+
+## Slide 51 — When it does not run
+
+**Section:** 10 · When it does not run
+
+
+The five things that go wrong, and what each one actually means.
+
+OpenAI error, api key must be set. That is no dot env file, or the wrong variable name, or you forgot to call load dot env. The name has to be exactly OPENAI underscore API underscore KEY.
+
+Rate limit error, quota exceeded. This one is badly named and sends people down the wrong path. It is not a rate limit. Your key works fine — the account simply has no credit. Add funds in Billing. If you are sitting there adding retry logic and backoff, you are solving a problem you do not have.
+
+Module not found error. Your virtual environment is not active, or you installed into a different one. Check for the venv prefix in your prompt. This is the one that comes back to bite people who open a new terminal tab and forget to re-activate.
+
+No dot txt files found. You are running the script from a different directory than the one holding docs. Relative paths are relative to where you launched python, not to where the file lives.
+
+And created a chunk of size N longer than eight hundred. That is a warning, not an error. A single paragraph exceeded the target. Expected behaviour, as we saw. Nothing to fix.
+
+
+## Slide 52 — Check yourself
+
+**Section:** 10 · Check yourself
+
+
+Before you move on, check yourself against these. If you are recording this, pause here — genuinely try to answer them out loud before reading on.
+
+One. Why does a two million token window not remove the need for RAG? Two reasons: scale, because real corpora are orders of magnitude larger; and cost and quality, because sending irrelevant context is expensive, slow, and produces worse answers.
+
+Two. Four million tokens at a chunk size of five hundred. Eight thousand chunks, and eight thousand vectors. One vector per chunk, always.
+
+Three. Ten chunks back, four irrelevant. Not broken. A retriever always returns k results whether or not they are any good.
+
+Four. What is in the prompt? The user's question and the original English text of the top chunks. Never the vectors.
+
+Five. Which Document attribute survives chunking? Metadata. Every chunk inherits its parent's.
+
+Six. Chunk size counts characters, not tokens.
+
+Seven. Leave out persist directory and Chroma runs in memory — everything vanishes when the script ends and you pay to embed again.
+
+Eight. Documents with model A, queries with model B. The symptom is that there is no symptom. No error, collapsed scores, and confidently wrong chunks.
+
+
+## Slide 53 — The whole session in ten lines
+
+**Section:** 10 · Summary
+
+
+The whole session in ten lines. This is your revision card.
+
+Models have a token limit, and real document stores are millions of times larger. So you retrieve the relevant pieces instead of sending everything.
+
+A RAG system is two pipelines. Ingestion runs once. Retrieval runs per question.
+
+Ingestion: cut documents into chunks, embed each chunk, store the vectors with their text.
+
+An embedding is a fixed-length list of numbers where similar meaning gives similar numbers.
+
+A vector database stores those numbers and searches them fast.
+
+Retrieval: embed the question the same way, rank stored vectors by closeness, take the top k.
+
+Send the model the question plus the original text of those chunks. Never the vectors.
+
+Set chunk overlap so sentences on the seam survive, and set persist directory or you lose the work.
+
+And the last one, which is the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking this fails silently.
+
+
+## Slide 54 — Next: the retrieval pipeline
+
+
+That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.
+
+And you have locked in a decision: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That choice now applies to the whole project.
+
+Next lesson is the retrieval pipeline — the bottom row of the diagram, properly this time. You take a question, embed it with that same model, pull the closest chunks out of db_chroma, build a prompt, and hand it to an LLM to answer. We got a preview of it today in demo seven; next time we build it properly, including what to do when the retriever comes back with nothing good.
+
+If you are working along, the best thing you can do before then is swap my five Wikipedia articles for a set of documents you actually want to ask questions about. Everything we built today works unchanged — point DOCS_PATH at your folder, delete db_chroma, and re-run. The pipeline does not care what the documents are.
+
+Thanks for working through it.

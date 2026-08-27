@@ -1,0 +1,376 @@
+/* Theme for the RAG presentation. Light "paper" palette, chosen to read
+   cleanly on a screen recording rather than a projector. */
+
+:root {
+  --ink: #14181f;
+  --ink-soft: #4d5a68;
+  --ink-faint: #8b97a3;
+  --paper: #f6f6f4;
+  --card: #ffffff;
+  --rule: #dfe0dc;
+  --accent: #e8590c;
+  --accent-soft: #fde3d1;
+  --teal: #146b5f;
+  --teal-soft: #d5e8e4;
+  --display: "Bricolage Grotesque", "Helvetica Neue", system-ui, sans-serif;
+  --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.reveal-viewport { background: var(--paper); }
+
+.reveal {
+  font-family: var(--body);
+  font-size: 30px;
+  color: var(--ink);
+}
+
+.reveal .slides { text-align: left; }
+
+/* Reveal centres slides vertically. Cap the width so long prose lines do not
+   run the full 1280px, which is uncomfortable to read on a recording. */
+.reveal .slides section > * { max-width: 1180px; }
+
+/* --- headings ------------------------------------------------------- */
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  font-family: var(--display);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 0.5em 0;
+  text-shadow: none;
+}
+.reveal h1 { font-size: 2.4em; font-weight: 800; }
+.reveal h2 { font-size: 1.65em; font-weight: 800; }
+.reveal h3 { font-size: 1.15em; font-weight: 600; }
+.reveal h4 {
+  font-size: 0.62em; font-weight: 600; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+
+.reveal p { line-height: 1.5; margin: 0 0 0.7em 0; }
+.reveal strong { color: var(--accent); font-weight: 600; }
+.reveal em { color: var(--teal); font-style: italic; }
+
+/* --- the eyebrow that numbers every slide ---------------------------- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.5em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 1.4em;
+  display: block;
+}
+.eyebrow b { color: var(--accent); font-weight: 500; }
+
+/* --- lists ----------------------------------------------------------- */
+.reveal ul, .reveal ol { display: block; margin-left: 1.1em; }
+.reveal li { line-height: 1.45; margin-bottom: 0.42em; }
+.reveal ul li::marker { color: var(--accent); }
+.reveal ol li::marker { color: var(--accent); font-family: var(--mono); font-size: 0.8em; }
+
+/* --- code ------------------------------------------------------------ */
+.reveal pre {
+  font-family: var(--mono);
+  font-size: 0.44em;
+  line-height: 1.5;
+  width: 100%;
+  box-shadow: none;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  margin: 0.5em 0;
+}
+.reveal pre code {
+  padding: 0.9em 1.1em;
+  background: transparent;
+  max-height: 560px;
+  border-radius: 6px;
+}
+.reveal code { font-family: var(--mono); font-variant-ligatures: none; }
+.reveal p code, .reveal li code, .reveal td code {
+  background: var(--accent-soft);
+  color: #8a3503;
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+  font-size: 0.82em;
+}
+
+/* --- the demo cue: the single most important element in the deck ------ */
+.cue {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  background: var(--accent-soft);
+  border-left: 5px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  margin: 0.8em 0;
+  font-family: var(--mono);
+  font-size: 0.55em;
+  line-height: 1.4;
+}
+.cue .label {
+  font-weight: 700;
+  color: #8a3503;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+.cue .cmd { color: var(--ink); font-weight: 500; }
+
+/* --- callouts -------------------------------------------------------- */
+.callout {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--teal);
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  margin: 0.7em 0;
+  font-size: 0.72em;
+  line-height: 1.5;
+}
+.callout .label {
+  font-family: var(--mono);
+  font-size: 0.68em;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 0.35em;
+  font-weight: 700;
+}
+.callout.warn { border-left-color: var(--accent); }
+.callout.warn .label { color: var(--accent); }
+
+.definition {
+  background: var(--teal-soft);
+  border-radius: 6px;
+  padding: 0.9em 1.1em;
+  margin: 0.7em 0;
+  font-size: 0.8em;
+  line-height: 1.5;
+}
+
+/* --- tables ---------------------------------------------------------- */
+.reveal table { width: 100%; border-collapse: collapse; font-size: 0.62em; margin: 0.5em 0; }
+.reveal table th {
+  font-family: var(--mono); font-size: 0.78em; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--ink-faint); font-weight: 500;
+  text-align: left; border-bottom: 2px solid var(--rule); padding: 0.5em 0.7em;
+}
+.reveal table td {
+  padding: 0.5em 0.7em; border-bottom: 1px solid var(--rule);
+  vertical-align: top; line-height: 1.4;
+}
+.reveal table td.num { font-family: var(--mono); text-align: right; white-space: nowrap; }
+
+/* --- the pipeline diagram -------------------------------------------- */
+.pipe { margin: 0.5em 0; }
+.pipe .row { display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.35em; }
+.pipe .box {
+  flex: 1; background: var(--card); border: 1px solid var(--rule);
+  border-radius: 5px; padding: 0.65em 0.4em; text-align: center;
+  font-family: var(--display); font-size: 0.5em; font-weight: 600;
+  line-height: 1.25; color: var(--ink);
+}
+.pipe .box small {
+  display: block; font-family: var(--mono); font-weight: 400;
+  font-size: 0.72em; color: var(--ink-faint); margin-top: 0.25em;
+}
+.pipe .box.hot { border-color: var(--accent); background: var(--accent-soft); }
+.pipe .box.cool { border-color: var(--teal); background: var(--teal-soft); }
+.pipe .arrow { color: var(--ink-faint); font-size: 0.7em; flex: 0 0 auto; }
+.pipe .tag {
+  font-family: var(--mono); font-size: 0.42em; margin-top: 0.9em; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--ink-faint); margin: 0.5em 0 0.3em;
+}
+.pipe .tag b { color: var(--accent); font-weight: 600; }
+
+/* --- terminal output blocks ------------------------------------------ */
+.term {
+  background: #14181f; color: #e6e6e3; border-radius: 6px;
+  font-family: var(--mono); font-size: 0.4em; line-height: 1.55;
+  /* terminal output must render literally: no "===" -> ligature */
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  padding: 0.9em 1.1em; margin: 0.5em 0; white-space: pre; overflow-x: auto;
+}
+.term .dim { color: #8b97a3; }
+.term .hi { color: #ff9a5c; }
+.term .ok { color: #6fd3bf; }
+
+/* --- layout helpers --------------------------------------------------- */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1em; align-items: start; }
+.tight { font-size: 0.78em; }
+.muted { color: var(--ink-soft); }
+.center { text-align: center; }
+
+.big-num {
+  font-family: var(--mono); font-size: 1.5em; color: var(--accent);
+  font-weight: 500; line-height: 1;
+}
+
+/* --- title slide ------------------------------------------------------ */
+.title-slide h1 { font-size: 2.7em; margin-bottom: 0.2em; }
+.title-slide .sub {
+  font-size: 0.92em; color: var(--ink-soft); line-height: 1.5;
+  max-width: 22em; margin-bottom: 1.2em;
+}
+.title-slide .meta {
+  font-family: var(--mono); font-size: 0.5em; color: var(--ink-faint);
+  letter-spacing: 0.08em; line-height: 2;
+  border-top: 1px solid var(--rule); padding-top: 1em;
+}
+.title-slide .meta b { color: var(--ink); font-weight: 500; }
+
+/* --- progress + controls --------------------------------------------- */
+.reveal .progress { color: var(--accent); height: 4px; }
+.reveal .controls { color: var(--ink-faint); }
+.reveal .slide-number {
+  font-family: var(--mono); font-size: 16px;
+  background: transparent; color: var(--ink-faint);
+}
+.reveal .slide-number a { text-decoration: none; color: inherit; }
+
+/* section divider slides */
+section.divider { text-align: left; }
+section.divider h2 { font-size: 2.3em; color: var(--accent); }
+section.divider .rule { width: 4em; height: 5px; background: var(--accent); margin-bottom: 0.8em; }
+
+/* ======================================================================
+   Interactive widgets
+   ====================================================================== */
+
+.ix {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.75em 0.9em;
+  font-size: 0.58em;
+  line-height: 1.45;
+}
+.ix + .ix { margin-top: 0.5em; }
+
+.ix-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1em; margin-bottom: 0.6em;
+}
+.ix-title {
+  font-family: var(--mono); font-size: 0.78em; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--accent); font-weight: 700;
+}
+.ix-hint { font-size: 0.8em; color: var(--ink-faint); }
+
+/* --- controls --------------------------------------------------------- */
+.ix-controls { display: grid; gap: 0.55em; }
+.ix-controls.two-up { grid-template-columns: 1fr 1fr; gap: 0.9em; }
+
+.ix-ctl label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: var(--mono); font-size: 0.8em; color: var(--ink-soft);
+  margin-bottom: 0.18em;
+}
+.ix-ctl label b { color: var(--accent); font-weight: 700; }
+
+.ix input[type=range] {
+  width: 100%; accent-color: var(--accent); height: 1.1em; margin: 0;
+  cursor: pointer;
+}
+.ix input[type=text], .ix textarea {
+  width: 100%; font-family: var(--mono); font-size: 0.95em;
+  padding: 0.45em 0.6em; border: 1px solid var(--rule); border-radius: 4px;
+  background: var(--paper); color: var(--ink); resize: vertical;
+}
+.ix input[type=text]:focus, .ix textarea:focus {
+  outline: 2px solid var(--accent); outline-offset: -1px;
+}
+
+.ix-chips { display: flex; flex-wrap: wrap; gap: 0.3em; margin-top: 0.45em; }
+.ix-chip {
+  font-family: var(--mono); font-size: 0.78em; padding: 0.22em 0.6em;
+  border: 1px solid var(--rule); border-radius: 999px; cursor: pointer;
+  background: var(--paper); color: var(--ink-soft); transition: all .12s;
+  user-select: none;
+}
+.ix-chip:hover { border-color: var(--accent); color: var(--accent); }
+.ix-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* --- stat strip -------------------------------------------------------- */
+.ix-stats {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  gap: 0.5em; margin-top: 0.65em; padding-top: 0.6em;
+  border-top: 1px solid var(--rule);
+}
+.ix-stat .v {
+  font-family: var(--mono); font-size: 1.35em; color: var(--accent);
+  font-weight: 500; line-height: 1.1;
+}
+.ix-stat .k {
+  font-family: var(--mono); font-size: 0.72em; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--ink-faint); margin-top: 0.15em;
+}
+.ix-stat.cool .v { color: var(--teal); }
+.ix-stat.plain .v { color: var(--ink); }
+
+/* --- chunk / result lists ---------------------------------------------- */
+.ix-list {
+  margin-top: 0.6em; max-height: 240px; overflow-y: auto;
+  border: 1px solid var(--rule); border-radius: 4px; background: var(--paper);
+}
+.ix-row {
+  padding: 0.4em 0.6em; border-bottom: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 0.8em; line-height: 1.4;
+  display: flex; gap: 0.6em; align-items: flex-start;
+}
+.ix-row:last-child { border-bottom: none; }
+.ix-row .idx { color: var(--ink-faint); flex: 0 0 2.2em; }
+.ix-row .body { flex: 1; word-break: break-word; }
+.ix-row .sc { flex: 0 0 3.2em; text-align: right; color: var(--ink-faint); }
+.ix-row.hit { background: var(--accent-soft); }
+.ix-row.hit .sc { color: #8a3503; font-weight: 700; }
+.ix-row mark { background: var(--teal-soft); color: var(--teal); border-radius: 2px; }
+
+/* --- similarity bars ---------------------------------------------------- */
+.ix-bars { margin-top: 0.55em; display: grid; gap: 0.22em; }
+.ix-bar { display: flex; align-items: center; gap: 0.5em; font-family: var(--mono); font-size: 0.82em; }
+.ix-bar .w { flex: 0 0 6em; color: var(--ink-soft); }
+.ix-bar .track { display: block; flex: 1; height: 0.85em; background: var(--paper); border-radius: 2px; overflow: hidden; }
+.ix-bar .fill { display: block; height: 100%; background: var(--ink-faint); }
+.ix-bar .fill.animals { background: var(--accent); }
+.ix-bar .fill.fruit   { background: var(--teal); }
+.ix-bar .fill.drinks  { background: #7a6fd3; }
+.ix-bar .n { flex: 0 0 3em; text-align: right; color: var(--ink-soft); }
+
+/* --- scatter ------------------------------------------------------------ */
+.ix-scatter { width: 100%; height: 190px; }
+.ix-scatter .pt { cursor: pointer; }
+.ix-scatter text { font-family: var(--mono); font-size: 9px; fill: var(--ink-soft); }
+.ix-scatter text.on { fill: var(--accent); font-weight: 700; }
+
+/* --- toggle ------------------------------------------------------------- */
+.ix-toggle { display: flex; gap: 0.4em; }
+.ix-toggle button {
+  flex: 1; font-family: var(--mono); font-size: 0.82em; padding: 0.5em 0.7em;
+  border: 1px solid var(--rule); border-radius: 4px; background: var(--paper);
+  color: var(--ink-soft); cursor: pointer; transition: all .12s;
+}
+.ix-toggle button.on { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
+.ix-toggle button.on.bad { border-color: #b3300a; background: #b3300a; }
+
+.ix-note {
+  margin-top: 0.55em; font-size: 0.82em; color: var(--ink-soft);
+  border-left: 3px solid var(--rule); padding-left: 0.7em;
+}
+.ix-note b { color: var(--accent); }
+
+.ix-prompt {
+  margin-top: 0.6em; background: #14181f; color: #e6e6e3; border-radius: 4px;
+  padding: 0.6em 0.8em; font-family: var(--mono); font-size: 0.78em;
+  line-height: 1.5; max-height: 180px; overflow-y: auto; white-space: pre-wrap;
+  font-variant-ligatures: none;
+}
+.ix-prompt .lbl { color: #ff9a5c; }
+.ix-prompt .q { color: #6fd3bf; }
