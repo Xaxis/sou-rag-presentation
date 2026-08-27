@@ -94,7 +94,17 @@
 
   function boot() {
     build();
+
     setOpen(open);
+
+    // A 1280x780 canvas scaled into a phone gives ~15px headings. The reading
+    // view is the same lesson as a document, so point narrow screens at it.
+    if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
+      var nudge = el('a', 'deck-nudge',
+        '<b>Small screen?</b> The lesson reads better as a document &rarr;');
+      nudge.href = '/read/';
+      document.body.appendChild(nudge);
+    }
     if (window.Reveal && Reveal.on) {
       Reveal.on('slidechanged', function () { if (open) render(); });
       Reveal.on('ready', render);

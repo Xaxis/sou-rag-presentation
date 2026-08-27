@@ -444,3 +444,14 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
   padding: 6px 10px; display: inline-block; margin-bottom: 0.75em;
 }
 .deck-notes-body p.deck-none { color: var(--ink-faint); font-style: italic; }
+
+/* --- pointer to the reading view on small screens ----------------------- */
+.deck-nudge {
+  position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 70;
+  background: var(--ink); color: var(--paper); text-decoration: none;
+  border-radius: 6px; padding: 12px 14px; text-align: center;
+  font-family: var(--mono); font-size: 13px; line-height: 1.4;
+  box-shadow: 0 6px 24px rgba(20,24,31,.24);
+}
+.deck-nudge b { color: #ff9a5c; font-weight: 700; }
+@media (min-width: 821px) { .deck-nudge { display: none; } }

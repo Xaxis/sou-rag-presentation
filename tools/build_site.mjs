@@ -65,9 +65,9 @@ function nav(active) {
     `<a class="link ${cls}${active === href ? ' on' : ''}" href="${href}">${label}</a>`;
   return `<nav class="nav"><div class="wrap">
   <a class="brand" href="/">ragverse<span>.diy</span></a>
-  ${item('/deck/', 'The lesson')}
+  ${item('/read/', 'The lesson')}
   ${item('/play/', 'Playgrounds')}
-  ${item('/script/', 'Transcript', 'hide-s')}
+  ${item('/deck/', 'Deck', 'hide-s')}
   ${item('/present/', 'Present', 'hide-s')}
   <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
 </div></nav>`;
@@ -150,50 +150,78 @@ function buildPlay(slides) {
   });
 }
 
-/* ---------------------------------------------------------- transcript */
-function buildScript(slides) {
-  const stage = /^\[[A-Z][^\]]*\]$/;
-  const toc = slides
-    .map((s, i) => `<a href="#s${i + 1}"><b>${String(i + 1).padStart(2, '0')}</b> ${esc(s.title)}</a>`)
-    .join('\n');
+/* ------------------------------------------------------------- reading */
+/* The deck is a 1280x780 canvas; scaled into a phone it gives 15px headings.
+   This renders the same slides as a flowing document - real headings, real
+   type, the widgets inline, and the narration woven in where it belongs. */
+function buildRead(slides) {
+  const stage = /^\[[A-Z0-9][^\]]*\]$/;
+  const parts = [];
+  const chapters = [];
 
-  const items = slides.map((s, i) => {
-    const paras = s.notes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+  slides.forEach((s, i) => {
+    const isDivider = /divider/.test(s.body) || s.body.indexOf('class="rule"') !== -1;
+
+    // strip the pieces we re-render ourselves
+    let body = s.body
+      .replace(/<span class="eyebrow">[\s\S]*?<\/span>\s*/, '')
+      .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>\s*/, '')
+      .replace(/<div class="rule"><\/div>\s*/, '')
+      .trim();
+
+    const notes = s.notes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
       .map((p) => {
-        const one = p.replace(/\s+/g, ' ');
-        return stage.test(one)
-          ? `<p class="stage">${esc(one)}</p>`
-          : `<p>${esc(one)}</p>`;
+        const line = p.replace(/\s+/g, ' ');
+        return stage.test(line)
+          ? `<p class="read-stage">${esc(line)}</p>`
+          : `<p>${esc(line)}</p>`;
       }).join('\n');
-    const cues = s.cues.map((c) => `<span class="tx-run">${esc(c)}</span>`).join(' ');
-    return `<article class="tx-slide" id="s${i + 1}">
-  <div class="tx-meta"><span class="no">Slide ${i + 1}</span>${s.eyebrow ? ' &middot; ' + esc(s.eyebrow) : ''}</div>
-  <h3>${esc(s.title)}</h3>
-  ${cues ? cues + '\n' : ''}${paras}
-</article>`;
-  }).join('\n');
+
+    if (isDivider) {
+      const id = 'c' + (chapters.length + 1);
+      chapters.push({ id, title: s.title, n: i + 1 });
+      parts.push(`<section class="read-chapter" id="${id}">
+  <span class="read-chapter-k">${esc(s.eyebrow || 'Part')}</span>
+  <h2>${s.titleHtml}</h2>
+  ${body}
+  <div class="read-narration">${notes}</div>
+</section>`);
+      return;
+    }
+
+    parts.push(`<section class="read-slide" id="s${i + 1}">
+  <div class="read-meta"><span class="n">${i + 1}</span>${s.eyebrow ? esc(s.eyebrow) : ''}</div>
+  <h3>${s.titleHtml}</h3>
+  ${body ? `<div class="read-visual">${body}</div>` : ''}
+  ${notes ? `<div class="read-narration">${notes}</div>` : ''}
+</section>`);
+  });
+
+  const toc = chapters.map((c) =>
+    `<a href="#${c.id}"><b>${String(c.n).padStart(2, '0')}</b> ${esc(c.title)}</a>`).join('\n');
 
   const words = slides.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0);
-  const mins = Math.round(words / 135);
 
-  const body = `<div class="wrap tx">
-  <span class="eyebrow"><b>Transcript</b> &middot; ${slides.length} slides &middot; ~${mins} minutes</span>
-  <h1>Every word, in order.</h1>
-  <p style="color:var(--ink-soft)">The narration for the whole lesson. Useful if you would rather
-  read than watch, or want to find the bit you half-remember. Lines in green are cues to run
-  something or move a slider.</p>
-  <details style="margin:2em 0"><summary style="cursor:pointer;font-family:var(--mono);
-    font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint)">
-    Contents</summary>
-    <div class="toc" style="margin-top:1em">${toc}</div></details>
-  ${items}
+  const body = `<div class="wrap read">
+  <header class="read-head">
+    <span class="eyebrow"><b>The whole lesson</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
+    <h1>RAG, end to end.</h1>
+    <p class="read-lede">Every slide, with what the presenter says underneath it, and the
+    playgrounds where they belong. Nothing to install.</p>
+    <nav class="read-toc">${toc}</nav>
+    <p class="read-alt">Presenting instead? <a href="/deck/">Open the deck &rarr;</a></p>
+  </header>
+  ${parts.join('\n')}
+  <p class="read-end"><a class="btn primary" href="/play/">Play with the five widgets &rarr;</a></p>
 </div>`;
 
   return page({
-    title: 'Transcript — RAG, built in front of you',
-    desc: `The full ${slides.length}-slide narration for the RAG work-along lesson.`,
-    active: '/script/',
+    title: 'The lesson — RAG, built in front of you',
+    desc: 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
+    active: '/read/',
     body,
+    extraCss: '<script defer src="/deck/data.js"></script>\n' +
+              '<script defer src="/deck/interactive.js"></script>',
   });
 }
 
@@ -286,8 +314,8 @@ fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(DIST, 'index.ht
 fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 
-fs.mkdirSync(path.join(DIST, 'script'), { recursive: true });
-fs.writeFileSync(path.join(DIST, 'script', 'index.html'), buildScript(slides));
+fs.mkdirSync(path.join(DIST, 'read'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides));
 
 fs.mkdirSync(path.join(DIST, 'present'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'present', 'index.html'), buildPresent(slides));
@@ -296,5 +324,5 @@ const widgets = slides.filter((s) => s.widget).length;
 console.log(`built dist/`);
 console.log(`  deck    ${slides.length} slides`);
 console.log(`  play    ${widgets} playgrounds`);
-console.log(`  script  ${slides.length} entries`);
+console.log(`  read    ${slides.length} slides as a document`);
 console.log(`  present cue sheet`);
