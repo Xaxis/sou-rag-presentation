@@ -1,0 +1,226 @@
+/* Assemble the deployable site into dist/.
+ *
+ *   node tools/build_site.mjs
+ *
+ * Everything is derived from slides/index.html, so the landing page, the
+ * standalone playgrounds and the transcript can never drift from the deck.
+ * No dependencies — Vercel runs this with plain node.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIST = path.join(ROOT, 'dist');
+
+const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* ------------------------------------------------------------ parse deck */
+function parseDeck() {
+  const html = read('slides', 'index.html');
+  const out = [];
+  const re = /<section\b([^>]*)>([\s\S]*?)<\/section>/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const raw = m[2];
+    const ai = raw.indexOf('<aside class="notes">');
+    const body = ai === -1 ? raw : raw.slice(0, ai);
+    const notes = ai === -1 ? ''
+      : raw.slice(ai + '<aside class="notes">'.length, raw.lastIndexOf('</aside>')).trim();
+
+    const h = body.match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/);
+    const eb = body.match(/<span class="eyebrow">([\s\S]*?)<\/span>/);
+    const cues = [...body.matchAll(/<span class="cmd">([\s\S]*?)<\/span>/g)].map((c) => c[1]);
+    const widget = (body.match(/id="(ix-[a-z]+)"/) || [])[1] || null;
+
+    out.push({
+      titleHtml: h ? h[1].trim() : '',
+      title: strip(h ? h[1] : '(untitled)'),
+      eyebrow: strip(eb ? eb[1] : ''),
+      cues: cues.map(strip),
+      widget,
+      body,
+      notes,
+    });
+  }
+  return out;
+}
+const strip = (f) =>
+  f.replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '')
+   .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+   .replace(/&gt;/g, '>').replace(/&#183;/g, '·').replace(/\s+/g, ' ').trim();
+
+/* -------------------------------------------------------------- shell */
+const FONTS =
+  '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+  '<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">';
+const FAVICON =
+  '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 ' +
+  'viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E%F0%9F%94%8D%3C/text%3E%3C/svg%3E">';
+
+function nav(active) {
+  const item = (href, label, cls = '') =>
+    `<a class="link ${cls}${active === href ? ' on' : ''}" href="${href}">${label}</a>`;
+  return `<nav class="nav"><div class="wrap">
+  <a class="brand" href="/">ragverse<span>.diy</span></a>
+  ${item('/deck/', 'The lesson')}
+  ${item('/play/', 'Playgrounds')}
+  ${item('/script/', 'Transcript', 'hide-s')}
+  <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
+</div></nav>`;
+}
+
+function page({ title, desc, active, body, extraCss = '' }) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+${FAVICON}
+${FONTS}
+<link rel="stylesheet" href="/deck/theme.css">
+<link rel="stylesheet" href="/site.css">
+${extraCss}
+</head>
+<body>
+${nav(active)}
+${body}
+<footer><div class="wrap row">
+  <span>Built as a work-along lesson. Every claim executed, not asserted.</span>
+  <span class="sp"><a href="/deck/">Lesson</a> &middot; <a href="/play/">Playgrounds</a>
+  &middot; <a href="/script/">Transcript</a>
+  &middot; <a href="https://github.com/Xaxis/sou-rag-presentation">Source</a></span>
+</div></footer>
+</body>
+</html>`;
+}
+
+/* --------------------------------------------------------- playgrounds */
+const PLAY_META = {
+  'ix-scale':    { id: 'scale',    n: '01' },
+  'ix-embed':    { id: 'embed',    n: '02' },
+  'ix-chunk':    { id: 'chunk',    n: '03' },
+  'ix-retr':     { id: 'retr',     n: '04' },
+  'ix-mismatch': { id: 'mismatch', n: '05' },
+};
+
+function buildPlay(slides) {
+  const items = slides
+    .filter((s) => s.widget && PLAY_META[s.widget])
+    .map((s) => {
+      const meta = PLAY_META[s.widget];
+      // drop the eyebrow and the heading; we re-render those ourselves
+      let body = s.body
+        .replace(/<span class="eyebrow">[\s\S]*?<\/span>\s*/, '')
+        .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>\s*/, '');
+      const title = s.title.replace(/^Try it:\s*/i, '');
+      return `<article class="pg-item" id="${meta.id}">
+  <span class="pg-num">Playground ${meta.n}</span>
+  <h2>${title.charAt(0).toUpperCase()}${title.slice(1)}</h2>
+  ${body.trim()}
+</article>`;
+    })
+    .join('\n');
+
+  const body = `<div class="wrap pg">
+  <span class="eyebrow"><b>Interactive</b> &middot; no API key, no install</span>
+  <h1>Take it apart.</h1>
+  <p style="max-width:56ch;color:var(--ink-soft);font-size:1.1rem">
+  The five playgrounds from the lesson, on one page. Everything runs in your browser.
+  Playgrounds 02 and 05 use <strong>real precomputed OpenAI vectors</strong>; the rest is
+  exact browser code.</p>
+  ${items}
+  <p style="margin-top:2.4em"><a class="btn primary" href="/deck/">Now take the lesson &rarr;</a></p>
+</div>`;
+
+  return page({
+    title: 'RAG playgrounds — chunking, embeddings, retrieval',
+    desc: 'Five interactive RAG playgrounds: corpus scale, embedding neighbourhoods, chunking, retrieval scoring, and the silent embedding-model mismatch.',
+    active: '/play/',
+    body,
+    extraCss: '<script defer src="/deck/data.js"></script>\n' +
+              '<script defer src="/deck/interactive.js"></script>',
+  });
+}
+
+/* ---------------------------------------------------------- transcript */
+function buildScript(slides) {
+  const stage = /^\[[A-Z][^\]]*\]$/;
+  const toc = slides
+    .map((s, i) => `<a href="#s${i + 1}"><b>${String(i + 1).padStart(2, '0')}</b> ${esc(s.title)}</a>`)
+    .join('\n');
+
+  const items = slides.map((s, i) => {
+    const paras = s.notes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+      .map((p) => {
+        const one = p.replace(/\s+/g, ' ');
+        return stage.test(one)
+          ? `<p class="stage">${esc(one)}</p>`
+          : `<p>${esc(one)}</p>`;
+      }).join('\n');
+    const cues = s.cues.map((c) => `<span class="tx-run">${esc(c)}</span>`).join(' ');
+    return `<article class="tx-slide" id="s${i + 1}">
+  <div class="tx-meta"><span class="no">Slide ${i + 1}</span>${s.eyebrow ? ' &middot; ' + esc(s.eyebrow) : ''}</div>
+  <h3>${esc(s.title)}</h3>
+  ${cues ? cues + '\n' : ''}${paras}
+</article>`;
+  }).join('\n');
+
+  const words = slides.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0);
+  const mins = Math.round(words / 135);
+
+  const body = `<div class="wrap tx">
+  <span class="eyebrow"><b>Transcript</b> &middot; ${slides.length} slides &middot; ~${mins} minutes</span>
+  <h1>Every word, in order.</h1>
+  <p style="color:var(--ink-soft)">The narration for the whole lesson. Useful if you would rather
+  read than watch, or want to find the bit you half-remember. Lines in green are cues to run
+  something or move a slider.</p>
+  <details style="margin:2em 0"><summary style="cursor:pointer;font-family:var(--mono);
+    font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint)">
+    Contents</summary>
+    <div class="toc" style="margin-top:1em">${toc}</div></details>
+  ${items}
+</div>`;
+
+  return page({
+    title: 'Transcript — RAG, built in front of you',
+    desc: `The full ${slides.length}-slide narration for the RAG work-along lesson.`,
+    active: '/script/',
+    body,
+  });
+}
+
+/* --------------------------------------------------------------- build */
+function copyDir(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, e.name), d = path.join(dest, e.name);
+    if (e.isDirectory()) copyDir(s, d); else fs.copyFileSync(s, d);
+  }
+}
+
+const slides = parseDeck();
+fs.rmSync(DIST, { recursive: true, force: true });
+fs.mkdirSync(DIST, { recursive: true });
+
+copyDir(path.join(ROOT, 'slides'), path.join(DIST, 'deck'));
+fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
+fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(DIST, 'index.html'));
+
+fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
+
+fs.mkdirSync(path.join(DIST, 'script'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'script', 'index.html'), buildScript(slides));
+
+const widgets = slides.filter((s) => s.widget).length;
+console.log(`built dist/`);
+console.log(`  deck    ${slides.length} slides`);
+console.log(`  play    ${widgets} playgrounds`);
+console.log(`  script  ${slides.length} entries`);

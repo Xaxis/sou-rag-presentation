@@ -15,3 +15,7 @@ demo/.embedding_cache/
 .idea/
 .vscode/
 .DS_Store
+
+# built site
+dist/
+.vercel/

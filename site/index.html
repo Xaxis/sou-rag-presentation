@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG, built in front of you — an interactive lesson</title>
+<meta name="description" content="Learn Retrieval Augmented Generation by building it. 54 slides, five interactive playgrounds, and eight runnable demos — every number on screen is real output, not an illustration.">
+<meta property="og:title" content="RAG, built in front of you">
+<meta property="og:description" content="Learn Retrieval Augmented Generation by building it. Five interactive playgrounds and eight runnable demos — every number is real output.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E%F0%9F%94%8D%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/deck/theme.css">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="/">ragverse<span>.diy</span></a>
+  <a class="link" href="/deck/">The lesson</a>
+  <a class="link" href="/play/">Playgrounds</a>
+  <a class="link hide-s" href="/script/">Transcript</a>
+  <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <span class="eyebrow"><b>Retrieval track</b> &nbsp;·&nbsp; Lessons 01 &amp; 02</span>
+  <h1>RAG, built in<br>front of you.</h1>
+  <p class="lede">How to give a language model access to a hundred thousand documents
+  without ever putting a hundred thousand documents in the prompt.
+  <b>Every number on screen is real output</b> — nothing here is an illustration.</p>
+  <div class="cta">
+    <a class="btn primary" href="/deck/">Start the lesson →</a>
+    <a class="btn ghost" href="/play/">Just let me play</a>
+  </div>
+  <div class="facts">
+    <div class="fact"><div class="n">54</div><div class="l">slides</div></div>
+    <div class="fact"><div class="n">5</div><div class="l">interactive playgrounds</div></div>
+    <div class="fact"><div class="n">8</div><div class="l">runnable demos</div></div>
+    <div class="fact"><div class="n">&lt;$0.01</div><div class="l">to build it yourself</div></div>
+  </div>
+</div></header>
+
+<section class="band tint"><div class="wrap">
+  <span class="eyebrow">The shape of the thing</span>
+  <h2>A RAG system is two pipelines</h2>
+  <p style="max-width:60ch;color:var(--ink-soft)">Not one. People collapse them in their heads,
+  and that is exactly where the mental model breaks. Ingestion runs <em>once</em>, ahead of time.
+  Retrieval runs on <em>every</em> question.</p>
+
+  <div class="pipe" style="margin-top:1.6em;font-size:1.6em">
+    <div class="tag">Pipeline 01 &nbsp;·&nbsp; <b>INGESTION</b> &nbsp;·&nbsp; runs once</div>
+    <div class="row">
+      <div class="box">Source<small>documents</small></div><span class="arrow">→</span>
+      <div class="box">Chunking<small>cut to size</small></div><span class="arrow">→</span>
+      <div class="box hot">Embedding<small>model</small></div><span class="arrow">→</span>
+      <div class="box">Vectors<small>lists of numbers</small></div><span class="arrow">→</span>
+      <div class="box cool">Vector<small>database</small></div>
+    </div>
+    <div class="tag">Pipeline 02 &nbsp;·&nbsp; <b>RETRIEVAL</b> &nbsp;·&nbsp; runs per question</div>
+    <div class="row">
+      <div class="box">User<small>question</small></div><span class="arrow">→</span>
+      <div class="box hot">Embedding<small>model</small></div><span class="arrow">→</span>
+      <div class="box">Retriever<small>ranks by closeness</small></div><span class="arrow">→</span>
+      <div class="box">Top chunks<small>plain text</small></div><span class="arrow">→</span>
+      <div class="box">LLM writes<small>the answer</small></div>
+    </div>
+  </div>
+  <p style="margin-top:1.2em;font-size:0.95rem;color:var(--ink-soft)">
+  The <strong style="color:var(--accent)">same embedding model</strong> appears in both rows.
+  That is not a drawing shortcut — and the last playground breaks it on purpose to show you why.</p>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <span class="eyebrow">Move the sliders</span>
+  <h2>Five things you can take apart</h2>
+  <p style="max-width:60ch;color:var(--ink-soft)">They run in your browser. No API key, no sign-up,
+  no install. Two of them are driven by real precomputed OpenAI vectors.</p>
+  <div class="cards" style="margin-top:1.6em">
+    <a class="card" href="/play/#scale">
+      <span class="k">Playground 01</span>
+      <h3>When do you need RAG?</h3>
+      <p>Drag from one megabyte to one petabyte and watch the cost, the token count, and the
+      number of context windows you would need.</p>
+    </a>
+    <a class="card" href="/play/#embed">
+      <span class="k">Playground 02 · real vectors</span>
+      <h3>The neighbourhood map</h3>
+      <p>Click any word. Watch twelve real embeddings re-rank themselves by meaning —
+      and see the clusters nobody labelled.</p>
+    </a>
+    <a class="card" href="/play/#chunk">
+      <span class="k">Playground 03</span>
+      <h3>Watch the chunks re-cut</h3>
+      <p>Drag <code>chunk_size</code> and <code>chunk_overlap</code> and see the seams move,
+      the duplication climb, and sentences get cut in half.</p>
+    </a>
+    <a class="card" href="/play/#retr">
+      <span class="k">Playground 04</span>
+      <h3>Ask, and watch the prompt build</h3>
+      <p>Type a question, move top <em>k</em>, and read the exact prompt that would reach the
+      model. Then ask something the documents cannot answer.</p>
+    </a>
+    <a class="card" href="/play/#mismatch">
+      <span class="k">Playground 05 · real vectors</span>
+      <h3>Break it on purpose</h3>
+      <p>Flip the model that embeds the question. Same store, same question — and retrieval
+      quietly falls apart with zero errors raised.</p>
+    </a>
+    <a class="card" href="/deck/">
+      <span class="k">The full lesson</span>
+      <h3>All 54 slides →</h3>
+      <p>The theory and the build, end to end. Roughly 78 minutes if you read every word,
+      with the playgrounds in place.</p>
+    </a>
+  </div>
+</div></section>
+
+<section class="band tint"><div class="wrap">
+  <div class="grid2">
+    <div>
+      <span class="eyebrow">Outcomes</span>
+      <h2>What you will be able to do</h2>
+      <ul class="checks">
+        <li>Explain why a bigger context window does not remove the need for RAG.</li>
+        <li>Define <em>token</em>, <em>chunk</em>, <em>embedding</em>, <em>dimension</em>,
+            <em>vector database</em> and <em>retriever</em>.</li>
+        <li>Draw both halves of a RAG system from memory.</li>
+        <li>Predict which chunks a retriever will return, and say why.</li>
+        <li>Build a working ingestion pipeline in about sixty lines of Python.</li>
+        <li>Avoid the mistake that silently breaks most first RAG builds.</li>
+      </ul>
+    </div>
+    <div>
+      <span class="eyebrow">Honesty</span>
+      <h2>Where the numbers come from</h2>
+      <p style="color:var(--ink-soft)">Every terminal block in the lesson is pasted from a real run.
+      Where reality disagreed with the source material, the lesson says so:</p>
+      <ul class="checks" style="font-size:0.95rem">
+        <li>The tokenizer gives <strong>7</strong> tokens for a sentence the source calls 9.</li>
+        <li>This corpus yields <strong>547</strong> chunks, not 797 — article lengths differ.</li>
+        <li>Real embeddings put <strong>dog</strong> closest to <em>cat</em>, not <em>kitten</em>.
+            The demo explains why.</li>
+      </ul>
+      <p style="color:var(--ink-soft);font-size:0.95rem">The retrieval playground scores with
+      character-trigram vectors so it runs with no key — the mechanism is identical, and the
+      page says so rather than implying otherwise.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="grid2">
+    <div>
+      <span class="eyebrow">Work along</span>
+      <h2>Build it on your own machine</h2>
+      <p style="color:var(--ink-soft)">The whole thing is a repo. One entry point, eight demos,
+      and the finished sixty-line pipeline. Costs well under a cent in embeddings.</p>
+      <p><a class="btn ghost" href="https://github.com/Xaxis/sou-rag-presentation">Get the source →</a></p>
+    </div>
+    <div>
+<pre><code><span class="c"># clone it, then:</span>
+./run.sh setup     <span class="c"># venv, packages, documents</span>
+./run.sh check     <span class="c"># preflight, tests your API key</span>
+./run.sh slides    <span class="c"># this deck, locally</span>
+
+./run.sh demo 5    <span class="c"># chunking, in the terminal</span>
+./run.sh demo all  <span class="c"># all eight, in order</span></code></pre>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap row">
+  <span>Built as a work-along lesson. Every claim executed, not asserted.</span>
+  <span class="sp"><a href="/deck/">Lesson</a> &nbsp;·&nbsp; <a href="/play/">Playgrounds</a>
+  &nbsp;·&nbsp; <a href="/script/">Transcript</a>
+  &nbsp;·&nbsp; <a href="https://github.com/Xaxis/sou-rag-presentation">Source</a></span>
+</div></footer>
+
+</body>
+</html>
