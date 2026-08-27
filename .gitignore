@@ -19,3 +19,4 @@ demo/.embedding_cache/
 # built site
 dist/
 .vercel/
+.vercel

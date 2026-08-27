@@ -1,0 +1,6 @@
+# Anchored with a leading slash: an unanchored "dist/" also matches
+# slides/vendor/reveal/dist/, which silently broke the deck in production.
+/demo
+/dist
+/.git
+/SCRIPT.md
