@@ -63,10 +63,13 @@ const strip = (f) =>
    .replace(/&gt;/g, '>').replace(/&#183;/g, '·').replace(/\s+/g, ' ').trim();
 
 /* -------------------------------------------------------------- shell */
-const FONTS =
-  '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
-  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-  '<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">';
+const FONTS = [
+  '<link rel="preload" as="font" type="font/woff2" crossorigin href="/deck/fonts/bricolage-grotesque-latin-4efd1a.woff2">',
+  '<link rel="preload" as="font" type="font/woff2" crossorigin href="/deck/fonts/source-serif-4-latin-673d4d.woff2">',
+  '<link rel="preload" as="font" type="font/woff2" crossorigin href="/deck/fonts/jetbrains-mono-latin-1cd702.woff2">',
+  '<link rel="stylesheet" href="/deck/fonts.css">',
+].join('\n');
+
 const FAVICON =
   '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 ' +
   'viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E%F0%9F%94%8D%3C/text%3E%3C/svg%3E">';
@@ -503,10 +506,39 @@ fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js')
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'og.html'), path.join(DIST, 'og.html'));
 fs.copyFileSync(path.join(ROOT, 'site', '404.html'), path.join(DIST, '404.html'));
+
+// robots + sitemap, generated so new routes cannot be forgotten
+const ROUTES = ['/', '/read/', '/read/short/', '/read/talk/', '/read/talk-short/',
+                '/deck/', '/deck/short/', '/deck/talk/', '/deck/talk-short/',
+                '/play/', '/present/'];
+fs.writeFileSync(path.join(DIST, 'robots.txt'),
+  `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+fs.writeFileSync(path.join(DIST, 'sitemap.xml'),
+  '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+  ROUTES.map((r) =>
+    `  <url><loc>${SITE}${r}</loc><changefreq>monthly</changefreq>` +
+    `<priority>${r === '/' ? '1.0' : r.startsWith('/read') ? '0.9' : '0.7'}</priority></url>`
+  ).join('\n') + '\n</urlset>\n');
 if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
   fs.copyFileSync(path.join(ROOT, 'site', 'og.png'), path.join(DIST, 'og.png'));
 }
-fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(DIST, 'index.html'));
+{
+  const coreSlides = slides.filter((s) => s.core);
+  const mins = (ss) => Math.round(
+    ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0) / 135);
+  const vals = {
+    FULL_SLIDES: slides.length, SHORT_SLIDES: coreSlides.length,
+    FULL_MIN: mins(slides), SHORT_MIN: mins(coreSlides),
+  };
+  let landing = read('site', 'index.html');
+  for (const [k, v] of Object.entries(vals)) {
+    landing = landing.split(`{{${k}}}`).join(String(v));
+  }
+  const left = landing.match(/\{\{[A-Z_]+\}\}/g);
+  if (left) throw new Error('unfilled placeholders on the landing page: ' + left.join(', '));
+  fs.writeFileSync(path.join(DIST, 'index.html'), landing);
+}
 
 fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));

@@ -9,10 +9,12 @@ searchable vector database out, in about sixty lines of Python.
 
 It comes in **four editions** — long or short, and work-along or talk-only:
 
+<!-- BEGIN:editions -->
 | | Work-along (you run the demos) | Talk only (no terminal) |
 |---|---|---|
-| **Full** · 54 slides | [~78 min](https://ragverse.diy/read/) | [~78 min](https://ragverse.diy/read/talk/) |
-| **Short** · 33 slides | [~45 min](https://ragverse.diy/read/short/) | [~45 min](https://ragverse.diy/read/talk-short/) |
+| **Full** · 54 slides | [~80 min](https://ragverse.diy/read/) | [~80 min](https://ragverse.diy/read/talk/) |
+| **Short** · 35 slides | [~51 min](https://ragverse.diy/read/short/) | [~51 min](https://ragverse.diy/read/talk-short/) |
+<!-- END:editions -->
 
 Same slides, same output, same rigour — what changes is the narration and how
 much of it there is. The talk editions explain output that is already on the
@@ -131,8 +133,8 @@ from scratch.
 run.sh                     everything goes through this
 demo/                      the eight demos + ingestion_pipeline.py
 demo/docs/                 the five source articles
-slides/                    the deck (reveal.js, vendored - works offline)
-SCRIPT.md                  word-for-word narration for all 54 slides
+slides/                    the deck - reveal.js and fonts vendored, fully offline
+SCRIPT.md                  word-for-word narration, every slide
 tools/                     regenerate the docs, corpus, and site
 ```
 

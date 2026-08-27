@@ -167,9 +167,19 @@ def main():
     # keep the README's two tables in step with the deck
     if README.exists():
         demo_tbl, ix_tbl = render_tables(slides)
+        S = "https://ragverse.diy"
+        editions = (
+            "| | Work-along (you run the demos) | Talk only (no terminal) |\n"
+            "|---|---|---|\n"
+            f"| **Full** · {len(slides)} slides | [~{minutes} min]({S}/read/) "
+            f"| [~{minutes} min]({S}/read/talk/) |\n"
+            f"| **Short** · {len(core)} slides | [~{core_minutes} min]({S}/read/short/) "
+            f"| [~{core_minutes} min]({S}/read/talk-short/) |"
+        )
         text = README.read_text(encoding="utf-8")
         text, ok1 = splice(text, "demo-table", demo_tbl)
         text, ok2 = splice(text, "ix-table", ix_tbl)
+        text, _ = splice(text, "editions", editions)
         text = re.sub(r"A \d+-slide deck", f"A {len(slides)}-slide deck", text)
         text = re.sub(r"narration for all \d+ slides\. ~\d+ minutes",
                       f"narration for all {len(slides)} slides. ~{minutes} minutes", text)

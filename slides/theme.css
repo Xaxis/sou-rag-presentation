@@ -459,3 +459,13 @@ body[data-mode="talk"] .cue .label {
   color: var(--ink-faint); font-weight: 500; letter-spacing: 0.14em;
 }
 body[data-mode="talk"] .cue .cmd { color: var(--ink-soft); font-weight: 400; }
+
+/* a worked illustration, not a program run - visibly different from real output */
+.term.illustrative {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px dashed var(--rule);
+}
+.term.illustrative .dim { color: var(--ink-faint); }
+.term.illustrative .hi { color: var(--accent-text); }
+.term.illustrative .ok { color: var(--teal); }

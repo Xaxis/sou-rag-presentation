@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Full lesson | 54 slides · ~10,719 words · ~79 min |
-| Short edit | 33 slides · ~47 min |
+| Full lesson | 54 slides · ~10,765 words · ~80 min |
+| Short edit | 35 slides · ~51 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -274,7 +274,7 @@ The property that matters is the fixed length. One word in or nine hundred words
 That is the trick. Everything downstream depends on it.
 
 
-## Slide 16 — Similar meaning, similar numbers
+## Slide 16 — Similar meaning, similar numbers · **in the short edit**
 
 **Section:** 05 · What an embedding is
 
@@ -405,7 +405,9 @@ Step three. The retriever compares that one vector against every stored vector. 
 
 Step four. It ranks them by closeness and returns the top k.
 
-Look at the example. The question is "what were our sales in the first quarter". It becomes a vector. And then every chunk gets a score. Q1 revenue reached four point two million: zero point nine one. Quarterly sales by region: zero point eight eight. Revenue targets for the first quarter: zero point eight four. Those three go to the model.
+Look at the example — and note this one is a worked illustration rather than a program run, which is why it says so at the top. Everywhere else in this lesson the terminal blocks are genuine output; here I want a clean, made-up company so the point is unmissable.
+
+The question is "what were our sales in the first quarter". It becomes a vector. And then every chunk gets a score. Q1 revenue reached four point two million: zero point nine one. Quarterly sales by region: zero point eight eight. Revenue targets for the first quarter: zero point eight four. Those three go to the model.
 
 And then look at what did not make it. Annual headcount summary at zero point four two — related to business, not to the question. Refunds at zero point three one. Guest wifi at zero point one nine, which is about as unrelated as it gets.
 
@@ -414,7 +416,7 @@ Notice something about that top result. The question says "sales". The winning c
 How closeness is actually calculated is a later topic. For now: it is distance between two points, measured with arithmetic.
 
 
-## Slide 23 — You choose how many come back
+## Slide 23 — You choose how many come back · **in the short edit**
 
 **Section:** 08 · Top k
 
@@ -723,7 +725,7 @@ Let me run it.
 
 Five hundred and forty-seven vectors stored. And a folder has appeared that was not there a moment ago.
 
-Look at what is stored per chunk, because this is the vector database table from earlier, now real. The vector: fifteen hundred and thirty-six numbers. The original text: the opening of the Tesla article. And the metadata: source, docs slash tesla dot txt.
+Look at what is stored per chunk, because this is the vector database table from earlier, now real. The vector: fifteen hundred and thirty-six numbers. The original text: the opening of the Google article. And the metadata: source, docs slash google dot txt.
 
 There is the metadata surviving, exactly as promised. It went in at the loader, came through the splitter untouched, and is now sitting in the database attached to a chunk.
 

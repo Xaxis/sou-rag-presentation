@@ -22,6 +22,12 @@ You can also open `slides/index.html` directly. Every slide and all five
 widgets work over `file://`; the only thing that needs the server is the
 speaker window, because it opens a second page.
 
+**The deck is genuinely offline.** Reveal is vendored and the webfonts are
+self-hosted in `slides/fonts/`, so presenting needs no network at all — worth
+knowing before you rely on conference wifi. If you change the type stack in
+`tokens.css`, re-run `python3 tools/fetch_fonts.py` and update the preload
+filenames it prints.
+
 Cues in the narration:
 
 - `[RUN DEMO n]` — switch to the terminal and run that demo.
@@ -108,6 +114,7 @@ vendored reveal, tokens and widget code rather than duplicating them.
 | `tools/export_slide_data.py` | Recomputes the real vectors in `slides/data.js`. |
 | `tools/build_site.mjs` | Assembles `dist/` for deployment. No dependencies. |
 | `tools/make_og.mjs` | Re-renders the social card to `site/og.png`. Needs playwright. |
+| `tools/fetch_fonts.py` | Re-downloads the self-hosted webfonts into `slides/fonts/`. |
 
 `fetch_docs.py` does one non-obvious thing. Wikipedia's plain-text export
 separates paragraphs with a single newline, and the lesson's splitter splits on
