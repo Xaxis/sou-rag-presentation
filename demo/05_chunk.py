@@ -7,17 +7,20 @@ them up, and then shows exactly what chunk_overlap buys you.
 import _demo  # noqa: F401  (sets up paths + quiet warnings)
 
 import os
+from pathlib import Path
 
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_core.documents import Document
 from langchain_text_splitters import CharacterTextSplitter
 
 from _demo import DOCS_PATH, note, section, title
 
 title("05", "Chunk the documents")
 
-documents = DirectoryLoader(
-    DOCS_PATH, glob="*.txt", loader_cls=TextLoader
-).load()
+documents = [
+    Document(page_content=p.read_text(encoding="utf-8"),
+             metadata={"source": f"{DOCS_PATH}/{p.name}"})
+    for p in sorted(Path(DOCS_PATH).glob("*.txt"))
+]
 
 
 def split_documents(documents, chunk_size=800, chunk_overlap=0, show=True):

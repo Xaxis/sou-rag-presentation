@@ -50,7 +50,8 @@ section("How much text, in tokens - logarithmic scale")
 scales = [
     ("One chunk",                        1_000),
     ("These 5 articles",                 total_tokens),
-    ("A frontier model window",          2_000_000),
+    ("A frontier model window",          1_000_000),
+    ("The largest advertised",           10_000_000),
     ("A mid sized company, 1 TB",        250_000_000_000),
     ("An enterprise archive, 1 PB",      250_000_000_000_000),
 ]
@@ -63,7 +64,7 @@ for label, n in scales:
 
 note("")
 note("Each step right is ten times larger, not one step larger.")
-note("Everything below the model window line does not fit in a prompt.")
+note("Everything below the model window lines does not fit in a prompt.")
 note("That gap is not closed by waiting for bigger models.")
 note("")
 note("And you pay per token. Sending 500,000 tokens of irrelevant context")

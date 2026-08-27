@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Full lesson | 54 slides · ~10,517 words · ~78 min |
-| Short edit | 33 slides · ~46 min |
+| Full lesson | 54 slides · ~10,719 words · ~79 min |
+| Short edit | 33 slides · ~47 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -137,7 +137,9 @@ Second piece of vocabulary: the context window.
 
 The context window is the total number of tokens a model can hold in a single request. And the critical detail is that everything counts toward it — everything you send in, and everything the model writes back out. They share one budget. Past that limit, the information is simply not there. Not summarised, not compressed. Not there.
 
-Right now, in 2026, frontier models sit somewhere between two hundred thousand and two million tokens depending on which one you pick. Two million tokens is a genuinely enormous number. It is several very long books.
+Right now, in 2026, the major models have converged on one million tokens. GPT-5.5, Gemini 3.1 Pro, Claude Opus 4.8, Claude Sonnet 5 — they all sit at a million. A few advertise ten million, though I'd treat that with some suspicion: no published benchmark shows answer quality holding anywhere near the top of those windows. Advertised capacity and usable capacity are not the same thing.
+
+Still — a million tokens is a genuinely enormous number. It is several very long books.
 
 I want to flag something about that figure: verify it before you quote it. These numbers move every few months, and a slide deck is exactly the kind of place a stale number goes to live forever.
 
@@ -155,15 +157,15 @@ Now, this is a logarithmic scale, and I need you to read it carefully, because l
 
 Start at the top. One chunk — that is a single retrievable piece of text, and we will define it properly in a moment — is about a thousand tokens.
 
-The five Wikipedia articles we are about to ingest come to seventy-two thousand tokens. That is our whole corpus for today, and notice, it comfortably fits inside a frontier model. For five documents you genuinely do not need RAG.
+The five Wikipedia articles we are about to ingest come to seventy-two thousand tokens. That is our whole corpus for today, and notice — it comfortably fits inside a frontier model. For five documents you genuinely do not need RAG. I want to be honest about that rather than pretend otherwise.
 
-A frontier model window: two million.
+A frontier model window: one million. The largest advertised: ten million.
 
-Now watch what happens. A mid-sized company with one terabyte of documents: two hundred and fifty billion tokens. That is a hundred and twenty-five thousand times larger than the model window.
+Now watch what happens. A mid-sized company with one terabyte of documents: two hundred and fifty billion tokens. That is two hundred and fifty thousand times larger than the model window.
 
 An enterprise archive at one petabyte: two hundred and fifty trillion.
 
-So here is the thing to take away. That gap is not a gap you close by waiting for bigger models. If context windows got a thousand times bigger tomorrow — which they will not — you would still be three orders of magnitude short of the mid-sized company. This is a structural problem, not a temporary one.
+So here is the thing to take away. That gap is not a gap you close by waiting for bigger models. If context windows got a thousand times bigger tomorrow — which they will not — you would still be short of the mid-sized company by a factor of two hundred and fifty. This is a structural problem, not a temporary one.
 
 
 ## Slide 10 — Try it: when do you actually need RAG?
@@ -490,18 +492,22 @@ Now — check this before you go any further. The venv prefix on your prompt is 
 For bigger projects you would reach for Poetry or uv instead. For learning, venv is fine.
 
 
-## Slide 28 — Six packages, one line
+## Slide 28 — Five packages, one line
 
 **Section:** 01 · Packages
 
 
-Six packages, one pip install line.
+Five packages, one pip install line.
 
-And these map almost exactly onto the boxes in the diagram, which is a nice property. Langchain is the core abstractions the others build on. Langchain-community gives us the document loaders — that is the box that reads files off disk. Langchain-text-splitters is the chunking box. Langchain-openai is the embedding model client. Langchain-chroma is the vector database. And python-dotenv is the one that is not in the diagram — it just reads your API key out of a file so you never type a secret into your source code.
+These map almost exactly onto the boxes in the diagram. Langchain gives us the core abstractions, including the Document object we will meet in a moment. Langchain-text-splitters is the chunking box. Langchain-openai is the embedding model client. Langchain-chroma is the vector database. And python-dotenv is the one that is not in the diagram — it reads your API key out of a file so you never type a secret into your source code.
 
-If you are in this repo rather than typing from scratch, there is a requirements dot txt, so it is pip install dash r requirements dot txt.
+Now, the interesting one is the package that is *not* on this list.
 
-One note for later: langchain-community now prints a deprecation warning about being sunset. It still works fine, and the migration path is toward standalone integration packages. I have silenced that warning in the demo scripts so it does not clutter the screen, but you will see it if you write this from scratch.
+Almost every RAG tutorial you will find — including the written version of this lesson — installs langchain-community, because that is where DirectoryLoader lives. That package was archived in May twenty twenty-six. LangChain version one moved to a model of one package per provider, and community became a legacy compatibility layer.
+
+It still imports today. But I am not going to teach you to build on an archived package, and as you will see in a moment, for reading text files you do not need a loader package at all. That is six lines of Python.
+
+If you are in this repo rather than typing from scratch, there is a requirements dot txt.
 
 
 ## Slide 29 — One secret, in one place · **in the short edit**
@@ -548,13 +554,13 @@ One detail in that script worth mentioning. Wikipedia's plain-text export separa
 
 Open ingestion pipeline dot py and start with this. Imports, two constants, and an empty main.
 
-Each line of that import block maps to one box in the diagram, which is why I want you to type it all at once. DirectoryLoader and TextLoader read the files. CharacterTextSplitter chunks them. OpenAIEmbeddings turns chunks into vectors. Chroma stores them.
+Each line of that import block maps to one box in the diagram, which is why I want you to type it all at once. Path and Document are how we read the files — a standard-library import and one LangChain class, no loader package. CharacterTextSplitter chunks them. OpenAIEmbeddings turns chunks into vectors. Chroma stores them.
 
 Load dot env is the odd one out — it pulls your key out of the dot env file and into the environment, so the OpenAI client can find it without you ever typing a secret in code.
 
 Now run it. You should see "main function" printed, and nothing else.
 
-That step looks pointless and it is not. It confirms three separate things before you have written any real logic: your virtual environment is active, all six packages installed correctly, and your file has no syntax errors. If something is wrong with your setup, you find out here — in two seconds, with a clear error — rather than forty lines later in the middle of an API call.
+That step looks pointless and it is not. It confirms three separate things before you have written any real logic: your virtual environment is active, all five packages installed correctly, and your file has no syntax errors. If something is wrong with your setup, you find out here — in two seconds, with a clear error — rather than forty lines later in the middle of an API call.
 
 Get in the habit. Prove the skeleton runs before you fill it in.
 
@@ -565,9 +571,11 @@ Get in the habit. Prove the skeleton runs before you fill it in.
 **Run:** `python 04_load.py`
 
 
-Step one. Load the files.
+Step one. Load the files. And this is the step where I depart from most tutorials, so let me be explicit about why.
 
-DirectoryLoader takes three things: a path, a glob, and a loader class. The glob is star dot txt, which means only text files — everything else in that folder is ignored. The loader class is TextLoader, which is how each matched file actually gets read.
+Every RAG tutorial reaches for DirectoryLoader here. Look at what it actually does for a folder of text files: it globs for a pattern, reads each file, and wraps the text in a Document with the path as metadata. That is the whole job. So that is what we write — six lines, using pathlib from the standard library and the Document class.
+
+You get the same objects, you drop an archived dependency, and — more importantly — nothing is hidden. When somebody says "the loader", this is what they mean.
 
 Notice the two guard clauses, and notice they are doing different jobs. The first one checks the directory exists. The second checks we actually loaded something. Without that second check, pointing at an empty folder gives you a pipeline that runs happily all the way through, embeds nothing, stores nothing, and reports success. Fail loudly and early rather than silently loading nothing — that principle will save you more debugging time in RAG than almost anything else, because so much of this stack fails quietly.
 
@@ -585,25 +593,27 @@ Here is what comes back. Five files in, five Document objects out.
 
 That Document object shows up everywhere from here on, so learn its two attributes now — there are only two and they are both simple.
 
-Dot page underscore content is the entire text of the file as one long string. Not a list of lines, not a stream. One string, ninety-four thousand characters for Tesla.
+Dot page underscore content is the entire text of the file as one long string. Not a list of lines, not a stream. One string — sixty-eight thousand characters for Google, ninety-four thousand for Tesla.
 
-Dot metadata is a dictionary, filled in for you by the loader. Right now it holds one key, source, pointing at the file path. You can add your own keys later — page numbers, authors, dates, permissions — and that is how real systems do access control and citation.
+Dot metadata is a dictionary. Right now it holds one key, source, pointing at the file path — we put it there ourselves, which is worth noticing, because it means you can put anything you like in it. You can add your own keys later — page numbers, authors, dates, permissions — and that is how real systems do access control and citation.
 
 And here is the property that makes metadata worth caring about: metadata survives everything. When a document gets chunked in a moment, every single chunk inherits its parent's metadata. That is how a RAG system can tell a user which file an answer came from, even though the thing it retrieved was a four-hundred-character fragment.
 
 
-## Slide 34 — Two things that will bite you
+## Slide 34 — Two things worth knowing
 
 **Section:** 05 · Two gotchas
 
 
-Two gotchas, and the first one just demonstrated itself.
+Two things worth knowing.
 
-Order is not guaranteed. Look back at that output — index zero was tesla dot txt, not google dot txt, even though google comes first alphabetically and I listed it first in the fetch script. The loader walks the directory in whatever order the filesystem hands it back. So never write code that assumes index zero is a particular file. If you need a specific document, filter on the metadata.
+First, that call to sorted is not decoration. DirectoryLoader walked the directory in whatever order the filesystem handed back — which meant index zero could be a different file on your machine than on mine, and the chunk order changed with it. For a lesson where we compare numbers, that is genuinely annoying. Sorting makes the run reproducible.
 
-Second gotcha. Other file types need other loaders. PyPDFLoader for PDFs, CSVLoader for CSVs, WebBaseLoader for web pages. You swap the loader class and change the glob to match.
+But the underlying advice survives either way: never write code that assumes index zero is a particular file. If you need a specific document, filter on the metadata.
 
-And a specific trap in there: if you leave loader class out entirely, LangChain does not fail. It falls back to a default loader that needs the unstructured package, which is a large dependency you probably have not installed. The error you get points at the missing package rather than at the missing argument, so it takes a while to work out what actually went wrong.
+Second, text is the easy case. I have just told you that you do not need a loader package, and for dot-txt files that is true. PDFs, spreadsheets and HTML are a different story — those need a real parser, and that is absolutely worth a dependency. Reach for langchain-unstructured, or pypdf directly.
+
+The important part is that what comes out the other side is the same thing: Document objects, with page content and metadata. So everything downstream of this box — chunking, embedding, storing, retrieving — does not change at all.
 
 
 ## Slide 35 — Chunk them · **in the short edit**

@@ -53,7 +53,7 @@ Want the slides on screen at the same time? In a second terminal:
 | 01 | **7** | `python 01_tokens.py` | Tokens are not words; the corpus-vs-context-window scale gap |
 | 02 | **15** | `python 02_embedding_shape.py` | Any length of text in, always 1,536 numbers out |
 | 03 | **17** | `python 03_similar_meaning.py` | Similar meaning really does give similar numbers |
-| 04 | **32** | `python 04_load.py` | `DirectoryLoader`, the `Document` object, metadata |
+| 04 | **32** | `python 04_load.py` | Reading files into `Document` objects, and metadata |
 | 05 | **35** | `python 05_chunk.py` | Chunking, why 800 is a target, what overlap buys you |
 | 06 | **39, 45** | `python 06_embed_store.py` | `Chroma.from_documents` embeds **and** stores |
 | 07 | **42** | `python 07_query.py "Who founded SpaceX?"` | Retrieval, and the real prompt that reaches the LLM |

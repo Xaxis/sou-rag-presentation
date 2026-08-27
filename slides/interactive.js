@@ -35,7 +35,7 @@
       const chars = bytes;                 // ~1 byte per char for plain text
       const toks = Math.round(chars / 4);
       const chunks = Math.ceil(chars / 800);
-      const windows = toks / 2e6;          // 2M-token frontier window
+      const windows = toks / 1e6;          // 1M-token frontier window
       const cost = (toks / 1e6) * 0.02;    // text-embedding-3-small, $0.02/M
 
       $('sc-label').textContent = humanBytes(bytes);

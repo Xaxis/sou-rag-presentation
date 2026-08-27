@@ -9,9 +9,10 @@ chunk and writes the results to disk in a single call.
 import _demo  # noqa: F401  (sets up paths + quiet warnings)
 
 import sys
+from pathlib import Path
 
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_core.documents import Document
 from langchain_text_splitters import CharacterTextSplitter
 
 from _demo import (CachedEmbeddings, DB_PATH, DOCS_PATH, note, require_key,
@@ -21,7 +22,11 @@ require_key()
 append = "--append" in sys.argv
 title("06", "Embed every chunk and store it on disk")
 
-documents = DirectoryLoader(DOCS_PATH, glob="*.txt", loader_cls=TextLoader).load()
+documents = [
+    Document(page_content=p.read_text(encoding="utf-8"),
+             metadata={"source": f"{DOCS_PATH}/{p.name}"})
+    for p in sorted(Path(DOCS_PATH).glob("*.txt"))
+]
 chunks = CharacterTextSplitter(
     chunk_size=800, chunk_overlap=100, separator="\n\n"
 ).split_documents(documents)

@@ -23,7 +23,7 @@ DEMO_SHOWS = {
     "01_tokens.py": "Tokens are not words; the corpus-vs-context-window scale gap",
     "02_embedding_shape.py": "Any length of text in, always 1,536 numbers out",
     "03_similar_meaning.py": "Similar meaning really does give similar numbers",
-    "04_load.py": "`DirectoryLoader`, the `Document` object, metadata",
+    "04_load.py": "Reading files into `Document` objects, and metadata",
     "05_chunk.py": "Chunking, why 800 is a target, what overlap buys you",
     "06_embed_store.py": "`Chroma.from_documents` embeds **and** stores",
     "07_query.py": "Retrieval, and the real prompt that reaches the LLM",

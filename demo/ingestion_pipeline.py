@@ -9,11 +9,11 @@ text files into a searchable vector database.
 The numbered demo scripts in this folder take these same steps apart one at
 a time for the presentation. This is the whole thing, assembled.
 """
-import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_core.documents import Document
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
@@ -25,25 +25,31 @@ DB_PATH = "db_chroma"
 
 
 def load_documents(docs_path):
-    # Fail loudly and early rather than silently loading nothing
-    if not os.path.exists(docs_path):
+    """Read every .txt file into a LangChain Document.
+
+    Most tutorials reach for DirectoryLoader from langchain-community here.
+    That package was archived in May 2026, and for plain text files it was
+    only ever doing this: read the file, attach the path as metadata. Doing
+    it by hand removes a dead dependency and shows what a "loader" really is.
+    """
+    folder = Path(docs_path)
+    if not folder.is_dir():
         raise FileNotFoundError(f"Directory not found: {docs_path}")
 
-    loader = DirectoryLoader(
-        docs_path,
-        glob="*.txt",             # only text files, ignore everything else
-        loader_cls=TextLoader,    # how to read each matched file
-    )
-
-    documents = loader.load()
+    documents = [
+        Document(
+            page_content=path.read_text(encoding="utf-8"),
+            metadata={"source": f"{docs_path}/{path.name}"},
+        )
+        for path in sorted(folder.glob("*.txt"))
+    ]
 
     if len(documents) == 0:
         raise ValueError(f"No .txt files found in {docs_path}")
 
     print(f"Loaded {len(documents)} documents")
     for doc in documents:
-        source = doc.metadata["source"]
-        print(f"  {source:24} {len(doc.page_content):>8,} characters")
+        print(f"  {doc.metadata['source']:24} {len(doc.page_content):>8,} characters")
 
     return documents
 
