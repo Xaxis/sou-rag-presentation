@@ -1,0 +1,115 @@
+# Maintaining and presenting
+
+Notes for editing the lesson, presenting it, and deploying the site.
+If you just want to work through the lesson, the [README](../README.md) is
+all you need.
+
+---
+
+## Presenting
+
+```bash
+./run.sh slides
+```
+
+Press **S** for the speaker window — narration, timer, and a preview of the
+next slide. That is the window for your second monitor while recording.
+
+Keys: `→ / ←` navigate · `S` speaker view · `F` fullscreen · `O` overview ·
+`B` blank the screen.
+
+You can also open `slides/index.html` directly. Every slide and all five
+widgets work over `file://`; the only thing that needs the server is the
+speaker window, because it opens a second page.
+
+Cues in the narration:
+
+- `[RUN DEMO n]` — switch to the terminal and run that demo.
+- `[CLICK ...]` / `[DRAG ...]` — drive the widget on the current slide.
+
+---
+
+## Editing
+
+Narration lives in **one** place: the `<aside class="notes">` blocks in
+`slides/index.html`. After editing:
+
+```bash
+./run.sh script
+```
+
+That regenerates `SCRIPT.md` **and** the two tables in the README, deriving
+slide numbers from the deck. Never edit `SCRIPT.md` or those tables by hand —
+they are generated, and hand-edits get overwritten.
+
+This matters more than it sounds: inserting the five interactive slides once
+shifted every slide number after slide 9 and silently invalidated a
+hand-written table.
+
+---
+
+## The tools
+
+| Tool | What it does |
+|---|---|
+| `tools/fetch_docs.py` | Downloads the five articles and normalises them. |
+| `tools/build_script.py` | Regenerates `SCRIPT.md` and the README tables. |
+| `tools/export_slide_data.py` | Recomputes the real vectors in `slides/data.js`. |
+| `tools/build_site.mjs` | Assembles `dist/` for deployment. No dependencies. |
+
+`fetch_docs.py` does one non-obvious thing. Wikipedia's plain-text export
+separates paragraphs with a single newline, and the lesson's splitter splits on
+blank lines. Without normalising, `CharacterTextSplitter` finds almost no break
+points and emits 8,000-character chunks that are useless for retrieval.
+
+---
+
+## The site
+
+```bash
+node tools/build_site.mjs          # -> dist/
+npx serve dist                     # or any static server
+```
+
+Routes: `/` landing · `/deck/` the slides · `/play/` the five playgrounds on
+one page · `/script/` the narration.
+
+The playground and transcript pages are **derived from `slides/index.html`** at
+build time, so they cannot drift from the deck.
+
+### Deploying
+
+```bash
+vercel deploy --prod
+```
+
+Two things that will bite you if you change the config:
+
+- **`trailingSlash` must stay `true`.** The deck uses relative asset paths. With
+  it off, `/deck/` redirects to `/deck` and every asset resolves against the
+  site root.
+- **Anchor `.vercelignore` paths with a leading slash.** An unanchored `dist/`
+  also matches `slides/vendor/reveal/dist/` and strips reveal.js from the
+  upload.
+
+Neither shows up locally. Check the deployed URL, not just localhost.
+
+---
+
+## Where the numbers differ from the source lessons
+
+These are real outputs, so a few figures moved:
+
+- The source says *"Retrieval augmented generation is powerful"* is 9 tokens.
+  The real `cl100k_base` tokenizer gives **7**. Demo 01 prints the true count.
+- The source gets **797** chunks; this corpus gives **539** at
+  `chunk_overlap=0` and **547** at `100`. Article lengths differ, and the
+  source says to expect this.
+- The source's table implies *kitten* is closest to *cat*. Real embeddings put
+  **dog** first. Demo 03 derives its commentary from the actual output and
+  explains why.
+
+Embeddings are cached on disk (`demo/.embedding_cache/`) keyed by model,
+dimensions and text, so rehearsing a demo twenty times costs money once. The
+vectors are genuine API results. `ingestion_pipeline.py` deliberately has no
+cache.

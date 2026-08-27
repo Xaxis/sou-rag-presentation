@@ -6,6 +6,7 @@
 #   ./run.sh demo 5       run one demo (1-8), or "all" to run them in order
 #   ./run.sh check        preflight: verify everything before you hit record
 #   ./run.sh script       regenerate SCRIPT.md and the README tables
+#   ./run.sh follow       guided walkthrough: every demo in order, with pauses
 #   ./run.sh clean        delete the vector store so demo 06 starts fresh
 
 set -uo pipefail
@@ -184,6 +185,51 @@ cmd_demo() {
   exec "$PY" "$file" "$@"
 }
 
+# The guided path. Runs the eight demos in order, says which slide each one
+# belongs to, and waits between them so you can read the output.
+cmd_follow() {
+  [ -x "$PY" ] || { bad "run ./run.sh setup first"; exit 1; }
+  cmd_check >/dev/null 2>&1 || { bold "Preflight failed:"; cmd_check; exit 1; }
+
+  local names=(
+    "01_tokens.py|7|Tokens are not words, and the scale gap"
+    "02_embedding_shape.py|15|Text in, a fixed-length vector out"
+    "03_similar_meaning.py|17|Similar meaning gives similar numbers"
+    "04_load.py|32|Load the documents off disk"
+    "05_chunk.py|35|Chunk them, and what overlap buys you"
+    "06_embed_store.py|39|Embed every chunk and store it"
+    "07_query.py|42|Ask a question, see the real prompt"
+    "08_model_mismatch.py|48|Break it: one model for docs, another for queries"
+  )
+
+  echo
+  bold "The eight demos, in order."
+  info "Each one matches a slide. Press Enter to run the next, or q to stop."
+  info "Open the slides in another window: ./run.sh slides"
+  echo
+
+  cd "$DEMO" || exit 1
+  local i=0
+  for entry in "${names[@]}"; do
+    i=$((i + 1))
+    local file="${entry%%|*}"; local rest="${entry#*|}"
+    local slide="${rest%%|*}"; local desc="${rest#*|}"
+
+    printf '\033[1m  [%d/8] %s\033[0m\n' "$i" "$desc"
+    printf '\033[2m        slide %s   ·   python %s\033[0m\n' "$slide" "$file"
+    if [ -t 0 ]; then
+      printf '        press Enter to run (q to quit) '
+      read -r reply
+      [ "$reply" = "q" ] && { echo; info "stopped at demo $i"; return 0; }
+    fi
+    echo
+    "$PY" "$file" || { bad "$file failed"; return 1; }
+    echo
+  done
+  bold "That is the whole ingestion pipeline."
+  info "The finished file is demo/ingestion_pipeline.py - about sixty lines."
+}
+
 cmd_script()  { python3 "$ROOT/tools/build_script.py"; }
 cmd_clean()   { rm -rf "$DEMO/db_chroma" "$DEMO/db_mismatch"; ok "vector stores deleted"; }
 
@@ -192,6 +238,7 @@ case "${1:-}" in
   check)  cmd_check ;;
   slides) cmd_slides ;;
   demo)   shift; cmd_demo "$@" ;;
+  follow) cmd_follow ;;
   script) cmd_script ;;
   clean)  cmd_clean ;;
   *)
@@ -199,6 +246,7 @@ case "${1:-}" in
     echo
     echo "  ./run.sh setup        create the venv, install packages, fetch documents"
     echo "  ./run.sh slides       serve the deck and open it in your browser"
+    echo "  ./run.sh follow       guided walkthrough of all eight demos, with pauses"
     echo "  ./run.sh demo 5       run one demo (1-8), or 'all' for every demo in order"
     echo "  ./run.sh check        preflight: verify everything before you hit record"
     echo "  ./run.sh script       regenerate SCRIPT.md and the README tables"
