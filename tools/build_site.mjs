@@ -68,6 +68,7 @@ function nav(active) {
   ${item('/deck/', 'The lesson')}
   ${item('/play/', 'Playgrounds')}
   ${item('/script/', 'Transcript', 'hide-s')}
+  ${item('/present/', 'Present', 'hide-s')}
   <a class="link hide-s" href="https://github.com/Xaxis/sou-rag-presentation">Source</a>
 </div></nav>`;
 }
@@ -196,6 +197,75 @@ function buildScript(slides) {
   });
 }
 
+/* ------------------------------------------------------------- present */
+function buildPresent(slides) {
+  const cues = [];
+  slides.forEach((s, i) => {
+    s.cues.forEach((c) => cues.push({ n: i + 1, cue: c, title: s.title }));
+    if (s.widget) cues.push({ n: i + 1, cue: null, title: s.title, widget: true });
+  });
+
+  const rows = cues.map((c) =>
+    `<tr><td class="n">${c.n}</td><td>${esc(c.title)}</td><td>${
+      c.widget
+        ? '<em>interactive — drive it with the mouse</em>'
+        : '<code>' + esc(c.cue) + '</code>'
+    }</td></tr>`).join('\n');
+
+  const body = `<div class="wrap tx" style="max-width:860px">
+  <span class="eyebrow"><b>For the presenter</b> &middot; recording setup</span>
+  <h1>Record it from here.</h1>
+  <p style="color:var(--ink-soft);font-size:1.08rem">The deck is the whole instrument.
+  Slides, live playgrounds and the terminal output are all on screen — you only need a
+  second window for your notes.</p>
+
+  <h2 style="margin-top:1.8em">Setup</h2>
+  <ol class="steps">
+    <li><strong>Open the deck</strong> and go fullscreen with <kbd>F</kbd>.
+      <a class="btn ghost" style="margin-left:0.6em;padding:0.45em 0.9em" href="/deck/">Open the deck &rarr;</a></li>
+    <li><strong>Press <kbd>S</kbd></strong> for the speaker window — your narration, a timer,
+      and a preview of the next slide. Put it on your second monitor. Allow the popup the
+      first time.</li>
+    <li><strong>Record the deck window only</strong>, not the speaker window.</li>
+    <li>If you are also running the demos in a terminal, run
+      <code>./run.sh check</code> first — it makes a real API call and catches a dead key
+      before you are on camera.</li>
+  </ol>
+
+  <div class="callout" style="margin:1.6em 0">
+    <span class="label">One thing to know</span>
+    The deck also has a <strong>Narration</strong> button (<kbd>T</kbd>) that shows the same
+    notes inline, for people working through it alone. Leave it closed while you record —
+    you want the speaker window instead.
+  </div>
+
+  <h2 style="margin-top:1.8em">Keys</h2>
+  <table class="keys">
+    <tr><td><kbd>&rarr;</kbd> <kbd>&larr;</kbd></td><td>next / previous slide</td></tr>
+    <tr><td><kbd>S</kbd></td><td>speaker window</td></tr>
+    <tr><td><kbd>F</kbd></td><td>fullscreen</td></tr>
+    <tr><td><kbd>O</kbd></td><td>slide overview — good for jumping</td></tr>
+    <tr><td><kbd>B</kbd></td><td>blank the screen</td></tr>
+    <tr><td><kbd>T</kbd></td><td>narration drawer (for learners, not for recording)</td></tr>
+  </table>
+
+  <h2 style="margin-top:1.8em">Every cue, in order</h2>
+  <p style="color:var(--ink-soft)">Where to switch to the terminal, and where to pick up the
+  mouse. Generated from the deck, so it stays in step.</p>
+  <table class="cues">
+    <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
+    ${rows}
+  </table>
+</div>`;
+
+  return page({
+    title: 'Presenting and recording — ragverse.diy',
+    desc: 'How to present or record the RAG lesson from the deck: speaker view, keys, and every demo cue in order.',
+    active: '/present/',
+    body,
+  });
+}
+
 /* --------------------------------------------------------------- build */
 function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
@@ -219,8 +289,12 @@ fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 fs.mkdirSync(path.join(DIST, 'script'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'script', 'index.html'), buildScript(slides));
 
+fs.mkdirSync(path.join(DIST, 'present'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'present', 'index.html'), buildPresent(slides));
+
 const widgets = slides.filter((s) => s.widget).length;
 console.log(`built dist/`);
 console.log(`  deck    ${slides.length} slides`);
 console.log(`  play    ${widgets} playgrounds`);
 console.log(`  script  ${slides.length} entries`);
+console.log(`  present cue sheet`);

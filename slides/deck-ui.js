@@ -1,0 +1,113 @@
+/* Deck chrome that serves the two ways this deck gets used.
+ *
+ *   Presenting / recording : Reveal's speaker window (S) - notes, timer,
+ *                            next-slide preview on a second monitor.
+ *   Following along alone  : a narration drawer (T) that shows, inline, what
+ *                            the presenter would be saying on this slide.
+ *
+ * Without the drawer a solo learner gets slides and no explanation, which is
+ * most of the lesson missing.
+ */
+(function () {
+  'use strict';
+
+  // The speaker window renders the deck inside iframes for its previews.
+  // Chrome inside those would be noise, so bail out when framed.
+  if (window.self !== window.top) return;
+
+  var KEY = 'ragverse.notes.open';
+  var open = false;
+  try { open = localStorage.getItem(KEY) === '1'; } catch (e) {}
+
+  var deck, drawer, body, toggle;
+
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+
+  function build() {
+    deck = document.querySelector('.reveal');
+
+    var bar = el('div', 'deck-bar');
+    toggle = el('button', 'deck-btn', '<b>T</b> Narration');
+    toggle.title = 'Show what the presenter says on this slide (T)';
+    toggle.addEventListener('click', function () { setOpen(!open); });
+
+    var present = el('button', 'deck-btn', '<b>S</b> Speaker view');
+    present.title = 'Open the speaker window for presenting or recording (S)';
+    present.addEventListener('click', function () {
+      // Reveal's notes plugin owns the popup; ask it the same way S does.
+      var ev = new KeyboardEvent('keydown', { keyCode: 83, which: 83, key: 's' });
+      document.dispatchEvent(ev);
+    });
+
+    bar.appendChild(toggle);
+    bar.appendChild(present);
+    document.body.appendChild(bar);
+
+    drawer = el('aside', 'deck-notes');
+    var head = el('div', 'deck-notes-head');
+    head.appendChild(el('span', 'deck-notes-title', 'What the presenter says'));
+    var close = el('button', 'deck-notes-close', '&times;');
+    close.setAttribute('aria-label', 'Close narration');
+    close.addEventListener('click', function () { setOpen(false); });
+    head.appendChild(close);
+    body = el('div', 'deck-notes-body');
+    drawer.appendChild(head);
+    drawer.appendChild(body);
+    document.body.appendChild(drawer);
+  }
+
+  var STAGE = /^\[[A-Z0-9][^\]]*\]$/;
+
+  function render() {
+    if (!body) return;
+    var slide = window.Reveal && Reveal.getCurrentSlide();
+    var notes = slide && slide.querySelector('aside.notes');
+    if (!notes) { body.innerHTML = '<p class="deck-none">No narration for this slide.</p>'; return; }
+
+    var text = notes.textContent.replace(/\r/g, '').trim();
+    var html = text.split(/\n\s*\n/).map(function (p) {
+      var line = p.trim().replace(/\s+/g, ' ');
+      if (!line) return '';
+      var esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return STAGE.test(line)
+        ? '<p class="deck-stage">' + esc + '</p>'
+        : '<p>' + esc + '</p>';
+    }).join('');
+    body.innerHTML = html;
+    body.scrollTop = 0;
+  }
+
+  function setOpen(next) {
+    open = next;
+    try { localStorage.setItem(KEY, open ? '1' : '0'); } catch (e) {}
+    document.body.classList.toggle('notes-open', open);
+    toggle.classList.toggle('on', open);
+    if (open) render();
+    // Reveal scales slides to its container, so let it re-measure.
+    if (window.Reveal && Reveal.layout) setTimeout(function () { Reveal.layout(); }, 210);
+  }
+
+  function boot() {
+    build();
+    setOpen(open);
+    if (window.Reveal && Reveal.on) {
+      Reveal.on('slidechanged', function () { if (open) render(); });
+      Reveal.on('ready', render);
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var t = e.target;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      if (e.key === 't' || e.key === 'T') { e.preventDefault(); setOpen(!open); }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();

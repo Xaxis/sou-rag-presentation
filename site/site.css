@@ -211,3 +211,28 @@ footer .row .sp { margin-left: auto; }
   .ix-controls.two-up { grid-template-columns: 1fr; }
   .ix-stats { grid-auto-flow: row; grid-template-columns: 1fr 1fr; }
 }
+
+/* --- present page -------------------------------------------------------- */
+kbd {
+  font-family: var(--mono); font-size: 0.8em; border: 1px solid var(--rule);
+  border-bottom-width: 2px; border-radius: 4px; padding: 0.15em 0.45em;
+  background: var(--card); color: var(--ink);
+}
+ol.steps { padding-left: 1.3em; }
+ol.steps li { margin-bottom: 0.9em; line-height: 1.6; }
+ol.steps li::marker { font-family: var(--mono); color: var(--accent); font-weight: 700; }
+table.keys, table.cues { width: 100%; border-collapse: collapse; margin-top: 0.8em; }
+table.keys td, table.cues td, table.cues th {
+  padding: 0.5em 0.7em; border-bottom: 1px solid var(--rule);
+  text-align: left; vertical-align: top; font-size: 0.94rem;
+}
+table.cues th {
+  font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--ink-faint); font-weight: 500;
+  border-bottom: 2px solid var(--rule);
+}
+table.keys td:first-child { width: 8em; white-space: nowrap; }
+table.cues td.n {
+  font-family: var(--mono); color: var(--accent); font-weight: 700; width: 4em;
+}
+table.cues code { font-size: 0.82em; }

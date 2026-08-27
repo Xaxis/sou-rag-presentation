@@ -374,3 +374,73 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 }
 .ix-prompt .lbl { color: #ff9a5c; }
 .ix-prompt .q { color: #6fd3bf; }
+
+/* ======================================================================
+   Deck chrome: narration drawer + controls
+   ====================================================================== */
+
+.deck-bar {
+  position: fixed; left: 14px; bottom: 12px; z-index: 60;
+  display: flex; gap: 6px;
+}
+.deck-btn {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+  padding: 7px 12px; border-radius: 5px; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--card); color: var(--ink-soft);
+  display: inline-flex; align-items: center; gap: 7px; line-height: 1;
+  transition: border-color .12s, color .12s, background .12s;
+}
+.deck-btn b {
+  font-weight: 700; color: var(--accent); border: 1px solid var(--rule);
+  border-radius: 3px; padding: 2px 5px; font-size: 10px;
+}
+.deck-btn:hover { border-color: var(--accent); color: var(--ink); }
+.deck-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.deck-btn.on b { color: #fff; border-color: rgba(255,255,255,.5); }
+
+.deck-notes {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+  height: 34vh; min-height: 220px;
+  background: var(--card); border-top: 2px solid var(--accent);
+  box-shadow: 0 -10px 34px rgba(20, 24, 31, .1);
+  transform: translateY(101%); transition: transform .2s ease;
+  display: flex; flex-direction: column;
+}
+body.notes-open .deck-notes { transform: translateY(0); }
+
+/* give the slides the remaining space so nothing sits under the drawer */
+.reveal { transition: height .2s ease; }
+body.notes-open .reveal { height: 66vh !important; }
+body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
+@media (max-height: 620px) {
+  .deck-notes { height: 46vh; }
+  body.notes-open .reveal { height: 54vh !important; }
+  body.notes-open .deck-bar { bottom: calc(46vh + 10px); }
+}
+
+.deck-notes-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 20px 7px; border-bottom: 1px solid var(--rule); flex: 0 0 auto;
+}
+.deck-notes-title {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--accent); font-weight: 700;
+}
+.deck-notes-close {
+  border: none; background: none; font-size: 22px; line-height: 1;
+  color: var(--ink-faint); cursor: pointer; padding: 0 4px;
+}
+.deck-notes-close:hover { color: var(--accent); }
+
+.deck-notes-body {
+  flex: 1 1 auto; overflow-y: auto; padding: 12px 20px 20px;
+  font-family: var(--body); font-size: 16px; line-height: 1.62; color: var(--ink);
+  max-width: 78ch;
+}
+.deck-notes-body p { margin: 0 0 0.75em; }
+.deck-notes-body p.deck-stage {
+  font-family: var(--mono); font-size: 13px; color: var(--teal);
+  background: var(--teal-soft); border-radius: 4px;
+  padding: 6px 10px; display: inline-block; margin-bottom: 0.75em;
+}
+.deck-notes-body p.deck-none { color: var(--ink-faint); font-style: italic; }
