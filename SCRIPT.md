@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Full lesson | 54 slides · ~10,765 words · ~80 min |
-| Short edit | 35 slides · ~51 min |
+| Full lesson | 54 slides · ~10,776 words · ~80 min |
+| Short edit | 36 slides · ~52 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -39,7 +39,7 @@ These are the outcomes. Six of them.
 
 By the end you will be able to explain why a bigger context window does not remove the need for RAG — that is the objection everyone raises first, and it has two answers.
 
-You will be able to define the vocabulary: token, chunk, embedding, dimension, vector database, retriever. These words get used loosely and that is where confusion comes from, so we will pin each one down.
+You will be able to define the vocabulary: token, context window, chunk, embedding, dimension, vector database, retriever, top k. These words get used loosely and that is where confusion comes from, so we will pin each one down as it appears.
 
 You will be able to draw both halves of a RAG system from memory. There are two halves and people routinely collapse them into one, which is where the mental model breaks.
 
@@ -113,7 +113,7 @@ That is the entire idea. I mean that literally — everything else in this sessi
 **Run:** `python 01_tokens.py`
 
 
-First piece of vocabulary: the token.
+A word you will need: the token.
 
 A token is the unit of text a model processes. Sometimes it is a whole word. Often it is a fragment of one. Models do not read letters, and they do not read words — they read tokens. This matters because every limit and every price you will ever meet is denominated in tokens, not words.
 
@@ -128,12 +128,12 @@ That is the rule in action. Common words are one token. Rarer or longer words ge
 The rule of thumb worth memorising: one token is roughly three quarters of an English word. So a thousand words is roughly thirteen hundred tokens.
 
 
-## Slide 8 — Everything has to fit inside one window
+## Slide 8 — Everything has to fit inside one window · **in the short edit**
 
 **Section:** 02 · The context window
 
 
-Second piece of vocabulary: the context window.
+The next word you will need: the context window.
 
 The context window is the total number of tokens a model can hold in a single request. And the critical detail is that everything counts toward it — everything you send in, and everything the model writes back out. They share one budget. Past that limit, the information is simply not there. Not summarised, not compressed. Not there.
 
@@ -242,11 +242,11 @@ Keep this diagram. Every RAG system you will ever build, from a weekend project 
 **Section:** 04 · Chunking
 
 
-Vocabulary word three: the chunk.
+Next word: the chunk.
 
 Chunking is breaking large documents into small pieces. You choose the size. If you set it to a thousand tokens, then ten million tokens of documents becomes ten thousand chunks. Simple arithmetic.
 
-Now, the word "chunk" is doing some work here and I want to be precise. A chunk is a slice, not a section. Chunks are cut by size, not by meaning. They do not respect chapter boundaries, headings, or the structure of an argument. A naive splitter will cut straight through the middle of a sentence, or a table, without hesitating. We are going to watch that happen live in demo five.
+Now, the word "chunk" is doing some work here and I want to be precise. A chunk is a slice, not a section. Chunks are cut by size, not by meaning. They do not respect chapter boundaries, headings, or the structure of an argument. A naive splitter will cut straight through the middle of a sentence, or a table, without hesitating. You will see exactly that when we get to the chunking step.
 
 So why cut at all? Why not keep whole documents? Because the chunk is your unit of retrieval — it is the smallest thing the system is able to hand back. If your chunks are whole Wikipedia articles, then a question about one sentence returns the entire article, and you are back to stuffing the context window with mostly-irrelevant text. Which is the problem we started with.
 
@@ -281,7 +281,7 @@ That is the trick. Everything downstream depends on it.
 
 So what is an embedding, actually? This is the part people get stuck on, so we will slow down here.
 
-A vector embedding is a list of numbers that stands in for a piece of text. Each number in that list is called a dimension. That is the fourth vocabulary word — dimension just means one position in the list.
+A vector embedding is a list of numbers that stands in for a piece of text. Each number in that list is called a dimension. Two more words for the list — and dimension just means one position in it.
 
 And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers. That is the property. That is what an embedding model is trained to do.
 
@@ -421,7 +421,7 @@ How closeness is actually calculated is a later topic. For now: it is distance b
 **Section:** 08 · Top k
 
 
-The number of chunks that come back is called top k. That is the sixth and last vocabulary word. You choose it. Ask for the top five and you get five results.
+The number of chunks that come back is called top k. That is the last of the words worth collecting. You choose it. Ask for the top five and you get five results.
 
 And now the important half of that sentence: whether or not all five are any good.
 

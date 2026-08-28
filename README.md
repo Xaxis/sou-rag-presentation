@@ -13,7 +13,7 @@ It comes in **four editions** — long or short, and work-along or talk-only:
 | | Work-along (you run the demos) | Talk only (no terminal) |
 |---|---|---|
 | **Full** · 54 slides | [~80 min](https://ragverse.diy/read/) | [~80 min](https://ragverse.diy/read/talk/) |
-| **Short** · 35 slides | [~51 min](https://ragverse.diy/read/short/) | [~51 min](https://ragverse.diy/read/talk-short/) |
+| **Short** · 36 slides | [~52 min](https://ragverse.diy/read/short/) | [~52 min](https://ragverse.diy/read/talk-short/) |
 <!-- END:editions -->
 
 Same slides, same output, same rigour — what changes is the narration and how
