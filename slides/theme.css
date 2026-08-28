@@ -469,3 +469,9 @@ body[data-mode="talk"] .cue .cmd { color: var(--ink-soft); font-weight: 400; }
 .term.illustrative .dim { color: var(--ink-faint); }
 .term.illustrative .hi { color: var(--accent-text); }
 .term.illustrative .ok { color: var(--teal); }
+
+/* chips are buttons now, so undo the UA button styling */
+button.ix-chip {
+  font: inherit; font-family: var(--mono); font-size: 0.78em;
+  appearance: none; -webkit-appearance: none;
+}

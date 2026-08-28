@@ -64,6 +64,55 @@ def bar(value, lo, hi, width=34, fill="█"):
     return fill * max(0, min(width, n))
 
 
+def _friendly_excepthook(exc_type, exc, tb):
+    """Turn the errors that actually happen into one readable line.
+
+    A traceback on a recording is noise at best and alarming at worst, and
+    every failure mode here has a known cause. Anything unexpected still
+    prints its full traceback - hiding a real bug would be worse.
+    """
+    import traceback
+
+    name = exc_type.__name__
+    msg = str(exc).lower()
+    known = None
+
+    if exc_type is KeyboardInterrupt:
+        print("\n  stopped.\n")
+        raise SystemExit(130)
+    if "api_key" in msg or "authentication" in name.lower() or "401" in msg:
+        known = ("OpenAI rejected the key.",
+                 "Check OPENAI_API_KEY in demo/.env, then run ./run.sh check")
+    elif "quota" in msg or "billing" in msg or "insufficient" in msg:
+        known = ("The key is valid but the account has no credit.",
+                 "Add funds at platform.openai.com -> Billing. "
+                 "This is not a rate limit, despite the error name.")
+    elif "rate limit" in msg or name == "RateLimitError":
+        known = ("OpenAI is rate limiting this key.",
+                 "Wait a moment and re-run. Cached embeddings mean a re-run "
+                 "only retries what failed.")
+    elif any(w in msg for w in ("connection", "timeout", "network", "getaddrinfo",
+                                "temporarily unavailable")):
+        known = ("Could not reach OpenAI.",
+                 "Check your network. Demos 01, 04 and 05 need no network at all.")
+    elif name == "FileNotFoundError" and "docs" in msg:
+        known = ("The documents are missing.",
+                 "Run: python3 tools/fetch_docs.py")
+
+    print()
+    if known:
+        headline, fix = known
+        print(f"  {headline}")
+        print(f"  {fix}")
+        print()
+        raise SystemExit(1)
+
+    traceback.print_exception(exc_type, exc, tb)
+
+
+sys.excepthook = _friendly_excepthook
+
+
 def require_key():
     if not os.environ.get("OPENAI_API_KEY"):
         print("\n  OPENAI_API_KEY is not set.")

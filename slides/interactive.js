@@ -78,7 +78,8 @@
 
     const chips = $('em-chips');
     chips.innerHTML = D.words
-      .map((w, i) => `<span class="ix-chip" data-i="${i}">${w}</span>`)
+      .map((w, i) =>
+        `<button type="button" class="ix-chip" data-i="${i}" aria-pressed="false">${w}</button>`)
       .join('');
     chips.addEventListener('click', (e) => {
       const c = e.target.closest('.ix-chip');
@@ -86,9 +87,10 @@
     });
 
     function render() {
-      chips.querySelectorAll('.ix-chip').forEach((c, i) =>
-        c.classList.toggle('on', i === probe)
-      );
+      chips.querySelectorAll('.ix-chip').forEach((c, i) => {
+        c.classList.toggle('on', i === probe);
+        c.setAttribute('aria-pressed', i === probe ? 'true' : 'false');
+      });
 
       const rows = D.words
         .map((w, i) => ({ w, i, s: D.similarity[probe][i] }))
@@ -131,7 +133,9 @@
       });
 
       $('em-scatter').innerHTML =
-        `<svg class="ix-scatter" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">` +
+        `<svg class="ix-scatter" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" ` +
+        `role="img" aria-label="Two-dimensional projection of the word embeddings. ` +
+        `The same words are selectable as buttons above.">` +
         pts.map((p) =>
           `<g class="pt" data-i="${p.i}">` +
           `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" ` +

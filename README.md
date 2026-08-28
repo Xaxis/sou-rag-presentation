@@ -120,7 +120,12 @@ the slide says so rather than pretending otherwise.
 | `Created a chunk of size N, longer than 800` | A warning, not an error. Expected — see slide 36. |
 
 `./run.sh check` catches most of these before you start, including a key that
-is still the placeholder or an account with no credit.
+is still the placeholder or an account with no credit. If something does fail
+mid-run you get one plain line explaining it, not a traceback.
+
+**Rehearse once and the recording cannot fail on network.** Embeddings are
+cached on disk by model, dimensions and text, so a second run of any demo you
+have already done makes no API calls at all — it works with the wifi off.
 
 Starting over: `./run.sh clean` deletes the vector store so demo 06 rebuilds
 from scratch.

@@ -175,6 +175,19 @@ bundled zenburn is a *dark* theme and rendered pale yellow on white paper —
 close to illegible on the slides that matter most. Every syntax colour now
 clears AA in both themes.
 
+## Recording safety
+
+Two things protect a take:
+
+- **The embedding cache.** `demo/.embedding_cache/` is keyed by model,
+  dimensions and text, so any demo you have rehearsed re-runs with no network
+  at all. Do a full `./run.sh follow` before recording and the live session
+  cannot fail on OpenAI.
+- **Friendly errors.** `_demo.py` installs an excepthook that turns the five
+  failures that actually happen — bad key, no credit, rate limit, no network,
+  missing documents — into a single readable line. Anything unexpected still
+  prints a full traceback, because hiding a real bug would be worse.
+
 ## Colour and contrast
 
 `slides/tokens.css` is the only place colours are defined. Four tokens do the
