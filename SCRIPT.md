@@ -6,7 +6,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Full lesson | 54 slides · ~10,776 words · ~80 min |
+| Full lesson | 54 slides · ~10,817 words · ~80 min |
 | Short edit | 36 slides · ~52 min |
 | Live demos | 11 slides carry a command |
 
@@ -798,7 +798,7 @@ Last interactive one, and it puts the whole retrieval pipeline in your hands.
 
 Small policy document, cut into chunks. Type a question, and every chunk gets scored against it. The highlighted ones are the ones that would be sent.
 
-An honesty note before I start clicking: the scoring on this page uses character-trigram vectors, not neural embeddings, because the page has to run in a browser with no API key. The mechanism is identical — cut, vectorise, cosine, rank, take the top k — but the vectors are cruder. Demo seven does exactly this with real embeddings.
+One honesty note before I start clicking. The four preset questions were embedded ahead of time with the real model, so those scores are genuine cosine similarity over fifteen hundred dimensions. If you type your own question, the page cannot embed it — that needs an API call — so it falls back to a rough local measure. The panel tells you which one you are looking at, and you should watch that label.
 
 [CLICK 'laptop budget']
 Watch the ranking jump. The equipment chunk goes to the top and the prompt underneath rebuilds itself in real time.
@@ -809,7 +809,9 @@ Now raise top k. More chunks get highlighted, and look at the "sent to model" fi
 [SET top k BACK TO 2, CLICK 'what is the capital of France']
 And here is the one I really want you to see. That question is not answerable from this document at all — there is nothing about France anywhere in it.
 
-The top score drops, and the panel underneath flags it: nothing here really answers that. But now look at the chunk list. You still got two results back. Highlighted. Neatly ranked. Ready to send.
+Look at the top score: zero point one three six, against zero point six seven for the annual leave question. These are real embeddings, so that collapse is real. And the panel underneath flags it: nothing here really answers that.
+
+But now look at the chunk list. You still got two results back. Highlighted. Neatly ranked. Ready to send.
 
 That is the point from earlier, made concrete. A retriever always returns k results. It has no concept of "I do not know". If you hand those two chunks to a language model with no score threshold, it will do its best with irrelevant text — and that is where a large share of RAG hallucinations actually come from.
 

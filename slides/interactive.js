@@ -266,20 +266,52 @@ Reviews. Formal reviews happen twice a year, in June and December. Promotion dec
     if (!root) return;
     const q = $('rt-q'), k = $('rt-k');
     const chunks = chunkText(RETR_DOC, 320, 40);
+    // exposed so tools/export_slide_data.py embeds exactly these strings
+    window.__ragRetrieval = { chunks: chunks.map((c) => c.text), presets: [] };
+
+    window.__ragRetrieval.presets =
+      [...$('rt-presets').querySelectorAll('.ix-chip')].map((c) => c.textContent.trim());
 
     $('rt-presets').addEventListener('click', (e) => {
       const c = e.target.closest('.ix-chip');
       if (c) { q.value = c.textContent; render(); }
     });
 
+    // Preset questions were embedded ahead of time with the real model, so
+    // their scores are genuine cosine similarity over 1,536 dimensions. A
+    // question you type cannot be embedded in a browser - that needs an API
+    // call - so those fall back to a rough local measure, and say so.
+    const REAL = (window.RAG_DATA && window.RAG_DATA.retrieval) || null;
+
+    function realScores(question) {
+      if (!REAL) return null;
+      const key = Object.keys(REAL.scores)
+        .find((p) => p.toLowerCase() === question.toLowerCase());
+      if (!key) return null;
+      // the precomputed row is aligned with REAL.chunks; map onto ours by text
+      return chunks.map((c) => {
+        const idx = REAL.chunks.indexOf(c.text);
+        return idx === -1 ? null : REAL.scores[key][idx];
+      });
+    }
+
     function render() {
       const topk = +k.value;
       $('rt-k-v').textContent = topk;
       const question = q.value.trim();
+      const real = question ? realScores(question) : null;
+      const usingReal = !!real && real.every((v) => v !== null);
       const qv = vec(question);
       const scored = chunks.map((c, i) => ({
-        i, text: c.text, s: question ? cos(vec(c.text), qv) : 0,
+        i, text: c.text,
+        s: usingReal ? real[i] : (question ? cos(vec(c.text), qv) : 0),
       }));
+
+      $('rt-mode').innerHTML = usingReal
+        ? '<b>real</b> OpenAI vectors'
+        : question ? 'approximate &mdash; typed questions need an API call'
+                   : 'pick a question';
+      $('rt-mode').className = 'ix-hint' + (usingReal ? ' ix-real' : '');
       const ranked = [...scored].sort((a, b) => b.s - a.s).slice(0, topk);
       const hits = new Set(ranked.map((r) => r.i));
 
@@ -306,7 +338,8 @@ Reviews. Formal reviews happen twice a year, in June and December. Promotion dec
       $('rt-top').textContent = (ranked[0] ? ranked[0].s : 0).toFixed(3);
 
       const best = ranked[0] ? ranked[0].s : 0;
-      $('rt-note').innerHTML = best < 0.25
+      const floor = usingReal ? 0.3 : 0.25;
+      $('rt-note').innerHTML = best < floor
         ? 'Top score is <b>' + best.toFixed(3) + '</b> — nothing here really answers that. ' +
           'Note that you still got ' + topk + ' results back. A retriever always returns k.'
         : 'Only the highlighted chunks are sent. Everything else in the document ' +

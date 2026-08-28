@@ -91,7 +91,7 @@
       <span class="k">Play with it &middot; no setup</span>
       <h3>Five playgrounds →</h3>
       <p>Move the sliders, ask a question, break the system on purpose. Runs in your
-      browser with no API key. Two use real OpenAI vectors.</p>
+      browser with no API key. Three of them use real OpenAI vectors.</p>
     </a>
     <a class="card" href="/present/" style="border-left:4px solid var(--violet)">
       <span class="k">Teach it &middot; slides + notes</span>
@@ -157,10 +157,10 @@
       the duplication climb, and sentences get cut in half.</p>
     </a>
     <a class="card" href="/play/#retr">
-      <span class="k">Playground 04</span>
+      <span class="k">Playground 04 · real vectors</span>
       <h3>Ask, and watch the prompt build</h3>
       <p>Type a question, move top <em>k</em>, and read the exact prompt that would reach the
-      model. Then ask something the documents cannot answer.</p>
+      model. Then ask something the documents cannot answer and watch the score collapse.</p>
     </a>
     <a class="card" href="/play/#mismatch">
       <span class="k">Playground 05 · real vectors</span>
@@ -203,9 +203,10 @@
         <li>Real embeddings put <strong>dog</strong> closest to <em>cat</em>, not <em>kitten</em>.
             The demo explains why.</li>
       </ul>
-      <p style="color:var(--ink-soft);font-size:0.95rem">The retrieval playground scores with
-      character-trigram vectors so it runs with no key — the mechanism is identical, and the
-      page says so rather than implying otherwise.</p>
+      <p style="color:var(--ink-soft);font-size:0.95rem">Three playgrounds run on real
+      precomputed OpenAI vectors. Only a question you type yourself falls back to a rough
+      local measure — embedding it needs an API call — and the panel says which you are
+      looking at rather than implying otherwise.</p>
     </div>
   </div>
 </div></section>

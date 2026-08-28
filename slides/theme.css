@@ -475,3 +475,7 @@ button.ix-chip {
   font: inherit; font-family: var(--mono); font-size: 0.78em;
   appearance: none; -webkit-appearance: none;
 }
+
+/* the retrieval playground says whether the scores are real or approximate */
+.ix-hint.ix-real { color: var(--teal); }
+.ix-hint.ix-real b { color: var(--teal); font-weight: 700; }

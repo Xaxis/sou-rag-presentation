@@ -171,8 +171,8 @@ function buildPlay(slides) {
   <h1>Take it apart.</h1>
   <p style="max-width:56ch;color:var(--ink-soft);font-size:1.1rem">
   The five playgrounds from the lesson, on one page. Everything runs in your browser.
-  Playgrounds 02 and 05 use <strong>real precomputed OpenAI vectors</strong>; the rest is
-  exact browser code.</p>
+  Playgrounds 02, 04 and 05 use <strong>real precomputed OpenAI vectors</strong>; the
+  chunking is exact browser code.</p>
   ${items}
   <p style="margin-top:2.4em"><a class="btn primary" href="/deck/">Now take the lesson &rarr;</a></p>
 </div>`;

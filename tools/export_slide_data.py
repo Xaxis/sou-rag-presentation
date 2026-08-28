@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "demo"))
 from _demo import CachedEmbeddings, cosine  # noqa: E402
 
 OUT = ROOT / "slides" / "data.js"
+CORPUS = ROOT / "tools" / "retrieval-corpus.json"
 
 WORDS = [
     "cat", "kitten", "dog", "puppy", "elephant", "lion",
@@ -59,6 +60,30 @@ def pca2(vectors):
     return (coords / span).tolist()
 
 
+def retrieval_scores(embedder):
+    """Real cosine scores for the retrieval playground's preset questions.
+
+    The playground chunks a fixed document, so the chunks never change and can
+    be embedded once here. Only the scores ship - a 4x4 matrix rather than
+    megabytes of vectors. A typed question still cannot be embedded in the
+    browser, so the widget falls back and says so.
+
+    The corpus file is written by the widget itself (window.__ragRetrieval),
+    so these are exactly the strings a visitor sees.
+    """
+    if not CORPUS.exists():
+        print(f"  ! {CORPUS.name} missing - run tools/extract_retrieval_corpus")
+        return None
+    corpus = json.loads(CORPUS.read_text())
+    chunks, presets = corpus["chunks"], corpus["presets"]
+    cvecs = embedder.embed_documents(chunks)
+    scores = {}
+    for q in presets:
+        qv = embedder.embed_query(q)
+        scores[q] = [round(cosine(qv, cv), 4) for cv in cvecs]
+    return {"chunks": chunks, "presets": presets, "scores": scores}
+
+
 def main():
     small = CachedEmbeddings(model="text-embedding-3-small", quiet=True)
 
@@ -80,7 +105,11 @@ def main():
     right = rank(small.embed_query(MISMATCH_Q))
     wrong = rank(large.embed_query(MISMATCH_Q))
 
+    print("embedding the retrieval playground corpus ...")
+    retrieval = retrieval_scores(small)
+
     data = {
+        "retrieval": retrieval,
         "words": WORDS,
         "groups": GROUPS,
         "similarity": sim,
@@ -105,6 +134,10 @@ def main():
         encoding="utf-8",
     )
     print(f"wrote {OUT.relative_to(ROOT)}  ({OUT.stat().st_size:,} bytes)")
+    if retrieval:
+        for q, row in retrieval["scores"].items():
+            best = max(range(len(row)), key=lambda i: row[i])
+            print(f"  {q[:30]:<32} best chunk {best} at {row[best]:.3f}")
     print(f"  right-model top hit: {right[0][0][:44]!r} {right[0][1]}")
     print(f"  wrong-model top hit: {wrong[0][0][:44]!r} {wrong[0][1]}")
 

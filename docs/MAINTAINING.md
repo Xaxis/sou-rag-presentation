@@ -156,6 +156,28 @@ Neither shows up locally. Check the deployed URL, not just localhost.
 
 ---
 
+## The retrieval playground's real scores
+
+The playground chunks a fixed document, so the chunks never change and can be
+embedded once. Only the **scores** ship — a 4×4 matrix rather than megabytes
+of vectors:
+
+```bash
+node tools/build_site.mjs && npx serve dist -l 8912
+node tools/extract_retrieval_corpus.mjs   # writes tools/retrieval-corpus.json
+demo/venv/bin/python tools/export_slide_data.py
+```
+
+The corpus file is written by the widget itself (`window.__ragRetrieval`), so
+the embedded strings are exactly what a visitor sees — the export cannot drift
+from the page. If you edit `RETR_DOC` or the chunk parameters in
+`interactive.js`, re-run those three commands or the preset scores silently
+stop matching their chunks.
+
+A question the visitor types still cannot be embedded in a browser, so it
+falls back to a character-trigram measure and the panel labels itself
+`approximate` rather than pretending otherwise.
+
 ## Syntax highlighting
 
 Reveal vendors the whole of highlight.js — 918KB to colour three languages,

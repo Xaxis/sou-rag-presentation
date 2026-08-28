@@ -102,10 +102,11 @@ you can also use them straight from [ragverse.diy/play](https://ragverse.diy/pla
 | **49** | Mismatch toggle | Flip the query model and watch retrieval break with zero errors raised |
 <!-- END:ix-table -->
 
-Two of them use real precomputed OpenAI vectors rather than a simulation. The
-chunking playground is exact. The retrieval playground scores with
-character-trigram vectors so it needs no key — the mechanism is identical, and
-the slide says so rather than pretending otherwise.
+Three of them use real precomputed OpenAI vectors rather than a simulation:
+the neighbourhood map, the retrieval playground's four preset questions, and
+the mismatch toggle. The chunking playground is exact browser code. Only a
+question you type yourself falls back to a rough local measure — embedding it
+would need an API call — and the panel says which one you are looking at.
 
 ---
 
