@@ -336,13 +336,13 @@ function buildPresent(all) {
   const TIERS = [
     { key: 'essentials', label: 'Essentials',
       slides: all.filter((s) => s.essential),
-      blurb: 'The whole arc, tightened. Both pipelines, what an embedding is, the build, and the silent failure — all eight demos, nothing skipped that matters.' },
+      blurb: 'The whole arc, tightened. Both pipelines, what an embedding is, the build, and the silent failure — all eight demos. Slides only, no interactive widgets.' },
     { key: 'short', label: 'Short',
       slides: all.filter((s) => s.core),
-      blurb: 'Everything in the essentials, plus the gotchas, the API key, the practical rules and all five playgrounds.' },
+      blurb: 'Everything in the essentials, plus the gotchas, the API key, the practical rules, and two of the interactive playgrounds.' },
     { key: 'full', label: 'Full',
       slides: all,
-      blurb: 'Everything: reference tables, the loader gotchas, the re-run trap, troubleshooting, the drills, all five playgrounds.' },
+      blurb: 'Everything: reference tables, the loader gotchas, the re-run trap, troubleshooting, the drills, and all five playgrounds.' },
   ];
 
   // one demo takes roughly a minute and a half including talking through it
