@@ -244,8 +244,7 @@ function buildRead(all, edit) {
           : `<p>${esc(line)}</p>`;
       }).join('\n');
 
-    const heading = length === 'full' && talk && s.talkTitle
-      ? esc(s.talkTitle) : s.titleHtml;
+    const heading = talk && s.talkTitle ? esc(s.talkTitle) : s.titleHtml;
 
     if (isDivider) {
       const id = 'c' + (chapters.length + 1);
@@ -474,6 +473,11 @@ function buildDeckVariant(rawHtml, { length, talk }) {
       b = setNotes(b, brief);
     } else if (talk && talkText) {
       b = setNotes(b, talkText);
+    }
+
+    // a title that assumes a live terminal is wrong in every talk edition,
+    // whichever narration that edition happens to be using
+    if (talk) {
       const t = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1];
       if (t) b = b.replace(/(<h[12][^>]*>)[\s\S]*?(<\/h[12]>)/, `$1${t}$2`);
     }

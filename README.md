@@ -23,8 +23,11 @@ short adds the gotchas, the API key and the practical rules.
 Same slides, same output, same rigour. **Neither short nor essentials is a
 summary** — both run on tightened narration rather than fewer ideas, and both
 carry all eight demos and every vocabulary term. Only the full edition keeps
-the unhurried, conversational phrasing. The talk editions explain output that is already on the slide, so there
-is nothing to set up and nothing that can fail on camera.
+the unhurried, conversational phrasing, which is what makes it long.
+
+The **talk** editions explain output that is already on the slide, so there is
+nothing to set up and nothing that can fail on camera. The **work-along**
+editions cue you to run each demo yourself.
 
 Every number in the lesson is real output from these scripts. Nothing is an
 illustration.

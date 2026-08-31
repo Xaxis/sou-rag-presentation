@@ -197,15 +197,17 @@ cmd_follow() {
   [ -x "$PY" ] || { bad "run ./run.sh setup first"; exit 1; }
   cmd_check >/dev/null 2>&1 || { bold "Preflight failed:"; cmd_check; exit 1; }
 
+  # Slide numbers differ per edition, so reference the slide by its title -
+  # that is stable whether you are presenting essentials, short or full.
   local names=(
-    "01_tokens.py|7|Tokens are not words, and the scale gap"
-    "02_embedding_shape.py|15|Text in, a fixed-length vector out"
-    "03_similar_meaning.py|17|Similar meaning gives similar numbers"
-    "04_load.py|32|Load the documents off disk"
-    "05_chunk.py|35|Chunk them, and what overlap buys you"
-    "06_embed_store.py|39|Embed every chunk and store it"
-    "07_query.py|42|Ask a question, see the real prompt"
-    "08_model_mismatch.py|48|Break it: one model for docs, another for queries"
+    "01_tokens.py|Models do not read words|tokens, and the scale gap"
+    "02_embedding_shape.py|This is not an LLM|text in, a fixed-length vector out"
+    "03_similar_meaning.py|Does that actually hold?|similar meaning, similar numbers"
+    "04_load.py|Load the files|reading files into Document objects"
+    "05_chunk.py|Chunk them|chunking, and what overlap buys you"
+    "06_embed_store.py|Embed and store|one call does both"
+    "07_query.py|Ask it something|retrieval, and the real prompt"
+    "08_model_mismatch.py|Same store. Same question.|the silent failure"
   )
 
   echo
@@ -222,7 +224,7 @@ cmd_follow() {
     local slide="${rest%%|*}"; local desc="${rest#*|}"
 
     printf '\033[1m  [%d/8] %s\033[0m\n' "$i" "$desc"
-    printf '\033[2m        slide %s   ·   python %s\033[0m\n' "$slide" "$file"
+    printf '\033[2m        slide: “%s”   ·   python %s\033[0m\n' "$slide" "$file"
     if [ -t 0 ]; then
       printf '        press Enter to run (q to quit) '
       read -r reply

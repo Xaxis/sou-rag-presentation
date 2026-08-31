@@ -81,11 +81,11 @@ Let me run the check, and we will begin.
 
 > **Essentials edition — tighter narration:**
 >
-> A lesson, not a live build — though everything here is runnable if you want it.
->
 > Everything on these slides is genuine output from real code. Nothing is a mock-up. If I claim two pieces of text have similar embeddings, you will see it measured.
 >
-> The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline. One entry point runs any of it. There is a link at the end.
+> The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, behind one entry point. Whether the demos get run here or you run them afterwards, the output is the same — there is a link at the end.
+>
+> The orange bars mark where a command produced what you are looking at.
 
 
 ## Slide 4 — Why RAG exists · **short edit**
