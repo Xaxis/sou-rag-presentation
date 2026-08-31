@@ -80,8 +80,14 @@ const FAVICON =
   'viewBox=%270 0 16 16%27%3E%3Ctext y=%2713%27 font-size=%2713%27%3E%F0%9F%94%8D%3C/text%3E%3C/svg%3E">';
 
 function nav(active) {
-  const item = (href, label, cls = '') =>
-    `<a class="link ${cls}${active === href ? ' on' : ''}" href="${href}">${label}</a>`;
+  const item = (href, label, cls = '') => {
+    // any /read/ edition should light up "The lesson", not just the full one
+    const here = active === href ||
+      (href === '/read/' && active.startsWith('/read/')) ||
+      (href === '/deck/' && active.startsWith('/deck/'));
+    return `<a class="${['link', cls, here ? 'on' : ''].filter(Boolean).join(' ')}"` +
+           ` href="${href}"${here ? ' aria-current="page"' : ''}>${label}</a>`;
+  };
   return `<nav class="nav"><div class="wrap">
   <a class="brand" href="/">ragverse<span>.diy</span></a>
   ${item('/read/', 'The lesson')}
@@ -277,7 +283,7 @@ function buildRead(all, edit) {
   const body = `<div class="wrap read">
   <header class="read-head">
     <span class="eyebrow"><b>${length === 'essentials' ? 'The essentials'
-      : length === 'short' ? 'The short lesson' : 'The whole lesson'}${talk ? ', as a talk' : ''}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
+      : length === 'short' ? 'The short lesson' : 'The whole lesson'}${talk ? ', as a talk' : ''}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / WPM)} min spoken &middot; ~${Math.round(words / 220)} min to read</span>
     <h1>${length === 'essentials' ? 'RAG, the short way.'
          : length === 'short' ? 'RAG, the fast way.' : 'RAG, end to end.'}</h1>
     <p class="read-lede">${length === 'essentials'

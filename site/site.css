@@ -46,6 +46,14 @@ a { color: var(--accent-text); text-decoration-thickness: 1px; text-underline-of
   color: var(--ink-soft); text-decoration: none; text-transform: uppercase;
 }
 .nav a.link:hover { color: var(--accent-text); }
+.nav a.link.on {
+  color: var(--ink);
+  position: relative;
+}
+.nav a.link.on::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -21px;
+  height: 2px; background: var(--accent);
+}
 @media (max-width: 640px) { .nav a.link.hide-s { display: none; } }
 
 /* --- hero -------------------------------------------------------------- */

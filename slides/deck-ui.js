@@ -95,6 +95,13 @@
       window.location.href = urlFor(lengthOf, !isTalk);
     });
 
+    // Landing on the deck from a shared link otherwise leaves you stranded;
+    // the bar auto-hides, so this costs the recording nothing.
+    var home = el('a', 'deck-btn deck-home', 'ragverse<b>.diy</b>');
+    home.href = '/';
+    home.title = 'Back to the site';
+
+    bar.appendChild(home);
     bar.appendChild(toggle);
     bar.appendChild(present);
     bar.appendChild(theme);

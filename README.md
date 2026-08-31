@@ -15,7 +15,7 @@ short adds the gotchas, the API key and the practical rules.
 <!-- BEGIN:editions -->
 | | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Essentials** · 22 slides | [~19 min](https://ragverse.diy/read/talk-essentials/) | [~31 min](https://ragverse.diy/read/essentials/) |
+| **Essentials** · 26 slides | [~21 min](https://ragverse.diy/read/talk-essentials/) | [~33 min](https://ragverse.diy/read/essentials/) |
 | **Short** · 36 slides | [~29 min](https://ragverse.diy/read/talk-short/) | [~41 min](https://ragverse.diy/read/short/) |
 | **Full** · 54 slides | [~86 min](https://ragverse.diy/read/talk/) | [~98 min](https://ragverse.diy/read/) |
 <!-- END:editions -->

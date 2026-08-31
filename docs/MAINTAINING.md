@@ -85,6 +85,10 @@ or that tier silently gets slower.
 Timings are computed at 125 words per minute, which is presenting pace with
 pauses, not read-aloud pace.
 
+**Every tier needs the chapter dividers.** The reading view builds its contents
+list from them, so a tier that drops them gets a one-item contents list that
+looks broken rather than short. They cost about fifty words each.
+
 **Mode** — work-along (you run the demos live) or talk-only (you explain output
 that is already on the slide). Slides whose narration changes carry a second
 narration block:

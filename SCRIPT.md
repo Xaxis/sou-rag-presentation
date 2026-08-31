@@ -6,7 +6,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 22 slides · ~19 min |
+| Essentials | 26 slides · ~21 min |
 | Short edit | 36 slides · ~29 min |
 | Full lesson | 54 slides · ~86 min |
 | Live demos | 11 slides carry a command |
@@ -88,7 +88,7 @@ Let me run the check, and we will begin.
 > The orange bars mark where a command produced what you are looking at.
 
 
-## Slide 4 — Why RAG exists · **short edit**
+## Slide 4 — Why RAG exists · **essentials**
 
 **Section:** Part one
 
@@ -295,7 +295,7 @@ That is the case for RAG, complete. Now let's look at how it is actually built.
 > Bury the one relevant paragraph inside five hundred thousand tokens and the model has a harder job than if you had handed it the paragraph. More context is not more helpful. Relevant context is.
 
 
-## Slide 12 — The shape of the system · **short edit**
+## Slide 12 — The shape of the system · **essentials**
 
 **Section:** Part two
 
@@ -533,7 +533,7 @@ For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector dat
 > Options: Pinecone, Weaviate, Chroma, Qdrant. We use Chroma because it runs locally with no account. If you already run Postgres, pgvector is often the right answer.
 
 
-## Slide 21 — Retrieval, in principle · **short edit**
+## Slide 21 — Retrieval, in principle · **essentials**
 
 **Section:** Part three
 
@@ -1123,7 +1123,7 @@ While you are experimenting, delete the db_chroma folder before each run. My dem
 In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it. But for learning, delete the folder.
 
 
-## Slide 46 — The mistake that breaks most first builds · **short edit**
+## Slide 46 — The mistake that breaks most first builds · **essentials**
 
 **Section:** Part five
 
