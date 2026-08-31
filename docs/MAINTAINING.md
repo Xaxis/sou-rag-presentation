@@ -217,7 +217,12 @@ clears AA in both themes.
 
 ## Recording safety
 
-Two things protect a take:
+Three things protect a take:
+
+- **The control bar fades.** It sits in the corner of every recorded frame, so
+  it drops to zero opacity after about two and a half seconds of no input and
+  returns on any mouse movement. It stays up while the narration drawer is open
+  or while it has keyboard focus.
 
 - **The embedding cache.** `demo/.embedding_cache/` is keyed by model,
   dimensions and text, so any demo you have rehearsed re-runs with no network

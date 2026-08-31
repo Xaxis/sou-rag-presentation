@@ -79,18 +79,18 @@
     }
 
     var next = LENGTHS[(LENGTHS.indexOf(lengthOf) + 1) % LENGTHS.length];
-    var lenBtn = el('button', 'deck-btn',
-      '<b>' + LABEL[lengthOf].charAt(0) + '</b> ' + LABEL[next]);
+    var lenBtn = el('button', 'deck-btn', LABEL[lengthOf] + ' \u203a');
     lenBtn.title = 'Currently the ' + LABEL[lengthOf].toLowerCase() +
-      ' edition. Switch to ' + LABEL[next].toLowerCase() + '.';
+      ' edition. Click for ' + LABEL[next].toLowerCase() + '.';
     lenBtn.addEventListener('click', function () {
       window.location.href = urlFor(next, isTalk);
     });
 
-    var modeBtn = el('button', 'deck-btn', isTalk ? 'Work-along' : 'Talk only');
+    var modeBtn = el('button', 'deck-btn',
+      (isTalk ? 'Talk' : 'Work-along') + ' \u203a');
     modeBtn.title = isTalk
-      ? 'Switch to the work-along narration, where you run the demos live'
-      : 'Switch to the talk narration, where the output is shown rather than run';
+      ? 'Talk narration. Click to switch to work-along, where you run the demos live.'
+      : 'Work-along narration. Click to switch to talk only, where output is shown rather than run.';
     modeBtn.addEventListener('click', function () {
       window.location.href = urlFor(lengthOf, !isTalk);
     });
@@ -146,8 +146,33 @@
     if (window.Reveal && Reveal.layout) setTimeout(function () { Reveal.layout(); }, 210);
   }
 
+  // The deck gets recorded, and a control bar in the corner of every frame is
+  // clutter. Fade it out when the mouse rests, bring it back on any movement -
+  // the same behaviour presentation tools use for their own chrome.
+  function autoHide(bar) {
+    var timer, awake = false;
+    function wake() {
+      if (!awake) { bar.classList.add('awake'); awake = true; }
+      clearTimeout(timer);
+      timer = setTimeout(sleep, 2600);
+    }
+    function sleep() {
+      if (bar.matches(':hover') || document.body.classList.contains('notes-open')) {
+        return wake();
+      }
+      bar.classList.remove('awake');
+      awake = false;
+    }
+    ['mousemove', 'mousedown', 'keydown', 'touchstart'].forEach(function (e) {
+      document.addEventListener(e, wake, { passive: true });
+    });
+    bar.addEventListener('mouseenter', wake);
+    wake();
+  }
+
   function boot() {
     build();
+    autoHide(document.querySelector('.deck-bar'));
 
     setOpen(open);
 

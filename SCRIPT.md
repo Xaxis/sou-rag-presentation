@@ -20,7 +20,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 ## Slide 1 — Retrieval Augmented Generation · **essentials**
 
 
-Welcome. Over the next hour or so we are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
+Welcome. We are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
 
 Here is the one-line version of what RAG is for. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents into the prompt? That is the problem. Everything else is mechanics.
 
@@ -33,7 +33,7 @@ Let's start with why this problem exists at all.
 
 > **Essentials edition — tighter narration:**
 >
-> Over the next twenty-five minutes we are going to build a Retrieval Augmented Generation system, and understand every piece of it.
+> We are going to build a Retrieval Augmented Generation system, and understand every piece of it.
 >
 > Here is the problem in one line. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt?
 >
@@ -1227,7 +1227,7 @@ And the last one, which is the one that will actually cost you an afternoon: one
 
 > **Essentials edition — tighter narration:**
 >
-> The whole thing in eight lines.
+> The whole lesson, on one slide.
 >
 > Models have a token limit; real document stores are millions of times larger. So you retrieve the relevant pieces instead of sending everything.
 >
