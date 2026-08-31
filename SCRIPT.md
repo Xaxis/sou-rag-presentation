@@ -6,7 +6,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 26 slides · ~21 min |
+| Essentials | 26 slides · ~20 min |
 | Short edit | 36 slides · ~29 min |
 | Full lesson | 54 slides · ~86 min |
 | Live demos | 11 slides carry a command |
@@ -311,7 +311,7 @@ So: two pipelines. Learn them separately, and everything after this is easy.
 >
 > Part two: the shape of the system.
 >
-> If there is one slide worth photographing, it is the next one. A RAG system is two pipelines, not one — and people collapse them in their heads, which is exactly where the mental model breaks.
+> Everything so far has been about why. This is the what — and it is one diagram.
 
 
 ## Slide 13 — Two pipelines · **essentials**
@@ -549,9 +549,7 @@ Now someone asks a question. This is the bottom row.
 >
 > Part three: retrieval.
 >
-> We have walked the whole top row now — documents, chunks, embedding model, vectors, database. Ingestion is finished, and finished is the right word: none of it runs again until your documents change.
->
-> Now someone asks a question.
+> All of that was preparation. Nothing we have built has answered a question yet.
 
 
 ## Slide 22 — The question takes the same road · **essentials**
@@ -582,9 +580,9 @@ How closeness is actually calculated is a later topic. For now: it is distance b
 
 > **Essentials edition — tighter narration:**
 >
-> Ingestion is done. Now someone asks a question, and it takes the same road.
+> A question arrives, and it takes the same road the documents took.
 >
-> The question goes through the same embedding model — I will keep repeating that — and becomes a vector of the same length. The retriever then scores every stored vector by closeness and returns the top matches.
+> It goes through the same embedding model — I will keep repeating that — and becomes a vector of the same length. The retriever then scores every stored vector by closeness and returns the top matches.
 >
 > How many come back is called top k. That is the last word worth collecting, and you choose it. But here is the half people miss: ask for five and you get five, whether or not any are good. A retriever has no concept of "nothing here fits". It always returns k results, neatly ranked.
 >
@@ -1137,11 +1135,9 @@ Here is what makes it dangerous. Nothing crashes. There is no error message. Let
 
 > **Essentials edition — tighter narration:**
 >
-> Part five, and this is the one to leave with.
+> Part five — and this is the one to leave with.
 >
-> The mistake that breaks most first builds. I have been foreshadowing it the whole way — the two orange boxes, "write that choice down", "the same model, every time".
->
-> Here is what makes it dangerous. Nothing crashes. There is no error message.
+> Everything else that goes wrong in this stack tells you. This one does not.
 
 
 ## Slide 47 — The consistency rule · **essentials**
@@ -1162,9 +1158,9 @@ Let's break it and watch.
 
 > **Essentials edition — tighter narration:**
 >
-> Now the mistake that breaks most first builds.
->
 > The rule: use the same embedding model and the same dimension count for your documents and your queries. Every time. No exceptions.
+>
+> I have been foreshadowing this the whole way — the two orange boxes, "write that choice down", "the same model, every time".
 >
 > The way it happens is completely ordinary. You embed your documents in January. Two months later you write the query side and reach for a model — maybe cheaper, maybe you just do not remember which you used.
 >
