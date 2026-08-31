@@ -31,6 +31,9 @@ function parseDeck() {
     const notes = ai === -1 ? ''
       : raw.slice(ai + '<aside class="notes">'.length,
                   raw.indexOf('</aside>', ai)).trim();
+    const bi = raw.indexOf('<aside class="brief">');
+    const briefNotes = bi === -1 ? ''
+      : raw.slice(bi + '<aside class="brief">'.length, raw.indexOf('</aside>', bi)).trim();
     const ti = raw.indexOf('<aside class="talk">');
     const talkNotes = ti === -1 ? ''
       : raw.slice(ti + '<aside class="talk">'.length,
@@ -43,7 +46,9 @@ function parseDeck() {
     const widget = (body.match(/id="(ix-[a-z]+)"/) || [])[1] || null;
 
     out.push({
-      core: /data-track="core"/.test(attrs),
+      essential: /data-track="essential"/.test(attrs),
+      core: /data-track="(core|essential)"/.test(attrs),
+      briefNotes,
       talkNotes,
       talkTitle,
       titleHtml: h ? h[1].trim() : '',
@@ -192,13 +197,21 @@ function buildPlay(slides) {
    This renders the same slides as a flowing document - real headings, real
    type, the widgets inline, and the narration woven in where it belongs. */
 function buildRead(all, edit) {
-  const short = /short/.test(edit);
   const talk = /talk/.test(edit);
-  const slides = short ? all.filter((s) => s.core) : all;
-  const base = '/read/' + (talk && short ? 'talk-short/' : talk ? 'talk/' : short ? 'short/' : '');
-  const other = short
-    ? `<a href="/read/${talk ? 'talk/' : ''}">Switch to the full lesson &rarr;</a>`
-    : `<a href="/read/${talk ? 'talk-short/' : 'short/'}">Prefer the short version? &rarr;</a>`;
+  const length = /essentials/.test(edit) ? 'essentials'
+               : /short/.test(edit) ? 'short' : 'full';
+  const slides = length === 'essentials' ? all.filter((s) => s.essential)
+               : length === 'short' ? all.filter((s) => s.core)
+               : all;
+  const seg = (len) => (len === 'full' ? '' : len + '/');
+  const base = '/read/' + (talk ? 'talk' + (length === 'full' ? '/' : '-' + seg(length))
+                                : seg(length));
+  const link = (len, label) =>
+    `<a href="/read/${talk ? 'talk' + (len === 'full' ? '/' : '-' + seg(len)) : seg(len)}">${label}</a>`;
+  const others = ['essentials', 'short', 'full'].filter((l) => l !== length)
+    .map((l) => link(l, l === 'full' ? 'the full lesson'
+                     : l === 'short' ? 'the short edit' : 'the essentials'));
+  const other = 'Also available as ' + others.join(' or ') + '.';
   const stage = /^\[[A-Z0-9][^\]]*\]$/;
   const parts = [];
   const chapters = [];
@@ -220,7 +233,8 @@ function buildRead(all, edit) {
         .replace(/<span class="label">Demo<\/span>/g, '<span class="label">Output of</span>');
     }
 
-    const useNotes = talk && s.talkNotes ? s.talkNotes : s.notes;
+    const useNotes = length === 'essentials' && s.briefNotes ? s.briefNotes
+                   : talk && s.talkNotes ? s.talkNotes : s.notes;
     const notes = useNotes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
       .map((p) => {
         const line = p.replace(/\s+/g, ' ');
@@ -229,7 +243,8 @@ function buildRead(all, edit) {
           : `<p>${esc(line)}</p>`;
       }).join('\n');
 
-    const heading = talk && s.talkTitle ? esc(s.talkTitle) : s.titleHtml;
+    const heading = length !== 'essentials' && talk && s.talkTitle
+      ? esc(s.talkTitle) : s.titleHtml;
 
     if (isDivider) {
       const id = 'c' + (chapters.length + 1);
@@ -254,30 +269,39 @@ function buildRead(all, edit) {
   const toc = chapters.map((c) =>
     `<a href="#${c.id}"><b>${String(c.n).padStart(2, '0')}</b> ${esc(c.title)}</a>`).join('\n');
 
-  const words = slides.reduce((a, s) =>
-    a + ((talk && s.talkNotes ? s.talkNotes : s.notes).split(/\s+/).filter(Boolean).length), 0);
+  const words = slides.reduce((a, s) => a + ((
+    length === 'essentials' && s.briefNotes ? s.briefNotes
+      : talk && s.talkNotes ? s.talkNotes : s.notes
+  ).split(/\s+/).filter(Boolean).length), 0);
 
   const body = `<div class="wrap read">
   <header class="read-head">
-    <span class="eyebrow"><b>${talk ? (short ? 'Short talk' : 'The talk') : (short ? 'The short lesson' : 'The whole lesson')}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
-    <h1>${short ? 'RAG, the short way.' : 'RAG, end to end.'}</h1>
-    <p class="read-lede">${talk
+    <span class="eyebrow"><b>${length === 'essentials' ? 'The essentials'
+      : length === 'short' ? 'The short lesson' : 'The whole lesson'}${talk ? ', as a talk' : ''}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / 200)} min read</span>
+    <h1>${length === 'essentials' ? 'RAG, the short way.'
+         : length === 'short' ? 'RAG, the fast way.' : 'RAG, end to end.'}</h1>
+    <p class="read-lede">${length === 'essentials'
+      ? 'The whole arc in about twenty minutes: why RAG exists, both pipelines, what an embedding really is, the build, and the mistake that fails silently. All eight demos, tightened prose, nothing skipped that matters.'
+      : talk
       ? 'Narrated as a talk: the code is shown and explained, not typed live. Every terminal block is genuine output. Follow along in the repo if you want to, or just read.'
-      : short
+      : length === 'short'
       ? 'The spine of the lesson: every demo, the two strongest playgrounds, and none of the asides. Same depth, fewer detours.'
       : 'Every slide, with what the presenter says underneath it, and the playgrounds where they belong. Nothing to install.'}</p>
     <p class="read-alt">${other}</p>
     <nav class="read-toc">${toc}</nav>
-    <p class="read-alt">Presenting instead? <a href="/deck/${talk && short ? 'talk-short/' : talk ? 'talk/' : short ? 'short/' : ''}">Open the deck &rarr;</a></p>
+    <p class="read-alt">Presenting instead? <a href="/deck/${talk ? 'talk' + (length === 'full' ? '/' : '-' + seg(length)) : seg(length)}">Open the deck &rarr;</a></p>
   </header>
   ${parts.join('\n')}
   <p class="read-end"><a class="btn primary" href="/play/">Play with the five widgets &rarr;</a></p>
 </div>`;
 
   return page({
-    title: short ? 'The short lesson — RAG, built in front of you'
-                 : 'The lesson — RAG, built in front of you',
-    desc: short
+    title: length === 'essentials' ? 'The essentials — RAG in about 20 minutes'
+         : length === 'short' ? 'The short lesson — RAG, built in front of you'
+         : 'The lesson — RAG, built in front of you',
+    desc: length === 'essentials'
+      ? 'The whole RAG lesson in about twenty minutes: both pipelines, what an embedding is, the build, and the silent failure.'
+      : length === 'short'
       ? 'The RAG lesson, tightened: every demo and the two strongest playgrounds, same depth, fewer detours.'
       : 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
     active: base,
@@ -298,32 +322,46 @@ function buildPresent(all) {
     });
     return cues.map((c) =>
       `<tr><td class="n">${c.n}</td><td>${esc(c.title)}</td><td>${
-        c.widget
-          ? '<em>interactive — drive it with the mouse</em>'
-          : '<code>' + esc(c.cue) + '</code>'
+        c.widget ? '<em>interactive — drive it with the mouse</em>'
+                 : '<code>' + esc(c.cue) + '</code>'
       }</td></tr>`).join('\n');
   }
 
-  const core = all.filter((s) => s.core);
-  const wordsOf = (ss) => ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0);
-  const fullMin = Math.round(wordsOf(all) / 135);
-  const shortMin = Math.round(wordsOf(core) / 135);
-  const slides = all;
+  const TIERS = [
+    { key: 'essentials', label: 'Essentials',
+      slides: all.filter((s) => s.essential),
+      blurb: 'The whole arc, tightened. Both pipelines, what an embedding is, the build, and the silent failure — all eight demos, nothing skipped that matters.' },
+    { key: 'short', label: 'Short',
+      slides: all.filter((s) => s.core),
+      blurb: 'The spine at a comfortable pace, with room for the asides that make it stick.' },
+    { key: 'full', label: 'Full',
+      slides: all,
+      blurb: 'Everything: reference tables, the loader gotchas, the re-run trap, troubleshooting, the drills, all five playgrounds.' },
+  ];
 
-  const cues = [];
-  slides.forEach((s, i) => {
-    s.cues.forEach((c) => cues.push({ n: i + 1, cue: c, title: s.title }));
-    if (s.widget) cues.push({ n: i + 1, cue: null, title: s.title, widget: true });
-  });
+  // one demo takes roughly a minute and a half including talking through it
+  const speak = (ss, tier) => Math.round(ss.reduce((a, s) =>
+    a + ((tier === 'essentials' && s.briefNotes ? s.briefNotes : s.notes)
+         .split(/\s+/).filter(Boolean).length), 0) / 135);
+  const demoMins = (ss) => Math.round(ss.filter((s) => s.cues.length).length * 1.5);
 
-  const rows = cues.map((c) =>
-    `<tr><td class="n">${c.n}</td><td>${esc(c.title)}</td><td>${
-      c.widget
-        ? '<em>interactive — drive it with the mouse</em>'
-        : '<code>' + esc(c.cue) + '</code>'
-    }</td></tr>`).join('\n');
+  const url = (tier, talk) => talk
+    ? (tier === 'full' ? '/deck/talk/' : `/deck/talk-${tier}/`)
+    : (tier === 'full' ? '/deck/' : `/deck/${tier}/`);
 
-  const body = `<div class="wrap tx" style="max-width:860px">
+  const rows = TIERS.map((t) => {
+    const sp = speak(t.slides, t.key);
+    const dm = demoMins(t.slides);
+    return `<tr>
+      <td><strong>${t.label}</strong><br><span class="muted">${t.slides.length} slides</span></td>
+      <td><a href="${url(t.key, true)}">~${sp} min</a><br><span class="muted">talk only</span></td>
+      <td><a href="${url(t.key, false)}">~${sp + dm} min</a><br><span class="muted">work-along</span></td>
+      <td>${t.blurb}</td>
+    </tr>`;
+  }).join('\n');
+
+  const ess = TIERS[0];
+  const body = `<div class="wrap tx" style="max-width:900px">
   <span class="eyebrow"><b>For the presenter</b> &middot; recording setup</span>
   <h1>Record it from here.</h1>
   <p style="color:var(--ink-soft);font-size:1.08rem">The deck is the whole instrument.
@@ -332,60 +370,35 @@ function buildPresent(all) {
 
   <h2 style="margin-top:1.8em">Pick an edition</h2>
   <p style="color:var(--ink-soft)">Two questions: how long, and do you run the code live?
-  Every combination is a complete lesson — the slides and the output are identical, only
-  the narration and the slide count change.</p>
-
-  <div class="cards" style="margin:1.2em 0 0">
-    <a class="card" href="/deck/" style="border-left:4px solid var(--accent)">
-      <span class="k">Work-along &middot; full</span>
-      <h3>${all.length} slides &middot; ~${fullMin} min &rarr;</h3>
-      <p>You build it live. Narration cues you to switch to the terminal at each demo.
-      Everything, including the reference tables and all five playgrounds.</p>
-    </a>
-    <a class="card" href="/deck/short/" style="border-left:4px solid var(--accent)">
-      <span class="k">Work-along &middot; short</span>
-      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
-      <p>The same build, tightened to the spine. All eight demos, two playgrounds,
-      none of the asides.</p>
-    </a>
-    <a class="card" href="/deck/talk/" style="border-left:4px solid var(--teal)">
-      <span class="k">Talk only &middot; full</span>
-      <h3>${all.length} slides &middot; ~${fullMin} min &rarr;</h3>
-      <p><strong>No terminal.</strong> You teach; the output is already on the slide and
-      the narration explains it. Viewers can run the code themselves afterwards.</p>
-    </a>
-    <a class="card" href="/deck/talk-short/" style="border-left:4px solid var(--teal)">
-      <span class="k">Talk only &middot; short</span>
-      <h3>${core.length} slides &middot; ~${shortMin} min &rarr;</h3>
-      <p>The shortest complete version. A single-sitting lecture with nothing to set up
-      and nothing that can fail on camera.</p>
-    </a>
-  </div>
-
+  Every combination is a complete lesson — the slides and the output are identical.
+  <strong>Talk only</strong> means the output is already on screen and you explain it;
+  <strong>work-along</strong> means you switch to a terminal and run it.</p>
+  <table class="cues" style="margin-top:1em">
+    <tr><th>Edition</th><th>Talk only</th><th>Work-along</th><th>What it carries</th></tr>
+    ${rows}
+  </table>
   <div class="callout" style="margin:1.2em 0 0">
-    <span class="label">Switching mid-flight</span>
-    The deck's control bar carries both toggles — <strong>Short/Full</strong> and
-    <strong>Talk/Work-along</strong> — so you can try a section each way before committing.
+    <span class="label">Most effective for a recorded video</span>
+    <strong>Essentials, talk only — about ${speak(ess.slides, 'essentials')} minutes.</strong>
+    It keeps every demo and the whole argument, with the prose written tight rather than
+    conversational. Work-along adds roughly ${demoMins(ess.slides)} minutes of running things.
   </div>
 
   <h2 style="margin-top:1.8em">Setup</h2>
   <ol class="steps">
-    <li><strong>Open the deck</strong> and go fullscreen with <kbd>F</kbd>.
-      <a class="btn ghost" style="margin-left:0.6em;padding:0.45em 0.9em" href="/deck/">Open the deck &rarr;</a></li>
-    <li><strong>Press <kbd>S</kbd></strong> for the speaker window — your narration, a timer,
-      and a preview of the next slide. Put it on your second monitor. Allow the popup the
-      first time.</li>
+    <li><strong>Open the deck</strong> and go fullscreen with <kbd>F</kbd>.</li>
+    <li><strong>Press <kbd>S</kbd></strong> for the speaker window — narration, a timer, and
+      the next slide. Put it on your second monitor. Allow the popup the first time.</li>
     <li><strong>Record the deck window only</strong>, not the speaker window.</li>
-    <li><strong>Work-along editions only:</strong> run <code>./run.sh check</code> first —
-      it makes a real API call and catches a dead key before you are on camera. In a talk
-      edition there is nothing to set up; the output is already on the slides.</li>
+    <li><strong>Work-along editions only:</strong> run <code>./run.sh check</code> first — it
+      makes a real API call and catches a dead key before you are on camera. Rehearse once and
+      the embedding cache means the take cannot fail on network.</li>
   </ol>
 
   <div class="callout" style="margin:1.6em 0">
     <span class="label">One thing to know</span>
-    The deck also has a <strong>Narration</strong> button (<kbd>T</kbd>) that shows the same
-    notes inline, for people working through it alone. Leave it closed while you record —
-    you want the speaker window instead.
+    The deck also has a <strong>Narration</strong> button (<kbd>T</kbd>) showing the same notes
+    inline, for people working through it alone. Leave it closed while you record.
   </div>
 
   <h2 style="margin-top:1.8em">Keys</h2>
@@ -400,24 +413,17 @@ function buildPresent(all) {
 
   <h2 style="margin-top:1.8em">Every cue, in order</h2>
   <p style="color:var(--ink-soft)">Where to switch to the terminal, and where to pick up the
-  mouse. Generated from the deck, so it stays in step. Slide numbers are per edit.</p>
-
-  <h3 style="margin-top:1.4em">Short edit &middot; ${core.length} slides</h3>
+  mouse. Generated from the deck, so it stays in step. Slide numbers are per edition.</p>
+  ${TIERS.map((t) => `<h3 style="margin-top:1.6em">${t.label} &middot; ${t.slides.length} slides</h3>
   <table class="cues">
     <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
-    ${cueRows(core)}
-  </table>
-
-  <h3 style="margin-top:2em">Full lesson &middot; ${all.length} slides</h3>
-  <table class="cues">
-    <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
-    ${rows}
-  </table>
+    ${cueRows(t.slides)}
+  </table>`).join('\n')}
 </div>`;
 
   return page({
     title: 'Presenting and recording — ragverse.diy',
-    desc: 'How to present or record the RAG lesson from the deck: speaker view, keys, and every demo cue in order.',
+    desc: 'How to present or record the RAG lesson: three lengths, talk or work-along, speaker view, and every demo cue in order.',
     active: '/present/',
     body,
   });
@@ -427,48 +433,65 @@ function buildPresent(all) {
 /* The short deck is the same file with the non-core sections removed and
    its relative asset paths lifted one level, so /deck/short/ still loads
    /deck/'s vendored reveal, tokens and widget code. */
-function buildDeckVariant(rawHtml, { short, talk }) {
+function buildDeckVariant(rawHtml, { length, talk }) {
   let out = rawHtml;
 
-  if (short) {
+  // 1. drop the slides this length does not carry
+  if (length !== 'full') {
+    const keep = length === 'essentials'
+      ? /data-track="essential"/
+      : /data-track="(core|essential)"/;
     out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
-      (whole, attrs) => (/data-track="core"/.test(attrs) ? whole : ''));
+      (whole, attrs) => (keep.test(attrs) ? whole : ''));
   }
 
+  // 2. pick the narration for this edition, then remove the unused variants.
+  //    essentials uses the brief notes, which are written mode-neutral;
+  //    otherwise talk mode swaps in the talk notes where a slide has them.
   out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
-    const ti = body.indexOf('<aside class="talk">');
-    if (ti === -1) return whole;
-    const talkText = body.slice(ti + '<aside class="talk">'.length,
-                                body.indexOf('</aside>', ti));
-    let b = body.slice(0, ti) + body.slice(body.indexOf('</aside>', ti) + 8);
+    const pull = (b, cls) => {
+      const i = b.indexOf(`<aside class="${cls}">`);
+      if (i === -1) return [b, null];
+      const j = b.indexOf('</aside>', i);
+      return [b.slice(0, i) + b.slice(j + 8),
+              b.slice(i + `<aside class="${cls}">`.length, j)];
+    };
+    const setNotes = (b, text) => {
+      const i = b.indexOf('<aside class="notes">');
+      if (i === -1) return b;
+      const j = b.indexOf('</aside>', i);
+      return b.slice(0, i) + '<aside class="notes">' + text + '</aside>' + b.slice(j + 8);
+    };
 
-    if (talk) {
-      // the talk narration replaces the work-along narration
-      const ai = b.indexOf('<aside class="notes">');
-      if (ai !== -1) {
-        b = b.slice(0, ai) + '<aside class="notes">' + talkText + '</aside>' +
-            b.slice(b.indexOf('</aside>', ai) + 8);
-      }
+    let [b, brief] = pull(body, 'brief');
+    let talkText;
+    [b, talkText] = pull(b, 'talk');
+
+    if (length === 'essentials' && brief) {
+      b = setNotes(b, brief);
+    } else if (talk && talkText) {
+      b = setNotes(b, talkText);
       const t = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1];
       if (t) b = b.replace(/(<h[12][^>]*>)[\s\S]*?(<\/h[12]>)/, `$1${t}$2`);
     }
     return `<section${attrs}>${b}</section>`;
   });
 
+  // 3. lift relative asset paths one level, since variants live in a subdir
   out = out.replace(/\b(href|src)="(?!https?:|\/|data:|#)([^"]+)"/g,
                     (m, attr, url) => `${attr}="../${url}"`);
 
   if (talk) {
+    out = out.replace(/<body>/, '<body data-mode="talk">');
     out = out.replace(/<span class="label">Demo&nbsp;\d+<\/span>/g,
                       '<span class="label">Output of</span>');
     out = out.replace(/<span class="label">Demo<\/span>/g,
                       '<span class="label">Output of</span>');
   }
 
-  const edit = [short ? 'short' : 'full', talk ? 'talk' : 'workalong'].join('-');
+  const edit = `${length}-${talk ? 'talk' : 'workalong'}`;
   out = out.replace('<div class="reveal">', `<div class="reveal" data-edit="${edit}">`);
-  if (talk) out = out.replace('<body>', '<body data-mode="talk">');
-  const label = (talk ? 'Talk' : 'Work-along') + (short ? ', short' : '');
+  const label = (talk ? 'Talk' : 'Work-along') + (length === 'full' ? '' : `, ${length}`);
   out = out.replace('<title>', `<title>${label} — `);
   return out;
 }
@@ -490,9 +513,11 @@ copyDir(path.join(ROOT, 'slides'), path.join(DIST, 'deck'));
 
 const rawDeck = read('slides', 'index.html');
 const DECK_VARIANTS = [
-  ['short',      { short: true,  talk: false }],
-  ['talk',       { short: false, talk: true  }],
-  ['talk-short', { short: true,  talk: true  }],
+  ['short',           { length: 'short',      talk: false }],
+  ['essentials',      { length: 'essentials', talk: false }],
+  ['talk',            { length: 'full',       talk: true  }],
+  ['talk-short',      { length: 'short',      talk: true  }],
+  ['talk-essentials', { length: 'essentials', talk: true  }],
 ];
 for (const [dir, opts] of DECK_VARIANTS) {
   fs.mkdirSync(path.join(DIST, 'deck', dir), { recursive: true });
@@ -501,7 +526,7 @@ for (const [dir, opts] of DECK_VARIANTS) {
 }
 // the default deck still needs its talk asides stripped out
 fs.writeFileSync(path.join(DIST, 'deck', 'index.html'),
-  rawDeck.replace(/\s*<aside class="talk">[\s\S]*?<\/aside>/g, ''));
+  rawDeck.replace(/\s*<aside class="(talk|brief)">[\s\S]*?<\/aside>/g, ''));
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
@@ -528,9 +553,13 @@ if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
   const coreSlides = slides.filter((s) => s.core);
   const mins = (ss) => Math.round(
     ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0) / 135);
+  const essSlides = slides.filter((s) => s.essential);
+  const essMins = Math.round(essSlides.reduce((a, s) =>
+    a + ((s.briefNotes || s.notes).split(/\s+/).filter(Boolean).length), 0) / 135);
   const vals = {
     FULL_SLIDES: slides.length, SHORT_SLIDES: coreSlides.length,
-    FULL_MIN: mins(slides), SHORT_MIN: mins(coreSlides),
+    ESS_SLIDES: essSlides.length,
+    FULL_MIN: mins(slides), SHORT_MIN: mins(coreSlides), ESS_MIN: essMins,
   };
   let landing = read('site', 'index.html');
   for (const [k, v] of Object.entries(vals)) {
@@ -546,7 +575,7 @@ fs.writeFileSync(path.join(DIST, 'play', 'index.html'), buildPlay(slides));
 
 fs.mkdirSync(path.join(DIST, 'read'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'read', 'index.html'), buildRead(slides, 'full'));
-for (const v of ['short', 'talk', 'talk-short']) {
+for (const v of ['short', 'essentials', 'talk', 'talk-short', 'talk-essentials']) {
   fs.mkdirSync(path.join(DIST, 'read', v), { recursive: true });
   fs.writeFileSync(path.join(DIST, 'read', v, 'index.html'), buildRead(slides, v));
 }

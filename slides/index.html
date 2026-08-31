@@ -20,7 +20,7 @@
 <div class="reveal"><div class="slides">
 
 <!-- ==================================================== 01 -->
-<section data-track="core" class="title-slide">
+<section data-track="essential" class="title-slide">
   <h1>Retrieval Augmented<br>Generation</h1>
   <p class="sub">How to give a language model access to a hundred thousand documents
   without ever putting a hundred thousand documents in the prompt.</p>
@@ -40,6 +40,13 @@ This is a work-along session. I am going to switch between these slides and a te
 You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under ten cents in embeddings.
 
 Let's start with why this problem exists at all.
+  </aside>
+  <aside class="brief">
+Over the next twenty-five minutes we are going to build a Retrieval Augmented Generation system, and understand every piece of it.
+
+Here is the problem in one line. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt?
+
+Everything on these slides is real output from real code. If I claim two pieces of text have similar embeddings, you will see it measured.
   </aside>
 </section>
 
@@ -147,7 +154,7 @@ That does not work. And the reason it does not work is the whole reason this les
 </section>
 
 <!-- ==================================================== 06 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; Definition</span>
   <h2>Retrieval Augmented Generation</h2>
   <div class="definition">
@@ -167,10 +174,19 @@ So the model does not get everything. It gets the right few pages.
 
 That is the entire idea. I mean that literally — everything else in this session is mechanics for how you find the right few pages quickly. If you leave with only one sentence, leave with that one.
   </aside>
+  <aside class="brief">
+You work somewhere with a few hundred internal documents. Someone asks a question that exactly one of them answers. The obvious move is to paste them all in and ask.
+
+That does not work, and why it does not work is the whole lesson.
+
+So: Retrieval Augmented Generation is a language model plus a retrieval system. The retrieval system searches your documents and pulls only the relevant pieces into the prompt, at the moment the model needs them.
+
+The model does not get everything. It gets the right few pages. That is the entire idea — everything after this is mechanics.
+  </aside>
 </section>
 
 <!-- ==================================================== 07 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; Tokens</span>
   <h2>Models do not read words</h2>
   <p class="tight">A <em>token</em> is the unit of text a model processes. Sometimes a whole
@@ -213,10 +229,19 @@ That is the rule in action. Common words are one token. Rarer or longer words ge
 
 The rule of thumb worth memorising: one token is roughly three quarters of an English word. So a thousand words is roughly thirteen hundred tokens.
   </aside>
+  <aside class="brief">
+First word you need: the token.
+
+A token is the unit of text a model processes. Sometimes a whole word, often a fragment. Models do not read words; they read tokens. That matters because every limit and every price you meet is counted in tokens.
+
+Look at the output. Five words, seven tokens. "Retrieval" splits into three pieces, while "augmented" and "powerful" survive whole. Common words are one token; rarer ones fragment.
+
+Rule of thumb: one token is about three quarters of an English word.
+  </aside>
 </section>
 
 <!-- ==================================================== 08 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The context window</span>
   <h2>Everything has to fit inside one window</h2>
   <p class="tight">The <em>context window</em> is the total number of tokens a model can hold
@@ -242,10 +267,17 @@ I want to flag something about that figure: verify it before you quote it. These
 
 So — two million tokens. That sounds like it should be plenty. Let's see how it compares to how much text an actual company holds.
   </aside>
+  <aside class="brief">
+Second word: the context window. That is the total number of tokens a model can hold in one request — everything you send and everything it writes back, sharing one budget. Past that limit the information is simply not there.
+
+In 2026 the major models have converged on one million tokens. A few advertise ten million, though no benchmark shows quality holding near the top of those windows.
+
+A million sounds like plenty. Let us see how it compares to what a company actually holds.
+  </aside>
 </section>
 
 <!-- ==================================================== 09 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The scale gap</span>
   <h2>Read the scale carefully</h2>
   <div class="term">     How much text, in tokens — <span class="dim">logarithmic scale</span>
@@ -275,6 +307,15 @@ Now watch what happens. A mid-sized company with one terabyte of documents: two 
 An enterprise archive at one petabyte: two hundred and fifty trillion.
 
 So here is the thing to take away. That gap is not a gap you close by waiting for bigger models. If context windows got a thousand times bigger tomorrow — which they will not — you would still be short of the mid-sized company by a factor of two hundred and fifty. This is a structural problem, not a temporary one.
+  </aside>
+  <aside class="brief">
+Read this carefully, because it is a logarithmic scale — each step right is ten times the last, not one step.
+
+Our five articles: seventy-two thousand tokens. That fits in a frontier model easily. For five documents you genuinely do not need RAG, and I would rather say that than pretend otherwise.
+
+Now watch. A mid-sized company with a terabyte of documents: two hundred and fifty billion tokens. That is two hundred and fifty thousand times a model window. An enterprise archive is a thousand times larger again.
+
+This is not a gap you close by waiting for bigger models. And there is a second reason: you pay per token, and burying the one relevant paragraph in half a million irrelevant ones gives you worse answers, not better.
   </aside>
 </section>
 
@@ -380,7 +421,7 @@ So: two pipelines. Learn them separately, and everything after this is easy.
 </section>
 
 <!-- ==================================================== 12 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>03</b> &nbsp;·&nbsp; The whole system in one picture</span>
   <h2>Two pipelines</h2>
   <div class="pipe">
@@ -417,10 +458,19 @@ Now look at the two orange boxes. The embedding model appears in both rows. That
 
 Keep this diagram. Every RAG system you will ever build, from a weekend project to production, is this diagram with more engineering around each box.
   </aside>
+  <aside class="brief">
+This is the slide to photograph. A RAG system is two pipelines, not one — people collapse them and that is where the mental model breaks.
+
+The top row, ingestion, runs once, before anybody asks anything. Documents go in, get chunked into small pieces, each piece goes through an embedding model and becomes a vector, and the vectors land in a database. Then it stops.
+
+The bottom row, retrieval, runs on every question. The question becomes a vector, a retriever ranks every stored vector by closeness, the top matches come back, and those chunks plus the question go to the LLM.
+
+Now look at the two orange boxes. The same embedding model appears in both rows. That is not a drawing shortcut — and we will break it deliberately at the end to show you why it matters.
+  </aside>
 </section>
 
 <!-- ==================================================== 13 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; Chunking</span>
   <h2>A chunk is a slice, not a section</h2>
   <p class="tight">Chunking is breaking large documents into small pieces. You choose the size.
@@ -445,10 +495,17 @@ So why cut at all? Why not keep whole documents? Because the chunk is your unit 
 
 Chunk size is therefore a real design decision, and there are techniques for cutting more intelligently. Those come later in the track. For today we cut simply, and I will show you exactly what that costs.
   </aside>
+  <aside class="brief">
+Next word: the chunk.
+
+Chunking is cutting documents into small pieces, and you choose the size. The important nuance: a chunk is a slice, not a section. Chunks are cut by size, not meaning. They do not respect headings or arguments, and a naive splitter will cut through the middle of a sentence without hesitating.
+
+Why cut at all? Because the chunk is your unit of retrieval — the smallest thing the system can hand back. If your chunks are whole articles, a question about one sentence returns the whole article, and you are back to stuffing the context window.
+  </aside>
 </section>
 
 <!-- ==================================================== 14 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; The embedding model</span>
   <h2>This is not an LLM</h2>
   <p class="tight">Different model, different job. It <strong>does not generate text</strong>.
@@ -490,10 +547,17 @@ The property that matters is the fixed length. One word in or nine hundred words
 
 That is the trick. Everything downstream depends on it.
   </aside>
+  <aside class="brief">
+Next box: the embedding model. And the thing that trips everyone: this is not an LLM. Different model, different job. It does not generate text. Text goes in, a list of numbers comes out.
+
+Look at the three rows. One word in. Eight words in. Three hundred and thirty-seven words in. Every time, exactly fifteen hundred and thirty-six numbers come back.
+
+That fixed length is the property the whole system rests on. Any two pieces of text, however different in length, become two lists of the same size — and two lists of the same size can be compared with arithmetic.
+  </aside>
 </section>
 
 <!-- ==================================================== 15 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; What an embedding is</span>
   <h2>Similar meaning, similar numbers</h2>
   <p class="tight">A <em>vector embedding</em> is a list of numbers that stands in for a piece
@@ -524,10 +588,19 @@ Cat and kitten sit almost on top of each other on every dimension — thirty-fou
 
 That is the intuition. Now let's check whether it survives contact with a real embedding model, because I do not want you taking a made-up table on faith.
   </aside>
+  <aside class="brief">
+So what is an embedding? A list of numbers standing in for a piece of text. Each number is called a dimension — that is two more words for your list.
+
+And here is the sentence that matters more than any other today: text with similar meaning produces similar numbers.
+
+This table is a teaching device, and I want to be honest that the numbers are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
+
+Real embeddings are not labelled and nobody knows what any single dimension means. So let us check whether the intuition survives contact with a real model.
+  </aside>
 </section>
 
 <!-- ==================================================== 16 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Measured, not asserted</span>
   <h2>Does that actually hold?</h2>
   <div class="cue">
@@ -579,6 +652,15 @@ Why? Because bare single words are a weak signal. "Cat" and "dog" co-occur in te
 But look at the bottom two lines, because that is where the claim really holds. Domestic animals: average similarity inside that group is zero point five three, and to everything outside it, zero point three two. Drinks: zero point six one inside, zero point three one outside. Every group is meaningfully tighter inside than out.
 
 That is a neighbourhood. And the crucial part — nobody labelled any of this. No human told the model that coffee and tea are related. It fell out of arithmetic over fifteen hundred numbers.
+  </aside>
+  <aside class="brief">
+Eight ordinary words, embedded with a real model, every pair measured. One point zero would be identical.
+
+Cat to dog, zero point six. Cat to kitten, zero point five seven. Then a clear drop to the fruit and the drinks.
+
+Now, honestly: that contradicts the tidy table. It said kitten should be closest. Real embeddings put dog first, because cat and dog co-occur in text constantly while kitten is a narrower word. Do not over-read the ordering inside a cluster — and note that real systems embed paragraphs, not single words.
+
+But look at the bottom lines, because that is where the claim holds. Every group is tighter inside than out. That is a neighbourhood, and nobody labelled any of it.
   </aside>
 </section>
 
@@ -660,7 +742,7 @@ There is a trade-off underneath all of this. More dimensions capture more meanin
 </section>
 
 <!-- ==================================================== 18 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; Where the vectors live</span>
   <h2>The vector database stores both</h2>
   <table>
@@ -689,6 +771,15 @@ The fourth column, source, is metadata. That is what lets you tell a user "this 
 
 For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector databases. We are using Chroma today because it runs locally, on disk, with no account and no server. FAISS is a library from Meta rather than a hosted service. And if you already run Postgres, the pgvector extension turns it into a vector database, which is often the right answer in a real company.
   </aside>
+  <aside class="brief">
+Last box in the top row: the vector database. It stores embeddings and finds the closest ones fast.
+
+The detail people miss is in this table. It stores the original text alongside every vector. The vector is how a chunk gets found; the original text is what actually gets used. Store only the numbers and you have a beautiful index and nothing to send a model — you cannot turn a vector back into English.
+
+That fourth column, the source, is metadata. It is what lets you tell a user which file an answer came from.
+
+Options: Pinecone, Weaviate, Chroma, Qdrant. We use Chroma because it runs locally with no account. If you already run Postgres, pgvector is often the right answer.
+  </aside>
 </section>
 
 <!-- ==================================================== 19 -->
@@ -707,7 +798,7 @@ Now someone asks a question. This is the bottom row.
 </section>
 
 <!-- ==================================================== 20 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; Retrieval, step by step</span>
   <h2>The question takes the same road</h2>
   <ol class="tight">
@@ -748,6 +839,15 @@ And then look at what did not make it. Annual headcount summary at zero point fo
 Notice something about that top result. The question says "sales". The winning chunk says "revenue". Those are different words. A keyword search for "sales" would have missed it entirely. That is what embeddings buy you — matching on meaning rather than on spelling.
 
 How closeness is actually calculated is a later topic. For now: it is distance between two points, measured with arithmetic.
+  </aside>
+  <aside class="brief">
+Ingestion is done. Now someone asks a question, and it takes the same road.
+
+The question goes through the same embedding model — I will keep repeating that — and becomes a vector of the same length. The retriever then scores every stored vector by closeness and returns the top matches.
+
+How many come back is called top k. That is the last word worth collecting, and you choose it. But here is the half people miss: ask for five and you get five, whether or not any are good. A retriever has no concept of "nothing here fits". It always returns k results, neatly ranked.
+
+Notice the winning chunk says "revenue" while the question says "sales". A keyword search misses that. Matching on meaning is what embeddings buy you.
   </aside>
 </section>
 
@@ -821,7 +921,7 @@ Right. That is all the theory. Let's build it.
 </section>
 
 <!-- ==================================================== 23 -->
-<section data-track="core" class="divider">
+<section data-track="essential" class="divider">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part four</b></span>
   <h2>Build the ingestion pipeline</h2>
@@ -834,6 +934,11 @@ Everything up to here has been the top half of the diagram explained. Now it is 
 Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under ten cents in embedding costs.
 
 By the end of this you will have a folder on disk holding the vector representation of every paragraph in your documents.
+  </aside>
+  <aside class="brief">
+That is the theory. Now we build it.
+
+Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
   </aside>
 </section>
 
@@ -1047,7 +1152,7 @@ Get in the habit. Prove the skeleton runs before you fill it in.
 </section>
 
 <!-- ==================================================== 30 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Step one</span>
   <h2>Load the files</h2>
   <pre><code class="language-python">def load_documents(docs_path):
@@ -1095,6 +1200,15 @@ So that is what this code does directly — six lines, using pathlib from the st
 Notice the two guard clauses, and notice they do different jobs. The first checks the directory exists. The second checks we actually loaded something. Without that second check, pointing at an empty folder gives you a pipeline that runs happily all the way through, embeds nothing, stores nothing, and reports success.
 
 Fail loudly and early rather than silently loading nothing. That principle will save you more debugging time in RAG than almost anything else, because so much of this stack fails quietly.
+  </aside>
+  <aside class="brief">
+Step one: load the files. And here I depart from most tutorials deliberately.
+
+Every RAG tutorial uses DirectoryLoader from langchain-community. That package was archived in May twenty twenty-six. And look at what it actually did for text files: glob a pattern, read each file, wrap the text in a Document with the path as metadata. That is the whole job — so we write it directly, in six lines.
+
+Same objects out, one fewer dead dependency, and nothing hidden behind the word "loader".
+
+Note the two guard clauses. One checks the folder exists; the other checks we actually loaded something. Without the second, an empty folder gives you a pipeline that runs happily, embeds nothing, and reports success.
   </aside>
 </section>
 
@@ -1162,7 +1276,7 @@ The important part is that what comes out the other side is the same thing: Docu
 </section>
 
 <!-- ==================================================== 33 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Step two</span>
   <h2>Chunk them</h2>
   <pre><code class="language-python">def split_documents(documents, chunk_size=800, chunk_overlap=0):
@@ -1203,6 +1317,15 @@ Three arguments. Chunk size. Chunk overlap — which we will come to, and which 
 
 And the thing I want to flag hardest: chunk size equals eight hundred means eight hundred characters. Not eight hundred tokens. Roughly two hundred tokens. Different splitters in different libraries count in different units, and getting this wrong by a factor of four is a very easy mistake to make. Always check which unit you are in.
   </aside>
+  <aside class="brief">
+Step two: chunk them. Articles of sixty thousand characters are useless units of retrieval — nobody wants a whole article back because one sentence matched.
+
+Three arguments: chunk size, chunk overlap, and a separator set to a blank line so we prefer paragraph boundaries.
+
+And the thing to flag hardest: chunk size of eight hundred means eight hundred characters, not tokens. Roughly two hundred tokens. Different splitters count in different units, and getting that wrong by a factor of four is easy.
+
+You will also see the chunks are not all eight hundred. The splitter cuts on the separator first, then merges up to the target — it never breaks a paragraph to hit the number. So it is a target, not a cap.
+  </aside>
 </section>
 
 <!-- ==================================================== 34 -->
@@ -1241,7 +1364,7 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 </section>
 
 <!-- ==================================================== 35 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Overlap</span>
   <h2>What <code>chunk_overlap</code> actually does</h2>
   <div class="term"><span class="dim">chunk_overlap = 0</span>
@@ -1271,6 +1394,15 @@ That is all overlap does. Each chunk repeats the last n characters of the one be
 Rule of thumb: set overlap to roughly ten to twenty percent of chunk size. For eight hundred characters, one hundred is a reasonable default. You pay for that duplication in storage and in embedding cost — the same text gets embedded twice — and it is almost always worth it.
 
 So we change the default to a hundred, and re-run.
+  </aside>
+  <aside class="brief">
+This is the part of chunking that matters, shown small enough to read.
+
+Overlap zero. Look at the seam: a sentence is cut clean in half. Neither half carries the whole fact, so neither is a good match for a question about it. The fact is in your database and unreachable.
+
+Overlap forty. Chunk one now begins by repeating the tail of chunk zero, so the sentence on the seam survives intact somewhere.
+
+That is all overlap does — each chunk repeats the last n characters of the one before. Rule of thumb: ten to twenty percent of chunk size. You pay for the duplication in storage and embedding calls, and it is almost always worth it.
   </aside>
 </section>
 
@@ -1324,7 +1456,7 @@ There is no correct answer on this slide. There is a shape of answer: chunks big
 </section>
 
 <!-- ==================================================== 36 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; Step three</span>
   <h2>Embed and store — one call does both</h2>
   <pre><code class="language-python">def create_vector_store(chunks, db_path):
@@ -1366,6 +1498,15 @@ These are two conceptual steps — two separate boxes in the diagram — and one
 This is also the one step in the whole pipeline that costs money and takes real time. Every chunk is a call to OpenAI. For five hundred and forty-seven chunks, expect thirty seconds to a couple of minutes, and a fraction of a cent.
 
 Everything before this point is free and local. Everything after it is free and local. This single call is where the bill comes from — which is why it matters that ingestion runs once, and not per question.
+  </aside>
+  <aside class="brief">
+Step three: embed and store. Two conceptual boxes, one line of code — Chroma dot from underscore documents embeds every chunk and writes it to disk in a single call.
+
+This is also the only step that costs money and takes time. Every chunk is an API call. Five hundred and forty-seven chunks, thirty seconds to a couple of minutes, a fraction of a cent.
+
+Three arguments matter. The embedding model — write that choice down, because the next lesson must use exactly the same one. Persist directory, or Chroma runs in memory and everything vanishes when the script ends. And cosine as the distance measure, which is the standard for text.
+
+Look at what is stored per chunk: the vector, the original text, and the metadata — the source surviving all the way from the loader.
   </aside>
 </section>
 
@@ -1431,7 +1572,7 @@ HNSW, by the way, stands for hierarchical navigable small world, which is the in
 </section>
 
 <!-- ==================================================== 39 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; Confirm it worked</span>
   <h2>Ask it something</h2>
   <div class="cue">
@@ -1474,10 +1615,17 @@ Look at the top hit: "In early 2002, Elon Musk started to look for staff for his
 
 One thing to note about the scores. Zero point six six is the top match, and that might feel low if you were expecting something near one. It is not low. Cosine similarity between a short question and a long paragraph rarely goes above zero point seven, because they are different shapes of text. What matters is the gap between the top results and everything else, not the absolute number. Do not go hunting for a universal threshold — calibrate against your own corpus.
   </aside>
+  <aside class="brief">
+Does it work? The store has five hundred and forty-seven vectors covering five companies. The question is "who founded SpaceX".
+
+Every single result comes from spacex dot txt. Not one Tesla chunk, despite Elon Musk appearing all over the Tesla article — exactly the near-miss that would trip a keyword search.
+
+One note on the scores. Zero point six six is the top match, and that might feel low. It is not. Cosine similarity between a short question and a long paragraph rarely exceeds zero point seven. What matters is the gap between the top results and the rest, not the absolute number.
+  </aside>
 </section>
 
 <!-- ==================================================== 40 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; The actual prompt</span>
   <h2>This is what reaches the model</h2>
   <div class="term">     │ Answer the question using only the context below.
@@ -1508,6 +1656,15 @@ There is nothing numeric anywhere in it. No vectors, no embeddings, no similarit
 Vectors are only used for finding. Their job finished the moment the matching was done, and then we went back to plain English.
 
 I think this is the single most clarifying thing in the whole lesson. All the machinery — the chunking, the embedding, the fifteen hundred dimensions, the HNSW index — exists to produce those three paragraphs. The clever part is the search. The prompt at the end is boring, and it is supposed to be.
+  </aside>
+  <aside class="brief">
+And here is the prompt. Every character of it.
+
+An instruction, the word CONTEXT, three paragraphs of ordinary English lifted from the article, and the question. Just under three thousand characters.
+
+There is nothing numeric in it. No vectors, no embeddings, no scores. The model has no idea a vector database was involved.
+
+This is the step everyone misreads. Vectors are only used for finding; their job ends the instant the matching is done, and then you are back in plain English. All the machinery — the chunking, the embeddings, the fifteen hundred dimensions — exists to produce those three paragraphs. The prompt at the end is boring, and it is meant to be.
   </aside>
 </section>
 
@@ -1628,7 +1785,7 @@ Here is what makes it dangerous. Nothing crashes. There is no error message. Let
 </section>
 
 <!-- ==================================================== 43 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; The consistency rule</span>
   <h2>The consistency rule</h2>
   <div class="definition">
@@ -1661,10 +1818,19 @@ The two systems cannot understand each other. And neither one will tell you.
 
 Let's break it and watch.
   </aside>
+  <aside class="brief">
+Now the mistake that breaks most first builds.
+
+The rule: use the same embedding model and the same dimension count for your documents and your queries. Every time. No exceptions.
+
+The way it happens is completely ordinary. You embed your documents in January. Two months later you write the query side and reach for a model — maybe cheaper, maybe you just do not remember which you used.
+
+Think of embedding models as separate languages. A vector written by one means nothing to another. The numbers are the same shape, the same range, they look entirely normal — and neither system will tell you.
+  </aside>
 </section>
 
 <!-- ==================================================== 44 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; Break it on purpose</span>
   <h2>Same store. Same question. Nothing crashes.</h2>
   <div class="cue">
@@ -1725,6 +1891,19 @@ Now notice what did not happen. Nothing crashed. No exception. No warning. No lo
 And then an LLM takes those three chunks and writes a fluent, confident, sourced-looking, wrong answer.
 
 That is why this is the mistake that breaks most first builds. Not because it is subtle to fix, but because it is invisible until someone checks an answer by hand.
+  </aside>
+  <aside class="brief">
+So let us break it on purpose.
+
+A fair test: the wrong model is text-embedding-3-large asked for fifteen hundred and thirty-six dimensions, so the vector is exactly the same shape. Chroma has no mismatch to complain about.
+
+Top block, the right model: all three results from spacex dot txt. Bottom block, same database, same question — only the model that embedded the question changed.
+
+The scores collapsed by a factor of ten. And the third result is from microsoft dot txt, returned for a question about SpaceX.
+
+Now notice what did not happen. Nothing crashed. No exception, no warning, no log line. Three results, ranked, formatted identically to the correct run. Every piece of monitoring you have says the system is fine — and an LLM handed those chunks writes a confident, wrong answer.
+
+That is why this breaks first builds. Not because it is hard to fix, but because it is invisible until someone checks an answer by hand.
   </aside>
 </section>
 
@@ -1881,7 +2060,7 @@ Eight. Documents with model A, queries with model B. The symptom is that there i
 </section>
 
 <!-- ==================================================== 48 -->
-<section data-track="core">
+<section data-track="essential">
   <span class="eyebrow"><b>10</b> &nbsp;·&nbsp; Summary</span>
   <h2>The whole session in ten lines</h2>
   <ol class="tight">
@@ -1916,6 +2095,21 @@ Send the model the question plus the original text of those chunks. Never the ve
 Set chunk overlap so sentences on the seam survive, and set persist directory or you lose the work.
 
 And the last one, which is the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking this fails silently.
+  </aside>
+  <aside class="brief">
+The whole thing in eight lines.
+
+Models have a token limit; real document stores are millions of times larger. So you retrieve the relevant pieces instead of sending everything.
+
+A RAG system is two pipelines — ingestion runs once, retrieval runs per question.
+
+Ingestion: chunk, embed, store the vectors with their text. An embedding is a fixed-length list of numbers where similar meaning gives similar numbers.
+
+Retrieval: embed the question the same way, rank by closeness, take the top k. Send the model the question plus the original text — never the vectors.
+
+Set overlap so sentences on the seam survive. Set persist directory or you lose the work.
+
+And the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking that fails silently.
   </aside>
 </section>
 

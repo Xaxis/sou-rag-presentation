@@ -7,18 +7,23 @@ A deck teaches Retrieval Augmented Generation; this repo is the code that goes
 with it. You end up with a working ingestion pipeline: five documents in, a
 searchable vector database out, in about sixty lines of Python.
 
-It comes in **four editions** — long or short, and work-along or talk-only:
+It comes in **six editions** — three lengths, each as a talk or a work-along.
+For a recorded video, **essentials as a talk (~18 min)** is the most effective:
+it keeps every demo and the whole argument, with the prose written tight rather
+than conversational.
 
 <!-- BEGIN:editions -->
-| | Work-along (you run the demos) | Talk only (no terminal) |
+| | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Full** · 54 slides | [~80 min](https://ragverse.diy/read/) | [~80 min](https://ragverse.diy/read/talk/) |
-| **Short** · 36 slides | [~52 min](https://ragverse.diy/read/short/) | [~52 min](https://ragverse.diy/read/talk-short/) |
+| **Essentials** · 22 slides | [~18 min](https://ragverse.diy/read/talk-essentials/) | [~30 min](https://ragverse.diy/read/essentials/) |
+| **Short** · 36 slides | [~52 min](https://ragverse.diy/read/talk-short/) | [~64 min](https://ragverse.diy/read/short/) |
+| **Full** · 54 slides | [~80 min](https://ragverse.diy/read/talk/) | [~92 min](https://ragverse.diy/read/) |
 <!-- END:editions -->
 
-Same slides, same output, same rigour — what changes is the narration and how
-much of it there is. The talk editions explain output that is already on the
-slide, so there is nothing to set up and nothing that can fail on camera.
+Same slides, same output, same rigour. **Essentials is not a summary** — it is
+the whole arc with tightened narration, all eight demos, and every vocabulary
+term. The talk editions explain output that is already on the slide, so there
+is nothing to set up and nothing that can fail on camera.
 
 Every number in the lesson is real output from these scripts. Nothing is an
 illustration.

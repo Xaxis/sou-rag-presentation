@@ -68,7 +68,11 @@ def parse(deck_html):
         cues = re.findall(r'<span class="cmd">(.*?)</span>', body, re.S)
 
         widgets = re.findall(r'id="(ix-[a-z]+)"', body)
-        core = 'data-track="core"' in attrs
+        core = 'data-track="core"' in attrs or 'data-track="essential"' in attrs
+        essential = 'data-track="essential"' in attrs
+        bi = raw.find('<aside class="brief">')
+        brief = "" if bi == -1 else raw[bi + len('<aside class="brief">'):
+                                        raw.find('</aside>', bi)].strip()
 
         slides.append({
             "title": strip_tags(heading.group(1)) if heading else "(untitled)",
@@ -76,6 +80,8 @@ def parse(deck_html):
             "cues": [strip_tags(c) for c in cues],
             "widgets": widgets,
             "core": core,
+            "essential": essential,
+            "brief": brief,
             "notes": notes,
         })
     return slides
@@ -128,6 +134,9 @@ def main():
     minutes = round(total_words / WORDS_PER_MINUTE)
     core = [s for s in slides if s["core"]]
     core_minutes = round(sum(len(s["notes"].split()) for s in core) / WORDS_PER_MINUTE)
+    ess = [s for s in slides if s["essential"]]
+    ess_minutes = round(
+        sum(len((s["brief"] or s["notes"]).split()) for s in ess) / WORDS_PER_MINUTE)
 
     out = []
     out.append("# Recording script\n")
@@ -138,8 +147,9 @@ def main():
     )
     out.append(
         f"| | |\n|---|---|\n"
-        f"| Full lesson | {len(slides)} slides · ~{total_words:,} words · ~{minutes} min |\n"
+        f"| Essentials | {len(ess)} slides · ~{ess_minutes} min |\n"
         f"| Short edit | {len(core)} slides · ~{core_minutes} min |\n"
+        f"| Full lesson | {len(slides)} slides · ~{minutes} min |\n"
         f"| Live demos | {sum(1 for s in slides if s['cues'])} slides carry a command |\n"
     )
     out.append(
@@ -148,7 +158,12 @@ def main():
     )
 
     for i, s in enumerate(slides, 1):
-        mark = " · **in the short edit**" if s["core"] else ""
+        if s["essential"]:
+            mark = " · **essentials**"
+        elif s["core"]:
+            mark = " · **short edit**"
+        else:
+            mark = ""
         out.append(f"\n## Slide {i} — {s['title']}{mark}\n")
         meta = []
         if s["eyebrow"]:
@@ -158,23 +173,31 @@ def main():
         if meta:
             out.append("  \n".join(meta) + "\n")
         out.append("\n" + s["notes"].strip() + "\n")
+        if s["brief"]:
+            out.append("\n> **Essentials edition — tighter narration:**\n>\n"
+                       + "\n".join("> " + ln if ln.strip() else ">"
+                                    for ln in s["brief"].splitlines()) + "\n")
 
     OUT.write_text("\n".join(out), encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)}")
     print(f"  full  {len(slides)} slides, ~{total_words:,} words, ~{minutes} min")
     print(f"  short {len(core)} slides, ~{core_minutes} min")
+    print(f"  ess   {len(ess)} slides, ~{ess_minutes} min")
 
     # keep the README's two tables in step with the deck
     if README.exists():
         demo_tbl, ix_tbl = render_tables(slides)
         S = "https://ragverse.diy"
         editions = (
-            "| | Work-along (you run the demos) | Talk only (no terminal) |\n"
+            "| | Talk only (no terminal) | Work-along (you run the demos) |\n"
             "|---|---|---|\n"
-            f"| **Full** · {len(slides)} slides | [~{minutes} min]({S}/read/) "
-            f"| [~{minutes} min]({S}/read/talk/) |\n"
-            f"| **Short** · {len(core)} slides | [~{core_minutes} min]({S}/read/short/) "
-            f"| [~{core_minutes} min]({S}/read/talk-short/) |"
+            f"| **Essentials** · {len(ess)} slides | "
+            f"[~{ess_minutes} min]({S}/read/talk-essentials/) "
+            f"| [~{ess_minutes + 12} min]({S}/read/essentials/) |\n"
+            f"| **Short** · {len(core)} slides | [~{core_minutes} min]({S}/read/talk-short/) "
+            f"| [~{core_minutes + 12} min]({S}/read/short/) |\n"
+            f"| **Full** · {len(slides)} slides | [~{minutes} min]({S}/read/talk/) "
+            f"| [~{minutes + 12} min]({S}/read/) |"
         )
         text = README.read_text(encoding="utf-8")
         text, ok1 = splice(text, "demo-table", demo_tbl)

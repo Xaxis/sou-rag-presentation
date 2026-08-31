@@ -54,16 +54,31 @@ hand-written table.
 
 ---
 
-## The four editions
+## The six editions
 
-Two independent axes, so four complete lessons out of one source file.
+Two independent axes — three lengths and two modes — so six complete lessons
+out of one source file.
 
-**Length** — every slide carries a track marker:
+**Length** — every slide carries a track marker, and the tiers nest:
 
 ```html
-<section data-track="core">   <!-- in the short edit too -->
-<section>                     <!-- full lesson only -->
+<section data-track="essential">  <!-- essentials, short and full -->
+<section data-track="core">       <!-- short and full -->
+<section>                         <!-- full only -->
 ```
+
+The essentials edition also uses **tighter narration** where a slide provides
+it, because cutting slides alone does not get you to twenty minutes — the
+median slide carries about 200 spoken words:
+
+```html
+<aside class="notes">…the unhurried version…</aside>
+<aside class="brief">…the same teaching, written tight…</aside>
+```
+
+`brief` is written **mode-neutral**, so it serves talk and work-along alike and
+needs no talk variant of its own. A slide with no `brief` falls back to its
+normal narration.
 
 **Mode** — work-along (you run the demos live) or talk-only (you explain output
 that is already on the slide). Slides whose narration changes carry a second
@@ -84,8 +99,11 @@ restyled as quiet provenance rather than an instruction.
 
 | | Work-along | Talk only |
 |---|---|---|
-| **Full** | `/deck/` · `/read/` | `/deck/talk/` · `/read/talk/` |
-| **Short** | `/deck/short/` · `/read/short/` | `/deck/talk-short/` · `/read/talk-short/` |
+| **Essentials** | `/deck/essentials/` | `/deck/talk-essentials/` |
+| **Short** | `/deck/short/` | `/deck/talk-short/` |
+| **Full** | `/deck/` | `/deck/talk/` |
+
+Same six under `/read/`. The deck's length button cycles the three tiers.
 
 The deck's control bar carries both toggles. `/present/` prints a cue sheet per
 length, and `SCRIPT.md` marks which slides are in the short edit.

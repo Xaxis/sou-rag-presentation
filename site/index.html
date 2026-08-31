@@ -54,12 +54,12 @@
     without ever putting a hundred thousand documents in the prompt.
     <b>Every number on screen is real output</b> — nothing here is an illustration.</p>
     <div class="cta">
-      <a class="btn primary" href="/read/">Start the lesson →</a>
-      <a class="btn ghost" href="/read/short/">Short edit · {{SHORT_MIN}} min</a>
+      <a class="btn primary" href="/read/essentials/">Start the lesson →</a>
+      <a class="btn ghost" href="/read/essentials/">Essentials · ~{{ESS_MIN}} min</a>
       <a class="btn ghost" href="/play/">Just let me play</a>
     </div>
     <div class="facts">
-      <div class="fact"><div class="n">{{FULL_SLIDES}}</div><div class="l">slides</div></div>
+      <div class="fact"><div class="n">~{{ESS_MIN}}<span style="font-size:0.5em"> min</span></div><div class="l">the short way</div></div>
       <div class="fact"><div class="n">5</div><div class="l">interactive playgrounds</div></div>
       <div class="fact"><div class="n">8</div><div class="l">runnable demos</div></div>
       <div class="fact"><div class="n">&lt;$0.01</div><div class="l">to build it yourself</div></div>
@@ -72,9 +72,10 @@
 <section class="band tint"><div class="wrap">
   <span class="eyebrow">Where to start</span>
   <h2>Three ways in</h2>
-  <p style="max-width:64ch;color:var(--ink-soft)">The lesson comes in four editions: long or
-  short, and work-along or talk-only. Same slides, same output, same rigour — what changes is
-  the narration and how much of it there is. None of them is a summary of the others.</p>
+  <p style="max-width:64ch;color:var(--ink-soft)">Three lengths, each in two modes: talk-only,
+  where the output is on screen and gets explained, or work-along, where you run it. Same
+  slides, same output, same rigour. The essentials edition is not a summary — it is the whole
+  argument with the prose written tight.</p>
   <div class="cards" style="margin-top:1.6em">
     <a class="card" href="/read/" style="border-left:4px solid var(--accent)">
       <span class="k">Read it &middot; self-paced</span>
@@ -82,9 +83,9 @@
       <p>Every slide as a document, with what the presenter says underneath and the
       playgrounds where they belong. Reads properly on a phone.</p>
       <p style="margin-top:0.7em;font-family:var(--mono);font-size:0.8rem;line-height:1.9">
-        <span style="color:var(--accent-text)">{{FULL_SLIDES}} slides &middot; ~{{FULL_MIN}} min</span><br>
-        <a href="/read/short/">short edit &middot; {{SHORT_SLIDES}} slides &middot; ~{{SHORT_MIN}} min</a><br>
-        <a href="/read/talk/">talk version &middot; no terminal</a>
+        <span style="color:var(--accent-text)">essentials &middot; {{ESS_SLIDES}} slides &middot; ~{{ESS_MIN}} min</span><br>
+        <a href="/read/short/">short &middot; {{SHORT_SLIDES}} slides &middot; ~{{SHORT_MIN}} min</a><br>
+        <a href="/read/">full &middot; {{FULL_SLIDES}} slides &middot; ~{{FULL_MIN}} min</a>
       </p>
     </a>
     <a class="card" href="/play/" style="border-left:4px solid var(--teal)">
@@ -171,8 +172,8 @@
     <a class="card" href="/read/">
       <span class="k">The full lesson</span>
       <h3>All {{FULL_SLIDES}} slides →</h3>
-      <p>The theory and the build, end to end, as one document you can read straight
-      through — with every playground in place. {{FULL_SLIDES}} slides, ~{{FULL_MIN}} minutes.</p>
+      <p>The whole arc in about twenty minutes, or the full {{FULL_MIN}}-minute treatment if
+      you want every aside. Same demos either way.</p>
     </a>
   </div>
 </div></section>

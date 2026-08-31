@@ -23,8 +23,10 @@
   // which edition this file was built as; read once, used in several places
   var editAttr = (document.querySelector('.reveal') || { getAttribute: function () {} })
                    .getAttribute('data-edit') || '';
-  var isShort = /short/.test(editAttr);
   var isTalk = /talk/.test(editAttr);
+  var lengthOf = /essentials/.test(editAttr) ? 'essentials'
+               : /short/.test(editAttr) ? 'short' : 'full';
+  var isShort = lengthOf !== 'full';
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -69,25 +71,29 @@
 
     // two axes: how long, and whether you run the code live.
     // absent data-edit means the default deck: full, work-along.
-    var URLS = {
-      'full-workalong': '/deck/',
-      'short-workalong': '/deck/short/',
-      'full-talk': '/deck/talk/',
-      'short-talk': '/deck/talk-short/',
-    };
-    function go(short, talk) {
-      window.location.href = URLS[(short ? 'short' : 'full') + '-' + (talk ? 'talk' : 'workalong')];
+    var LENGTHS = ['essentials', 'short', 'full'];
+    var LABEL = { essentials: 'Essentials', short: 'Short', full: 'Full' };
+    function urlFor(len, talk) {
+      if (!talk) return len === 'full' ? '/deck/' : '/deck/' + len + '/';
+      return len === 'full' ? '/deck/talk/' : '/deck/talk-' + len + '/';
     }
 
-    var lenBtn = el('button', 'deck-btn', isShort ? 'Full lesson' : 'Short edit');
-    lenBtn.title = isShort ? 'Switch to the complete lesson' : 'Switch to the short edit';
-    lenBtn.addEventListener('click', function () { go(!isShort, isTalk); });
+    var next = LENGTHS[(LENGTHS.indexOf(lengthOf) + 1) % LENGTHS.length];
+    var lenBtn = el('button', 'deck-btn',
+      '<b>' + LABEL[lengthOf].charAt(0) + '</b> ' + LABEL[next]);
+    lenBtn.title = 'Currently the ' + LABEL[lengthOf].toLowerCase() +
+      ' edition. Switch to ' + LABEL[next].toLowerCase() + '.';
+    lenBtn.addEventListener('click', function () {
+      window.location.href = urlFor(next, isTalk);
+    });
 
     var modeBtn = el('button', 'deck-btn', isTalk ? 'Work-along' : 'Talk only');
     modeBtn.title = isTalk
       ? 'Switch to the work-along narration, where you run the demos live'
       : 'Switch to the talk narration, where the output is shown rather than run';
-    modeBtn.addEventListener('click', function () { go(isShort, !isTalk); });
+    modeBtn.addEventListener('click', function () {
+      window.location.href = urlFor(lengthOf, !isTalk);
+    });
 
     bar.appendChild(toggle);
     bar.appendChild(present);
@@ -150,8 +156,9 @@
     if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
       var nudge = el('a', 'deck-nudge',
         '<b>Small screen?</b> The lesson reads better as a document &rarr;');
-      nudge.href = '/read/' +
-        (isTalk && isShort ? 'talk-short/' : isTalk ? 'talk/' : isShort ? 'short/' : '');
+      nudge.href = isTalk
+        ? '/read/' + (lengthOf === 'full' ? 'talk/' : 'talk-' + lengthOf + '/')
+        : '/read/' + (lengthOf === 'full' ? '' : lengthOf + '/');
       document.body.appendChild(nudge);
     }
     if (window.Reveal && Reveal.on) {
