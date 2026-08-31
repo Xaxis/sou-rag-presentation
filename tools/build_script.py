@@ -44,7 +44,7 @@ IX_SHOWS = {
                     "Flip the query model and watch retrieval break with zero errors raised"),
 }
 
-WORDS_PER_MINUTE = 135  # unhurried presenting pace
+WORDS_PER_MINUTE = 125  # presenting pace, including pauses
 
 
 def strip_tags(fragment):
@@ -133,7 +133,8 @@ def main():
     total_words = sum(len(s["notes"].split()) for s in slides)
     minutes = round(total_words / WORDS_PER_MINUTE)
     core = [s for s in slides if s["core"]]
-    core_minutes = round(sum(len(s["notes"].split()) for s in core) / WORDS_PER_MINUTE)
+    core_minutes = round(
+        sum(len((s["brief"] or s["notes"]).split()) for s in core) / WORDS_PER_MINUTE)
     ess = [s for s in slides if s["essential"]]
     ess_minutes = round(
         sum(len((s["brief"] or s["notes"]).split()) for s in ess) / WORDS_PER_MINUTE)

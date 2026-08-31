@@ -6,9 +6,9 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 22 slides · ~18 min |
-| Short edit | 36 slides · ~52 min |
-| Full lesson | 54 slides · ~80 min |
+| Essentials | 22 slides · ~19 min |
+| Short edit | 36 slides · ~29 min |
+| Full lesson | 54 slides · ~86 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -79,6 +79,15 @@ If you are working along, pause whenever you need to. The scripts are all indepe
 Let me run the check, and we will begin.
 
 
+> **Essentials edition — tighter narration:**
+>
+> A lesson, not a live build — though everything here is runnable if you want it.
+>
+> Everything on these slides is genuine output from real code. Nothing is a mock-up. If I claim two pieces of text have similar embeddings, you will see it measured.
+>
+> The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline. One entry point runs any of it. There is a link at the end.
+
+
 ## Slide 4 — Why RAG exists · **short edit**
 
 **Section:** Part one
@@ -91,6 +100,13 @@ I want to frame this carefully, because the framing matters. The problem RAG sol
 Let's make that concrete.
 
 
+> **Essentials edition — tighter narration:**
+>
+> Part one: why RAG exists at all.
+>
+> Worth framing carefully. The problem is not that language models are stupid — modern models are extraordinarily capable. The problem is that they are small: not in intelligence, but in how much they can look at in one go.
+
+
 ## Slide 5 — Several hundred internal documents · **short edit**
 
 **Section:** 01 · The problem
@@ -101,6 +117,15 @@ Picture a company with several hundred internal documents. Policy guidelines, te
 Somebody asks a question, and exactly one of those documents contains the answer. The obvious move — and this is genuinely what everyone tries first — is to paste all of them into the model and ask the question.
 
 That does not work. And the reason it does not work is the whole reason this lesson exists. So let me give you the definition to hold on to, and then we will take apart why the obvious approach fails.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Picture a company with a few hundred internal documents. Policies, specs, support logs, contracts. Ordinary things.
+>
+> Somebody asks a question, and exactly one of those documents holds the answer. The obvious move — and genuinely what everyone tries first — is to paste them all in and ask.
+>
+> That does not work. Why it does not work is the whole reason this lesson exists.
 
 
 ## Slide 6 — Retrieval Augmented Generation · **essentials**
@@ -261,6 +286,15 @@ So: sending five hundred thousand tokens of irrelevant context to answer one que
 That is the case for RAG, complete. Now let's look at how it is actually built.
 
 
+> **Essentials edition — tighter narration:**
+>
+> There is a second reason, and people forget it because the first one is so dramatic.
+>
+> Even when everything does fit, sending all of it is still wrong. You pay per token, so you pay for every irrelevant word. Latency scales with what you send. And — this is the counterintuitive one — you get worse answers.
+>
+> Bury the one relevant paragraph inside five hundred thousand tokens and the model has a harder job than if you had handed it the paragraph. More context is not more helpful. Relevant context is.
+
+
 ## Slide 12 — The shape of the system · **short edit**
 
 **Section:** Part two
@@ -271,6 +305,13 @@ Part two. The shape of the system.
 If there is one slide in this whole session to photograph, it is the next one. A RAG system is two pipelines, not one. People collapse them into one in their heads, and that is precisely where the mental model breaks and the questions get confused.
 
 So: two pipelines. Learn them separately, and everything after this is easy.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Part two: the shape of the system.
+>
+> If there is one slide worth photographing, it is the next one. A RAG system is two pipelines, not one — and people collapse them in their heads, which is exactly where the mental model breaks.
 
 
 ## Slide 13 — Two pipelines · **essentials**
@@ -504,6 +545,15 @@ We have walked the whole top row of the diagram now — documents, chunks, embed
 Now someone asks a question. This is the bottom row.
 
 
+> **Essentials edition — tighter narration:**
+>
+> Part three: retrieval.
+>
+> We have walked the whole top row now — documents, chunks, embedding model, vectors, database. Ingestion is finished, and finished is the right word: none of it runs again until your documents change.
+>
+> Now someone asks a question.
+
+
 ## Slide 22 — The question takes the same road · **essentials**
 
 **Section:** 08 · Retrieval, step by step
@@ -555,6 +605,15 @@ A retriever always returns something. It has no concept of "there is no good mat
 This catches people out constantly. Somebody builds their first RAG system, asks it a question the documents genuinely do not answer, gets five confident-looking chunks back, and concludes the retriever is broken. It is not broken. That is the expected shape of the output.
 
 So if a retriever returns ten chunks and four are irrelevant — that is normal. Filtering on a score threshold, or re-ranking, is how you handle it, and that is a later topic in the track. But knowing that it happens is not a later topic. That is today.
+
+
+> **Essentials edition — tighter narration:**
+>
+> The number of chunks that come back is called top k. You choose it. Ask for five and you get five.
+>
+> And now the half people miss: whether or not any of them are good. A retriever always returns something. It has no concept of "nothing here fits". If your corpus contains nothing relevant, you still get k results, neatly ranked and looking respectable. They are the least-bad of a bad set.
+>
+> So a retriever returning ten chunks of which four are irrelevant is not broken — that is the expected shape of the output. Filtering on a score threshold is how you handle it.
 
 
 ## Slide 24 — Vectors find. Text is what gets sent.
@@ -660,6 +719,17 @@ First, add credit. The API is prepaid, and it is completely separate from any Ch
 Second, add dot env to your gitignore. Do it before your first commit, not after. A leaked API key gets scraped off a public repository within minutes — there are bots doing nothing else. And once it is in your git history, removing it from the working tree does not remove it from the history.
 
 In this repo, dot env is already gitignored and there is a dot env dot example to copy.
+
+
+> **Essentials edition — tighter narration:**
+>
+> The API key. Create one on the OpenAI platform, copy it immediately — you cannot view it again — and put it in a file called dot env.
+>
+> Two things to do now rather than later.
+>
+> Add credit. The API is prepaid and entirely separate from a ChatGPT subscription; paying for Plus gives you no API credit, which catches people constantly. Embedding these five documents costs well under a cent.
+>
+> And add dot env to your gitignore before your first commit. A leaked key gets scraped off a public repository within minutes, and removing it from the working tree does not remove it from your history.
 
 
 ## Slide 30 — Five articles
@@ -864,6 +934,19 @@ And that is the trade. At zero you pay nothing extra and sentences on the seam g
 There is no correct answer on this slide. There is a shape of answer: chunks big enough to stand alone, small enough to be about one thing, with enough overlap that the seams do not eat your sentences.
 
 
+> **Essentials edition — tighter narration:**
+>
+> Same two numbers you just saw in code, except now you can move them.
+>
+> Drag chunk size down and the count climbs while the average drops. These are precise, but read them — they have lost their surroundings. A chunk saying "in 2008 he was named chief executive" does not say who "he" is.
+>
+> Drag it up and each chunk carries plenty of context, but a question about one detail now matches a chunk that is mostly about something else, and you send three times the tokens.
+>
+> Then drag the overlap up and watch the highlight: that repeated text is what you are storing and paying to embed twice.
+>
+> There is no correct answer here — only a shape. Big enough to stand alone, small enough to be about one thing.
+
+
 ## Slide 39 — Embed and store — one call does both · **essentials**
 
 **Section:** 07 · Step three  
@@ -924,6 +1007,17 @@ Persist directory is where the database lives on disk. Leave it out and Chroma r
 Collection metadata, hnsw colon space, cosine. That sets the distance measure used to compare vectors. Cosine similarity is the standard choice for text, because it measures the angle between two vectors rather than their magnitude — which means a long document and a short one about the same topic still score as similar. Set it and move on; how it works is a later topic.
 
 HNSW, by the way, stands for hierarchical navigable small world, which is the indexing algorithm. That is the thing making the search fast.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Three arguments matter here, and each has a failure attached.
+>
+> The embedding model. Write that choice down — the query side must use exactly the same one, and that is the finale of this lesson.
+>
+> Persist directory. Leave it out and Chroma runs in memory: everything vanishes when the script ends, and you pay to embed again. The code looks like it worked, printed success, and there is simply nothing on disk.
+>
+> And the distance measure, cosine, which is the standard for text because it compares the angle rather than the magnitude — so a long document and a short one about the same topic still score as similar.
 
 
 ## Slide 42 — Ask it something · **essentials**
@@ -1041,6 +1135,15 @@ The mistake that breaks most first RAG builds. I have been foreshadowing it all 
 Here is what makes it dangerous. Nothing crashes. There is no error message. Let me show you the rule, and then we will break it on purpose.
 
 
+> **Essentials edition — tighter narration:**
+>
+> Part five, and this is the one to leave with.
+>
+> The mistake that breaks most first builds. I have been foreshadowing it the whole way — the two orange boxes, "write that choice down", "the same model, every time".
+>
+> Here is what makes it dangerous. Nothing crashes. There is no error message.
+
+
 ## Slide 47 — The consistency rule · **essentials**
 
 **Section:** 09 · The consistency rule
@@ -1139,6 +1242,19 @@ This is what a silent failure looks like. The difference between a working RAG s
 That is why the rule is absolute. One embedding model, one dimension count, everywhere.
 
 
+> **Essentials edition — tighter narration:**
+>
+> And here is the failure as a switch you can flip.
+>
+> The documents were embedded once, correctly. The only thing this toggle changes is which model embeds the question.
+>
+> Same model: top score around zero point five five, and the right answer clearly first.
+>
+> Different model: same store, same question, same six facts — and the top score collapses to zero point zero two six. On six facts it happens to keep the right one near the top, which is exactly why this is so dangerous on a small test set. On five hundred chunks it returns a Microsoft paragraph for a question about SpaceX.
+>
+> Now look at the errors-raised number. Zero. That is what a silent failure looks like.
+
+
 ## Slide 50 — What this means in practice · **short edit**
 
 **Section:** 09 · In practice
@@ -1155,6 +1271,21 @@ Three. If you switch model later, you re-embed the entire corpus. There is no pa
 Four, and this one catches people who think they are being careful: changing dimensions within the same model breaks it too. Text-embedding-3-large at three thousand and text-embedding-3-large at fifteen hundred are not compatible with each other. Same model, different language.
 
 And then a suggestion that is not in the lesson but which I would put in any real build. Store the model name and the dimension count in the collection metadata when you create the store, and assert on them when you query. That is about ten lines of code, and it converts this entire category of silent failure into a loud one that fails on the first query. Given what we just watched, that is an extremely good trade.
+
+
+> **Essentials edition — tighter narration:**
+>
+> So what does that mean in practice? Four rules.
+>
+> Choose your embedding model before you ingest a single document. This is architecture, not an implementation detail you defer.
+>
+> Choose the dimension count at the same time and write it down somewhere your future self will look.
+>
+> If you switch model later, you re-embed everything. There is no partial migration — you cannot have half your corpus in each, because they cannot be compared.
+>
+> And this one catches the careful: changing dimensions within the same model breaks it too. Same model, different language.
+>
+> One suggestion not in the lesson: store the model name and dimension count in the collection metadata and assert on it when you query. Ten lines that turn a silent failure into a loud one.
 
 
 ## Slide 51 — When it does not run
@@ -1254,3 +1385,14 @@ Next lesson is the retrieval pipeline — the bottom row of the diagram, properl
 If you are working along, the best thing you can do before then is swap my five Wikipedia articles for a set of documents you actually want to ask questions about. Everything we built today works unchanged — point DOCS_PATH at your folder, delete db_chroma, and re-run. The pipeline does not care what the documents are.
 
 Thanks for working through it.
+
+
+> **Essentials edition — tighter narration:**
+>
+> That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — searchable, each one carrying the file it came from.
+>
+> And you have locked in a decision: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That now applies to the whole project.
+>
+> Next is the retrieval pipeline properly — question in, embed with that same model, pull the closest chunks, build a prompt, hand it to an LLM. Including what to do when nothing good comes back.
+>
+> The best thing you can do before then is swap these five articles for documents you actually want to ask questions about. Everything here works unchanged.

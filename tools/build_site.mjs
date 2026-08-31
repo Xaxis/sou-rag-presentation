@@ -94,6 +94,7 @@ function nav(active) {
 }
 
 const SITE = 'https://ragverse.diy';
+const WPM = 125;   // presenting pace, including pauses
 
 function page({ title, desc, active, body, extraCss = '', bodyAttr = '' }) {
   return `<!doctype html>
@@ -233,7 +234,7 @@ function buildRead(all, edit) {
         .replace(/<span class="label">Demo<\/span>/g, '<span class="label">Output of</span>');
     }
 
-    const useNotes = length === 'essentials' && s.briefNotes ? s.briefNotes
+    const useNotes = length !== 'full' && s.briefNotes ? s.briefNotes
                    : talk && s.talkNotes ? s.talkNotes : s.notes;
     const notes = useNotes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
       .map((p) => {
@@ -243,7 +244,7 @@ function buildRead(all, edit) {
           : `<p>${esc(line)}</p>`;
       }).join('\n');
 
-    const heading = length !== 'essentials' && talk && s.talkTitle
+    const heading = length === 'full' && talk && s.talkTitle
       ? esc(s.talkTitle) : s.titleHtml;
 
     if (isDivider) {
@@ -270,7 +271,7 @@ function buildRead(all, edit) {
     `<a href="#${c.id}"><b>${String(c.n).padStart(2, '0')}</b> ${esc(c.title)}</a>`).join('\n');
 
   const words = slides.reduce((a, s) => a + ((
-    length === 'essentials' && s.briefNotes ? s.briefNotes
+    length !== 'full' && s.briefNotes ? s.briefNotes
       : talk && s.talkNotes ? s.talkNotes : s.notes
   ).split(/\s+/).filter(Boolean).length), 0);
 
@@ -285,7 +286,7 @@ function buildRead(all, edit) {
       : talk
       ? 'Narrated as a talk: the code is shown and explained, not typed live. Every terminal block is genuine output. Follow along in the repo if you want to, or just read.'
       : length === 'short'
-      ? 'The spine of the lesson: every demo, the two strongest playgrounds, and none of the asides. Same depth, fewer detours.'
+      ? 'The spine plus the material that makes it stick — the gotchas, the API key, the practical rules — at the same tight pace as the essentials.'
       : 'Every slide, with what the presenter says underneath it, and the playgrounds where they belong. Nothing to install.'}</p>
     <p class="read-alt">${other}</p>
     <nav class="read-toc">${toc}</nav>
@@ -333,7 +334,7 @@ function buildPresent(all) {
       blurb: 'The whole arc, tightened. Both pipelines, what an embedding is, the build, and the silent failure — all eight demos, nothing skipped that matters.' },
     { key: 'short', label: 'Short',
       slides: all.filter((s) => s.core),
-      blurb: 'The spine at a comfortable pace, with room for the asides that make it stick.' },
+      blurb: 'Everything in the essentials, plus the gotchas, the API key, the practical rules and all five playgrounds.' },
     { key: 'full', label: 'Full',
       slides: all,
       blurb: 'Everything: reference tables, the loader gotchas, the re-run trap, troubleshooting, the drills, all five playgrounds.' },
@@ -341,8 +342,8 @@ function buildPresent(all) {
 
   // one demo takes roughly a minute and a half including talking through it
   const speak = (ss, tier) => Math.round(ss.reduce((a, s) =>
-    a + ((tier === 'essentials' && s.briefNotes ? s.briefNotes : s.notes)
-         .split(/\s+/).filter(Boolean).length), 0) / 135);
+    a + ((tier !== 'full' && s.briefNotes ? s.briefNotes : s.notes)
+         .split(/\s+/).filter(Boolean).length), 0) / WPM);
   const demoMins = (ss) => Math.round(ss.filter((s) => s.cues.length).length * 1.5);
 
   const url = (tier, talk) => talk
@@ -467,7 +468,9 @@ function buildDeckVariant(rawHtml, { length, talk }) {
     let talkText;
     [b, talkText] = pull(b, 'talk');
 
-    if (length === 'essentials' && brief) {
+    if (length !== 'full' && brief) {
+      // essentials and short both run on the tightened prose; only the full
+      // edition keeps the unhurried version
       b = setNotes(b, brief);
     } else if (talk && talkText) {
       b = setNotes(b, talkText);
@@ -552,14 +555,15 @@ if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
 {
   const coreSlides = slides.filter((s) => s.core);
   const mins = (ss) => Math.round(
-    ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0) / 135);
+    ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0) / WPM);
   const essSlides = slides.filter((s) => s.essential);
-  const essMins = Math.round(essSlides.reduce((a, s) =>
-    a + ((s.briefNotes || s.notes).split(/\s+/).filter(Boolean).length), 0) / 135);
+  const brief = (ss) => Math.round(ss.reduce((a, s) =>
+    a + ((s.briefNotes || s.notes).split(/\s+/).filter(Boolean).length), 0) / WPM);
+  const essMins = brief(essSlides);
   const vals = {
     FULL_SLIDES: slides.length, SHORT_SLIDES: coreSlides.length,
     ESS_SLIDES: essSlides.length,
-    FULL_MIN: mins(slides), SHORT_MIN: mins(coreSlides), ESS_MIN: essMins,
+    FULL_MIN: mins(slides), SHORT_MIN: brief(coreSlides), ESS_MIN: essMins,
   };
   let landing = read('site', 'index.html');
   for (const [k, v] of Object.entries(vals)) {

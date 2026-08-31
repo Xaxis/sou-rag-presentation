@@ -8,21 +8,22 @@ with it. You end up with a working ingestion pipeline: five documents in, a
 searchable vector database out, in about sixty lines of Python.
 
 It comes in **six editions** — three lengths, each as a talk or a work-along.
-For a recorded video, **essentials as a talk (~18 min)** is the most effective:
-it keeps every demo and the whole argument, with the prose written tight rather
-than conversational.
+For a recorded video, **essentials as a talk (~20 min)** or **short as a talk
+(~30 min)** are the most effective. Both keep every demo and the whole argument;
+short adds the gotchas, the API key and the practical rules.
 
 <!-- BEGIN:editions -->
 | | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Essentials** · 22 slides | [~18 min](https://ragverse.diy/read/talk-essentials/) | [~30 min](https://ragverse.diy/read/essentials/) |
-| **Short** · 36 slides | [~52 min](https://ragverse.diy/read/talk-short/) | [~64 min](https://ragverse.diy/read/short/) |
-| **Full** · 54 slides | [~80 min](https://ragverse.diy/read/talk/) | [~92 min](https://ragverse.diy/read/) |
+| **Essentials** · 22 slides | [~19 min](https://ragverse.diy/read/talk-essentials/) | [~31 min](https://ragverse.diy/read/essentials/) |
+| **Short** · 36 slides | [~29 min](https://ragverse.diy/read/talk-short/) | [~41 min](https://ragverse.diy/read/short/) |
+| **Full** · 54 slides | [~86 min](https://ragverse.diy/read/talk/) | [~98 min](https://ragverse.diy/read/) |
 <!-- END:editions -->
 
-Same slides, same output, same rigour. **Essentials is not a summary** — it is
-the whole arc with tightened narration, all eight demos, and every vocabulary
-term. The talk editions explain output that is already on the slide, so there
+Same slides, same output, same rigour. **Neither short nor essentials is a
+summary** — both run on tightened narration rather than fewer ideas, and both
+carry all eight demos and every vocabulary term. Only the full edition keeps
+the unhurried, conversational phrasing. The talk editions explain output that is already on the slide, so there
 is nothing to set up and nothing that can fail on camera.
 
 Every number in the lesson is real output from these scripts. Nothing is an

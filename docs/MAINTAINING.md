@@ -67,9 +67,10 @@ out of one source file.
 <section>                         <!-- full only -->
 ```
 
-The essentials edition also uses **tighter narration** where a slide provides
-it, because cutting slides alone does not get you to twenty minutes — the
-median slide carries about 200 spoken words:
+**Essentials and short both use tighter narration**; only the full edition keeps
+the unhurried phrasing. Cutting slides alone does not control runtime — the
+median slide in the full edition carries about 200 spoken words, so 36 slides
+of it still runs 52 minutes:
 
 ```html
 <aside class="notes">…the unhurried version…</aside>
@@ -78,7 +79,11 @@ median slide carries about 200 spoken words:
 
 `brief` is written **mode-neutral**, so it serves talk and work-along alike and
 needs no talk variant of its own. A slide with no `brief` falls back to its
-normal narration.
+normal narration — so every slide in the short and essentials tiers needs one,
+or that tier silently gets slower.
+
+Timings are computed at 125 words per minute, which is presenting pace with
+pauses, not read-aloud pace.
 
 **Mode** — work-along (you run the demos live) or talk-only (you explain output
 that is already on the slide). Slides whose narration changes carry a second
