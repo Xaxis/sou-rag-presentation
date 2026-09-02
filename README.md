@@ -15,9 +15,9 @@ gotchas, the API key and the practical rules.
 <!-- BEGIN:editions -->
 | | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Essentials** · 28 slides | [~23 min](https://ragverse.diy/read/talk-essentials/) | [~37 min](https://ragverse.diy/read/essentials/) |
-| **Short** · 36 slides | [~30 min](https://ragverse.diy/read/talk-short/) | [~44 min](https://ragverse.diy/read/short/) |
-| **Full** · 54 slides | [~83 min](https://ragverse.diy/read/talk/) | [~105 min](https://ragverse.diy/read/) |
+| **Essentials** · 29 slides | [~24 min](https://ragverse.diy/read/talk-essentials/) | [~38 min](https://ragverse.diy/read/essentials/) |
+| **Short** · 37 slides | [~31 min](https://ragverse.diy/read/talk-short/) | [~45 min](https://ragverse.diy/read/short/) |
+| **Full** · 55 slides | [~86 min](https://ragverse.diy/read/talk/) | [~107 min](https://ragverse.diy/read/) |
 <!-- END:editions -->
 
 Same slides, same output, same rigour. **Neither short nor essentials is a
@@ -70,15 +70,15 @@ title instead, so it is right whichever edition you have on screen.
 <!-- BEGIN:demo-table -->
 | Demo | Slide | Command | What it shows |
 |---|---|---|---|
-| 01 | **7** | `python 01_tokens.py` | Tokens are not words; the corpus-vs-context-window scale gap |
-| 02 | **15** | `python 02_embedding_shape.py` | Any length of text in, always 1,536 numbers out |
-| 03 | **17** | `python 03_similar_meaning.py` | Similar meaning really does give similar numbers |
-| 04 | **32** | `python 04_load.py` | Reading files into `Document` objects, and metadata |
-| 05 | **35** | `python 05_chunk.py` | Chunking, why 800 is a target, what overlap buys you |
-| 06 | **39, 45** | `python 06_embed_store.py` | `Chroma.from_documents` embeds **and** stores |
-| 07 | **42** | `python 07_query.py "Who founded SpaceX?"` | Retrieval, and the real prompt that reaches the LLM |
-| 08 | **48** | `python 08_model_mismatch.py` | The silent failure: wrong model, no error, wrong chunks |
-| — | **30** | `python3 tools/fetch_docs.py` | Downloads and normalises the five source articles |
+| 01 | **8** | `python 01_tokens.py` | Tokens are not words; the corpus-vs-context-window scale gap |
+| 02 | **16** | `python 02_embedding_shape.py` | Any length of text in, always 1,536 numbers out |
+| 03 | **18** | `python 03_similar_meaning.py` | Similar meaning really does give similar numbers |
+| 04 | **33** | `python 04_load.py` | Reading files into `Document` objects, and metadata |
+| 05 | **36** | `python 05_chunk.py` | Chunking, why 800 is a target, what overlap buys you |
+| 06 | **40, 46** | `python 06_embed_store.py` | `Chroma.from_documents` embeds **and** stores |
+| 07 | **43** | `python 07_query.py "Who founded SpaceX?"` | Retrieval, and the real prompt that reaches the LLM |
+| 08 | **49** | `python 08_model_mismatch.py` | The silent failure: wrong model, no error, wrong chunks |
+| — | **31** | `python3 tools/fetch_docs.py` | Downloads and normalises the five source articles |
 <!-- END:demo-table -->
 
 Run any one on its own with `./run.sh demo 5`, or all of them with
@@ -107,11 +107,11 @@ you can also use them straight from [ragverse.diy/play](https://ragverse.diy/pla
 <!-- BEGIN:ix-table -->
 | Slide | Widget | What you do on camera |
 |---|---|---|
-| **10** | Corpus scale explorer | Drag 1 MB to 1 PB; watch tokens, embedding cost and context windows needed |
-| **18** | Neighbourhood map | Click any word; similarity bars and a 2-D projection re-rank live |
-| **38** | Chunking playground | Drag `chunk_size` and `chunk_overlap`; chunks re-cut, overlap highlighted |
-| **44** | Retrieval playground | Type a question, move top *k*, watch the prompt assemble itself |
-| **49** | Mismatch toggle | Flip the query model and watch retrieval break with zero errors raised |
+| **11** | Corpus scale explorer | Drag 1 MB to 1 PB; watch tokens, embedding cost and context windows needed |
+| **19** | Neighbourhood map | Click any word; similarity bars and a 2-D projection re-rank live |
+| **39** | Chunking playground | Drag `chunk_size` and `chunk_overlap`; chunks re-cut, overlap highlighted |
+| **45** | Retrieval playground | Type a question, move top *k*, watch the prompt assemble itself |
+| **50** | Mismatch toggle | Flip the query model and watch retrieval break with zero errors raised |
 <!-- END:ix-table -->
 
 Three of them use real precomputed OpenAI vectors rather than a simulation:

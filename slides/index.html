@@ -32,8 +32,7 @@
   <div class="meta">
     <b>RETRIEVAL LESSON</b> &nbsp;·&nbsp; the theory, then the code<br>
     <span class="mode-wa"><b>YOU NEED</b> &nbsp;·&nbsp; Python 3.10+, an editor, one OpenAI API key<br>
-    <b>COST</b> &nbsp;·&nbsp; Well under a cent of embeddings<br></span>
-    <b>EIGHT DEMOS</b> &nbsp;·&nbsp; every claim on these slides is executed, not asserted
+    <b>COST</b> &nbsp;·&nbsp; Well under a cent of embeddings<br><b>EIGHT DEMOS</b> &nbsp;·&nbsp; one per concept, each one runnable</span>
   </div>
   <aside class="notes" data-markdown>
 Welcome. Before anything else, a quick word on who is talking.
@@ -107,31 +106,22 @@ And last, you will know the one mistake that silently breaks most first builds. 
 </section>
 
 <!-- ==================================================== 03 -->
-<section data-talk-title="Everything here is real output" data-track="essential">
+<section data-track="essential" data-only="workalong">
   <span class="eyebrow"><b>00</b> &nbsp;·&nbsp; How this session runs</span>
   <h2>Two windows, eight demos</h2>
-  <p class="tight mode-wa">Slides on one side, a terminal on the other. Whenever you see an
+  <p class="tight">Slides on one side, a terminal on the other. Whenever you see an
   orange bar, I stop talking and run the command in it. The output on the slide is
   the real output from that command.</p>
-  <p class="tight mode-talk">Wherever a terminal block appears on these slides, the line
-  above it names the command that printed it. Nothing here was typed by hand to look
-  convincing — if I claim two pieces of text sit close together, you will see it measured.</p>
   <div class="cue">
     <span class="label">Demo&nbsp;00</span>
     <span class="cmd">./run.sh check</span>
   </div>
-  <div class="callout mode-wa">
+  <div class="callout">
     <span class="label">Follow along</span>
     One entry point for everything: <code>./run.sh setup</code> once, then
     <code>./run.sh slides</code> for this deck and <code>./run.sh demo 5</code>
     for any demo. <code>demo/ingestion_pipeline.py</code> is the finished
     file we build up to.
-  </div>
-  <div class="callout mode-talk">
-    <span class="label">If you want to build it yourself</span>
-    Every script, the documents, and the finished sixty-line pipeline are at
-    <strong>ragverse.diy</strong>. There is nothing to install to follow along
-    here — it is there for afterwards.
   </div>
   <aside class="notes" data-markdown>
 A word on how this runs, so you can follow along rather than just watch.
@@ -236,6 +226,64 @@ That does not work, and why it does not work is the whole lesson.
 So: Retrieval Augmented Generation is a language model plus a retrieval system. The retrieval system searches your documents and pulls only the relevant pieces into the prompt, at the moment the model needs them.
 
 The model does not get everything. It gets the right few pages. That is the entire idea — everything after this is mechanics.
+  </aside>
+</section>
+
+<!-- ==================================================== 06b -->
+<section data-track="essential">
+  <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; Why anyone builds one</span>
+  <h2>You have almost certainly used one</h2>
+  <div class="two">
+    <div>
+      <p class="tight muted" style="margin-bottom:0.5em">Where you have met it</p>
+      <ul class="tight">
+        <li>The support assistant that answers <em>and links the help article</em>.</li>
+        <li>A model that searches the web and cites what it found.</li>
+        <li>A coding assistant that answers about <strong>your</strong> repository.</li>
+        <li>Internal Q&amp;A over policy, security questionnaires, runbooks.</li>
+      </ul>
+    </div>
+    <div>
+      <p class="tight muted" style="margin-bottom:0.5em">Why teams build it</p>
+      <ul class="tight">
+        <li><strong>Your data.</strong> No model was trained on your contracts or your tickets.</li>
+        <li><strong>Today's data.</strong> A policy changed this morning. Index it; done.</li>
+        <li><strong>Receipts.</strong> The retriever knows which chunks it used, so the
+        answer can point at them.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    <span class="label">The question everyone asks: why not fine-tune?</span>
+    Fine-tuning teaches a model a <strong>style</strong> — a format, a voice, a way of
+    reasoning. It is an expensive way to teach it a <em>fact</em>, and a hopeless way to
+    teach it a fact that changes on Tuesday. Retrieval gives a model facts it can point at.
+  </div>
+  <aside class="notes" data-markdown>
+Before any mechanics, the question underneath all of this: why does anyone build one?
+
+Start with where you have already met one, because you have. If you have used a support chatbot that answered your question and then linked you to the exact help article it got that from — that was retrieval. If you have watched a model search the web and cite what it found — retrieval. If you have asked a coding assistant something about your own repository and got a real answer rather than a plausible one — retrieval. Every company with an internal Q&A bot over its own policies is running one of these.
+
+Now the reasons teams build them. There are three, and they are worth separating.
+
+The first is your data. Whatever model you are using was not trained on your contracts, your runbooks, or your support tickets. It cannot know them. Ask it anyway and it will cheerfully invent something that sounds right.
+
+The second is today's data. A policy changed this morning. Somebody shipped a new product page an hour ago. You are not going to retrain a model because a policy changed — you drop the document in, and the next question picks it up.
+
+The third is receipts, and this is the one people underrate. The retriever knows exactly which chunks it used to answer, so the answer can point back at them. In most organisations an answer nobody can check is worth close to nothing. Being able to click through to the paragraph it came from is often the entire reason the project got approved.
+
+And then the question I get every single time: why not just fine-tune the model on our documents?
+
+Fine-tuning teaches a model a style. A format, a voice, a way of reasoning about a domain. It is a very expensive way to teach it a fact, and a hopeless way to teach it a fact that changes on Tuesday. It also gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows, and lets it show its working.
+  </aside>
+  <aside class="brief">
+Before any mechanics: why does anyone build one of these? You have almost certainly used one already.
+
+The support chatbot that answered you and then linked the exact help article — that was retrieval. A model that searches the web and cites what it found. A coding assistant that answers about your repository rather than a generic one.
+
+Teams build them for three reasons. Your data — no model was trained on your contracts or your support tickets, and asked anyway it will invent something plausible. Today's data — a policy changed this morning, and you are not going to retrain a model over that; you index the document and the next question picks it up. And receipts — the retriever knows which chunks it used, so the answer can point at them. In most organisations an answer nobody can check is worth close to nothing.
+
+Which answers the question I get every time: why not fine-tune? Fine-tuning teaches a model a style — a format, a voice. It is an expensive way to teach it a fact and a hopeless way to teach it one that changes on Tuesday, and it gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows.
   </aside>
 </section>
 
@@ -648,7 +696,7 @@ A vector embedding is a list of numbers that stands in for a piece of text. Each
 
 And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers. That is the property. That is what an embedding model is trained to do.
 
-Now, this table is a teaching device and I want to be honest that it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
+Now, this table is a teaching device, and it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
 
 Cat and kitten sit almost on top of each other on every dimension — thirty-four and thirty-three on size, both eight on domestication, seven point five and seven point one on sound. Because a kitten is a young cat. Dog shares the domestication value but sits further out on size. And elephant is far away from all three on everything — two hundred and ten on size against thirty-four.
 
@@ -659,7 +707,7 @@ So what is an embedding? A list of numbers standing in for a piece of text. Each
 
 And here is the sentence that matters more than any other today: text with similar meaning produces similar numbers.
 
-This table is a teaching device, and I want to be honest that the numbers are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
+This table is a teaching device and the numbers in it are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
 
 Real embeddings are not labelled and nobody knows what any single dimension means. So let us check whether the intuition survives contact with a real model.
   </aside>
@@ -667,7 +715,7 @@ Real embeddings are not labelled and nobody knows what any single dimension mean
 
 <!-- ==================================================== 16 -->
 <section data-track="essential">
-  <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Measured, not asserted</span>
+  <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Eight real words</span>
   <h2>Does that actually hold?</h2>
   <div class="cue">
     <span class="label">Demo&nbsp;03</span>
@@ -901,7 +949,7 @@ Step three. The retriever compares that one vector against every stored vector. 
 
 Step four. It ranks them by closeness and returns the top k.
 
-Look at the example — and note this one is a worked illustration rather than a program run, which is why it says so at the top. Everywhere else in this lesson the terminal blocks are genuine output; here I want a clean, made-up company so the point is unmissable.
+Look at the example. This one is drawn, not run — it says so at the top — because I want a tidy invented company here rather than five Wikipedia articles. The point is easier to see.
 
 The question is "what were our sales in the first quarter". It becomes a vector. And then every chunk gets a score. Q1 revenue reached four point two million: zero point nine one. Quarterly sales by region: zero point eight eight. Revenue targets for the first quarter: zero point eight four. Those three go to the model.
 

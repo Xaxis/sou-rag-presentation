@@ -6,9 +6,9 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 28 slides · ~23 min |
-| Short | 36 slides · ~30 min |
-| Full lesson | 54 slides · ~88 min |
+| Essentials | 29 slides · ~24 min |
+| Short | 37 slides · ~31 min |
+| Full lesson | 55 slides · ~90 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -161,7 +161,40 @@ That is the entire idea. I mean that literally — everything else in this sessi
 > The model does not get everything. It gets the right few pages. That is the entire idea — everything after this is mechanics.
 
 
-## Slide 7 — Models do not read words · **essentials**
+## Slide 7 — You have almost certainly used one · **essentials**
+
+**Section:** 01 · Why anyone builds one
+
+
+Before any mechanics, the question underneath all of this: why does anyone build one?
+
+Start with where you have already met one, because you have. If you have used a support chatbot that answered your question and then linked you to the exact help article it got that from — that was retrieval. If you have watched a model search the web and cite what it found — retrieval. If you have asked a coding assistant something about your own repository and got a real answer rather than a plausible one — retrieval. Every company with an internal Q&A bot over its own policies is running one of these.
+
+Now the reasons teams build them. There are three, and they are worth separating.
+
+The first is your data. Whatever model you are using was not trained on your contracts, your runbooks, or your support tickets. It cannot know them. Ask it anyway and it will cheerfully invent something that sounds right.
+
+The second is today's data. A policy changed this morning. Somebody shipped a new product page an hour ago. You are not going to retrain a model because a policy changed — you drop the document in, and the next question picks it up.
+
+The third is receipts, and this is the one people underrate. The retriever knows exactly which chunks it used to answer, so the answer can point back at them. In most organisations an answer nobody can check is worth close to nothing. Being able to click through to the paragraph it came from is often the entire reason the project got approved.
+
+And then the question I get every single time: why not just fine-tune the model on our documents?
+
+Fine-tuning teaches a model a style. A format, a voice, a way of reasoning about a domain. It is a very expensive way to teach it a fact, and a hopeless way to teach it a fact that changes on Tuesday. It also gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows, and lets it show its working.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Before any mechanics: why does anyone build one of these? You have almost certainly used one already.
+>
+> The support chatbot that answered you and then linked the exact help article — that was retrieval. A model that searches the web and cites what it found. A coding assistant that answers about your repository rather than a generic one.
+>
+> Teams build them for three reasons. Your data — no model was trained on your contracts or your support tickets, and asked anyway it will invent something plausible. Today's data — a policy changed this morning, and you are not going to retrain a model over that; you index the document and the next question picks it up. And receipts — the retriever knows which chunks it used, so the answer can point at them. In most organisations an answer nobody can check is worth close to nothing.
+>
+> Which answers the question I get every time: why not fine-tune? Fine-tuning teaches a model a style — a format, a voice. It is an expensive way to teach it a fact and a hopeless way to teach it one that changes on Tuesday, and it gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows.
+
+
+## Slide 8 — Models do not read words · **essentials**
 
 **Section:** 02 · Tokens  
 **Run:** `python 01_tokens.py`
@@ -193,7 +226,7 @@ The rule of thumb worth memorising: one token is roughly three quarters of an En
 > Rule of thumb: one token is about three quarters of an English word.
 
 
-## Slide 8 — Everything has to fit inside one window · **essentials**
+## Slide 9 — Everything has to fit inside one window · **essentials**
 
 **Section:** 02 · The context window
 
@@ -220,7 +253,7 @@ So — two million tokens. That sounds like it should be plenty. Let's see how i
 > A million sounds like plenty. Let us see how it compares to what a company actually holds.
 
 
-## Slide 9 — Read the scale carefully · **essentials**
+## Slide 10 — Read the scale carefully · **essentials**
 
 **Section:** 02 · The scale gap
 
@@ -253,7 +286,7 @@ So here is the thing to take away. That gap is not a gap you close by waiting fo
 > This is not a gap you close by waiting for bigger models. And there is a second reason: you pay per token, and burying the one relevant paragraph in half a million irrelevant ones gives you worse answers, not better.
 
 
-## Slide 10 — Try it: when do you actually need RAG?
+## Slide 11 — Try it: when do you actually need RAG?
 
 **Section:** 02 · Interactive
 
@@ -276,7 +309,7 @@ Watch the cost figure while you drag, because that is the one people do not thin
 The threshold where RAG stops being optional is lower than people expect. Somewhere around a few megabytes, this stops being a choice.
 
 
-## Slide 11 — You also pay per token · **short**
+## Slide 12 — You also pay per token · **short**
 
 **Section:** 02 · The second reason
 
@@ -303,7 +336,7 @@ That is the case for RAG, complete. Now let's look at how it is actually built.
 > Bury the one relevant paragraph inside five hundred thousand tokens and the model has a harder job than if you had handed it the paragraph. More context is not more helpful. Relevant context is.
 
 
-## Slide 12 — The shape of the system · **essentials**
+## Slide 13 — The shape of the system · **essentials**
 
 **Section:** Part two
 
@@ -322,7 +355,7 @@ So: two pipelines. Learn them separately, and everything after this is easy.
 > Everything so far has been about why. This is the what — and it is one diagram.
 
 
-## Slide 13 — Two pipelines · **essentials**
+## Slide 14 — Two pipelines · **essentials**
 
 **Section:** 03 · The whole system in one picture
 
@@ -349,7 +382,7 @@ Keep this diagram. Every RAG system you will ever build, from a weekend project 
 > Now look at the two orange boxes. The same embedding model appears in both rows. That is not a drawing shortcut — and we will break it deliberately at the end to show you why it matters.
 
 
-## Slide 14 — A chunk is a slice, not a section · **essentials**
+## Slide 15 — A chunk is a slice, not a section · **essentials**
 
 **Section:** 04 · Chunking
 
@@ -374,7 +407,7 @@ Chunk size is therefore a real design decision, and there are techniques for cut
 > Why cut at all? Because the chunk is your unit of retrieval — the smallest thing the system can hand back. If your chunks are whole articles, a question about one sentence returns the whole article, and you are back to stuffing the context window.
 
 
-## Slide 15 — This is not an LLM · **essentials**
+## Slide 16 — This is not an LLM · **essentials**
 
 **Section:** 04 · The embedding model  
 **Run:** `python 02_embedding_shape.py`
@@ -404,7 +437,7 @@ That is the trick. Everything downstream depends on it.
 > That fixed length is the property the whole system rests on. Any two pieces of text, however different in length, become two lists of the same size — and two lists of the same size can be compared with arithmetic.
 
 
-## Slide 16 — Similar meaning, similar numbers · **essentials**
+## Slide 17 — Similar meaning, similar numbers · **essentials**
 
 **Section:** 05 · What an embedding is
 
@@ -415,7 +448,7 @@ A vector embedding is a list of numbers that stands in for a piece of text. Each
 
 And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers. That is the property. That is what an embedding model is trained to do.
 
-Now, this table is a teaching device and I want to be honest that it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
+Now, this table is a teaching device, and it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
 
 Cat and kitten sit almost on top of each other on every dimension — thirty-four and thirty-three on size, both eight on domestication, seven point five and seven point one on sound. Because a kitten is a young cat. Dog shares the domestication value but sits further out on size. And elephant is far away from all three on everything — two hundred and ten on size against thirty-four.
 
@@ -428,14 +461,14 @@ That is the intuition. Now let's check whether it survives contact with a real e
 >
 > And here is the sentence that matters more than any other today: text with similar meaning produces similar numbers.
 >
-> This table is a teaching device, and I want to be honest that the numbers are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
+> This table is a teaching device and the numbers in it are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
 >
 > Real embeddings are not labelled and nobody knows what any single dimension means. So let us check whether the intuition survives contact with a real model.
 
 
-## Slide 17 — Does that actually hold? · **essentials**
+## Slide 18 — Does that actually hold? · **essentials**
 
-**Section:** 05 · Measured, not asserted  
+**Section:** 05 · Eight real words  
 **Run:** `python 03_similar_meaning.py`
 
 
@@ -469,7 +502,7 @@ This drawing would have two dimensions. Real embeddings have fifteen hundred and
 > But look at the bottom lines, because that is where the claim holds. Every group is tighter inside than out. That is a neighbourhood, and nobody labelled any of it.
 
 
-## Slide 18 — Try it: the neighbourhood map
+## Slide 19 — Try it: the neighbourhood map
 
 **Section:** 05 · Interactive
 
@@ -492,7 +525,7 @@ And here is a nice one. Lion sits near cat and elephant but away from dog — it
 Try a few. The thing I want you to notice is that every ordering you see came out of arithmetic on numbers, and every one of them is defensible. That is what "similar meaning gives similar numbers" actually looks like in practice.
 
 
-## Slide 19 — The ones you will meet first
+## Slide 20 — The ones you will meet first
 
 **Section:** 06 · Choosing a model
 
@@ -512,7 +545,7 @@ Same caveat as the context windows: check current pricing and dimension options 
 There is a trade-off underneath all of this. More dimensions capture more meaning, and also cost more to compute and more to store. Most production systems reduce dimensions deliberately.
 
 
-## Slide 20 — The vector database stores both · **essentials**
+## Slide 21 — The vector database stores both · **essentials**
 
 **Section:** 07 · Where the vectors live
 
@@ -541,7 +574,7 @@ For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector dat
 > Options: Pinecone, Weaviate, Chroma, Qdrant. We use Chroma because it runs locally with no account. If you already run Postgres, pgvector is often the right answer.
 
 
-## Slide 21 — Retrieval, in principle · **essentials**
+## Slide 22 — Retrieval, in principle · **essentials**
 
 **Section:** Part three
 
@@ -560,7 +593,7 @@ Now someone asks a question. This is the bottom row.
 > All of that was preparation. Nothing we have built has answered a question yet.
 
 
-## Slide 22 — The question takes the same road · **essentials**
+## Slide 23 — The question takes the same road · **essentials**
 
 **Section:** 08 · Retrieval, step by step
 
@@ -575,7 +608,7 @@ Step three. The retriever compares that one vector against every stored vector. 
 
 Step four. It ranks them by closeness and returns the top k.
 
-Look at the example — and note this one is a worked illustration rather than a program run, which is why it says so at the top. Everywhere else in this lesson the terminal blocks are genuine output; here I want a clean, made-up company so the point is unmissable.
+Look at the example. This one is drawn, not run — it says so at the top — because I want a tidy invented company here rather than five Wikipedia articles. The point is easier to see.
 
 The question is "what were our sales in the first quarter". It becomes a vector. And then every chunk gets a score. Q1 revenue reached four point two million: zero point nine one. Quarterly sales by region: zero point eight eight. Revenue targets for the first quarter: zero point eight four. Those three go to the model.
 
@@ -597,7 +630,7 @@ How closeness is actually calculated is a later topic. For now: it is distance b
 > Notice the winning chunk says "revenue" while the question says "sales". A keyword search misses that. Matching on meaning is what embeddings buy you.
 
 
-## Slide 23 — You choose how many come back · **short**
+## Slide 24 — You choose how many come back · **short**
 
 **Section:** 08 · Top k
 
@@ -622,7 +655,7 @@ So if a retriever returns ten chunks and four are irrelevant — that is normal.
 > What you do about it — filter on a score threshold, or re-rank — is a later topic. Knowing that it happens is not.
 
 
-## Slide 24 — Vectors find. Text is what gets sent.
+## Slide 25 — Vectors find. Text is what gets sent.
 
 **Section:** 08 · The step everyone misreads
 
@@ -642,7 +675,7 @@ Once that clicks, a lot of RAG stops being mysterious. The clever part is the se
 Right. That is all the theory. Let's build it.
 
 
-## Slide 25 — Build the ingestion pipeline · **essentials**
+## Slide 26 — Build the ingestion pipeline · **essentials**
 
 **Section:** Part four
 
@@ -663,7 +696,7 @@ By the end of this you will have a folder on disk holding the vector representat
 > Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
 
 
-## Slide 26 — You are here
+## Slide 27 — You are here
 
 **Section:** 00 · Where this sits
 
@@ -677,7 +710,7 @@ The bottom row — question, embed, retrieve, build a prompt, answer — is the 
 And again: ingestion runs once. When we finish, you will not run this code again unless your documents change. That is worth internalising because it shapes how you think about cost. The expensive step happens once, up front, and every question after that is cheap.
 
 
-## Slide 27 — The project
+## Slide 28 — The project
 
 **Section:** 01 · Set up
 
@@ -691,7 +724,7 @@ Now — check this before you go any further. The venv prefix on your prompt is 
 For bigger projects you would reach for Poetry or uv instead. For learning, venv is fine.
 
 
-## Slide 28 — Five packages, one line
+## Slide 29 — Five packages, one line
 
 **Section:** 01 · Packages
 
@@ -709,7 +742,7 @@ It still imports today. But I am not going to teach you to build on an archived 
 If you are in this repo rather than typing from scratch, there is a requirements dot txt.
 
 
-## Slide 29 — One secret, in one place · **short**
+## Slide 30 — One secret, in one place · **short**
 
 **Section:** 02 · The API key
 
@@ -738,7 +771,7 @@ In this repo, dot env is already gitignored and there is a dot env dot example t
 > And add dot env to your gitignore before your first commit. A leaked key gets scraped off a public repository within minutes, and removing it from the working tree does not remove it from your history.
 
 
-## Slide 30 — Five articles
+## Slide 31 — Five articles
 
 **Section:** 03 · The documents  
 **Run:** `python3 tools/fetch_docs.py`
@@ -757,7 +790,7 @@ Any five text files will work — use your own if you have something you actuall
 One detail in that script worth mentioning. Wikipedia's plain-text export separates paragraphs with a single newline. Our splitter is going to split on blank lines. So the script normalises every paragraph onto its own blank-line-separated block. Without that step the splitter finds almost no break points and produces eight-thousand-character chunks, which are useless units of retrieval. That is a real-world data-cleaning step, and it is the kind of thing that quietly ruins a RAG pipeline if you skip it.
 
 
-## Slide 31 — Imports first, prove it runs
+## Slide 32 — Imports first, prove it runs
 
 **Section:** 04 · The shell
 
@@ -775,7 +808,7 @@ That step looks pointless and it is not. It confirms three separate things befor
 Get in the habit. Prove the skeleton runs before you fill it in.
 
 
-## Slide 32 — Load the files · **essentials**
+## Slide 33 — Load the files · **essentials**
 
 **Section:** 05 · Step one  
 **Run:** `python 04_load.py`
@@ -805,7 +838,7 @@ Let me run it.
 > Note the two guard clauses. One checks the folder exists; the other checks we actually loaded something. Without the second, an empty folder gives you a pipeline that runs happily, embeds nothing, and reports success.
 
 
-## Slide 33 — Five files in, five Documents out
+## Slide 34 — Five files in, five Documents out
 
 **Section:** 05 · What comes back
 
@@ -821,7 +854,7 @@ Dot metadata is a dictionary. Right now it holds one key, source, pointing at th
 And here is the property that makes metadata worth caring about: metadata survives everything. When a document gets chunked in a moment, every single chunk inherits its parent's metadata. That is how a RAG system can tell a user which file an answer came from, even though the thing it retrieved was a four-hundred-character fragment.
 
 
-## Slide 34 — Two things worth knowing
+## Slide 35 — Two things worth knowing
 
 **Section:** 05 · Two gotchas
 
@@ -837,7 +870,7 @@ Second, text is the easy case. I have just told you that you do not need a loade
 The important part is that what comes out the other side is the same thing: Document objects, with page content and metadata. So everything downstream of this box — chunking, embedding, storing, retrieving — does not change at all.
 
 
-## Slide 35 — Chunk them · **essentials**
+## Slide 36 — Chunk them · **essentials**
 
 **Section:** 06 · Step two  
 **Run:** `python 05_chunk.py`
@@ -867,7 +900,7 @@ Let me run it.
 > You will also see the chunks are not all eight hundred. The splitter cuts on the separator first, then merges up to the target — it never breaks a paragraph to hit the number. So it is a target, not a cap.
 
 
-## Slide 36 — 800 is a target, not a cap
+## Slide 37 — 800 is a target, not a cap
 
 **Section:** 06 · The result
 
@@ -885,7 +918,7 @@ Those warnings are warnings, not errors. I have suppressed them in the demo and 
 Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles this better — it tries a sequence of separators, falling back to smaller ones — and it is what you would reach for in a real project. We are staying on the simple one today so that the mechanics stay visible.
 
 
-## Slide 37 — What chunk_overlap actually does · **essentials**
+## Slide 38 — What chunk_overlap actually does · **essentials**
 
 **Section:** 06 · Overlap
 
@@ -916,7 +949,7 @@ So we change the default to a hundred, and re-run.
 > That is all overlap does — each chunk repeats the last n characters of the one before. Rule of thumb: ten to twenty percent of chunk size. You pay for the duplication in storage and embedding calls, and it is almost always worth it.
 
 
-## Slide 38 — Try it: watch the chunks re-cut · **short**
+## Slide 39 — Try it: watch the chunks re-cut · **short**
 
 **Section:** 06 · Interactive
 
@@ -953,7 +986,7 @@ There is no correct answer on this slide. There is a shape of answer: chunks big
 > There is no correct answer here — only a shape. Big enough to stand alone, small enough to be about one thing.
 
 
-## Slide 39 — Embed and store — one call does both · **essentials**
+## Slide 40 — Embed and store — one call does both · **essentials**
 
 **Section:** 07 · Step three  
 **Run:** `python 06_embed_store.py`
@@ -983,7 +1016,7 @@ Let me run it.
 > Look at what is stored per chunk: the vector, the original text, and the metadata — the source surviving all the way from the loader.
 
 
-## Slide 40 — One row per chunk
+## Slide 41 — One row per chunk
 
 **Section:** 07 · What landed on disk
 
@@ -999,7 +1032,7 @@ Underneath, the folder structure. Chroma dot sqlite three holds the text, the me
 And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
 
 
-## Slide 41 — The three arguments that matter · **short**
+## Slide 42 — The three arguments that matter · **short**
 
 **Section:** 07 · The three arguments
 
@@ -1026,7 +1059,7 @@ HNSW, by the way, stands for hierarchical navigable small world, which is the in
 > And the distance measure, cosine, which is the standard for text because it compares the angle rather than the magnitude — so a long document and a short one about the same topic still score as similar.
 
 
-## Slide 42 — Ask it something · **essentials**
+## Slide 43 — Ask it something · **essentials**
 
 **Section:** 08 · Confirm it worked  
 **Run:** `python 07_query.py "Who founded SpaceX?"`
@@ -1056,7 +1089,7 @@ One thing to note about the scores. Zero point six six is the top match, and tha
 > One note on the scores. Zero point six six is the top match, and that might feel low. It is not. Cosine similarity between a short question and a long paragraph rarely exceeds zero point seven. What matters is the gap between the top results and the rest, not the absolute number.
 
 
-## Slide 43 — This is what reaches the model · **essentials**
+## Slide 44 — This is what reaches the model · **essentials**
 
 **Section:** 08 · The actual prompt
 
@@ -1085,7 +1118,7 @@ I think this is the single most clarifying thing in the whole lesson. All the ma
 > This is the step everyone misreads. Vectors are only used for finding; their job ends the instant the matching is done, and then you are back in plain English. All the machinery — the chunking, the embeddings, the fifteen hundred dimensions — exists to produce those three paragraphs. The prompt at the end is boring, and it is meant to be.
 
 
-## Slide 44 — Try it: ask, and watch the prompt build
+## Slide 45 — Try it: ask, and watch the prompt build
 
 **Section:** 08 · Interactive
 
@@ -1112,7 +1145,7 @@ But now look at the chunk list. You still got two results back. Highlighted. Nea
 That is the point from earlier, made concrete. A retriever always returns k results. It has no concept of "I do not know". If you hand those two chunks to a language model with no score threshold, it will do its best with irrelevant text — and that is where a large share of RAG hallucinations actually come from.
 
 
-## Slide 45 — Run it twice, pay twice
+## Slide 46 — Run it twice, pay twice
 
 **Section:** 08 · The re-run trap  
 **Run:** `python 06_embed_store.py --append`
@@ -1129,7 +1162,7 @@ While you are experimenting, delete the db_chroma folder before each run. My dem
 In production you would use a proper upsert with stable document IDs, so re-ingesting updates a chunk instead of duplicating it. But for learning, delete the folder.
 
 
-## Slide 46 — The mistake that breaks most first builds · **essentials**
+## Slide 47 — The mistake that breaks most first builds · **essentials**
 
 **Section:** Part five
 
@@ -1148,7 +1181,7 @@ Here is what makes it dangerous. Nothing crashes. There is no error message. Let
 > Everything else that goes wrong in this stack tells you. This one does not.
 
 
-## Slide 47 — The consistency rule · **essentials**
+## Slide 48 — The consistency rule · **essentials**
 
 **Section:** 09 · The consistency rule
 
@@ -1175,7 +1208,7 @@ Let's break it and watch.
 > Think of embedding models as separate languages. A vector written by one means nothing to another. The numbers are the same shape, the same range, they look entirely normal — and neither system will tell you.
 
 
-## Slide 48 — Same store. Same question. Nothing crashes. · **essentials**
+## Slide 49 — Same store. Same question. Nothing crashes. · **essentials**
 
 **Section:** 09 · Break it on purpose  
 **Run:** `python 08_model_mismatch.py`
@@ -1217,7 +1250,7 @@ That is why this is the mistake that breaks most first builds. Not because it is
 > That is why this breaks first builds. Not because it is hard to fix, but because it is invisible until someone checks an answer by hand.
 
 
-## Slide 49 — Try it: flip the model, break the system · **short**
+## Slide 50 — Try it: flip the model, break the system · **short**
 
 **Section:** 09 · Interactive
 
@@ -1259,7 +1292,7 @@ That is why the rule is absolute. One embedding model, one dimension count, ever
 > Now look at the errors-raised number. Zero. That is what a silent failure looks like.
 
 
-## Slide 50 — What this means in practice · **short**
+## Slide 51 — What this means in practice · **short**
 
 **Section:** 09 · In practice
 
@@ -1292,7 +1325,7 @@ And then a suggestion that is not in the lesson but which I would put in any rea
 > One suggestion not in the lesson: store the model name and dimension count in the collection metadata and assert on it when you query. Ten lines that turn a silent failure into a loud one.
 
 
-## Slide 51 — When it does not run
+## Slide 52 — When it does not run
 
 **Section:** 10 · When it does not run
 
@@ -1310,7 +1343,7 @@ No dot txt files found. You are running the script from a different directory th
 And created a chunk of size N longer than eight hundred. That is a warning, not an error. A single paragraph exceeded the target. Expected behaviour, as we saw. Nothing to fix.
 
 
-## Slide 52 — Check yourself
+## Slide 53 — Check yourself
 
 **Section:** 10 · Check yourself
 
@@ -1334,7 +1367,7 @@ Seven. Leave out persist directory and Chroma runs in memory — everything vani
 Eight. Documents with model A, queries with model B. The symptom is that there is no symptom. No error, collapsed scores, and confidently wrong chunks.
 
 
-## Slide 53 — The whole session in ten lines · **essentials**
+## Slide 54 — The whole session in ten lines · **essentials**
 
 **Section:** 10 · Summary
 
@@ -1377,7 +1410,7 @@ And the last one, which is the one that will actually cost you an afternoon: one
 > And the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking that fails silently.
 
 
-## Slide 54 — Next: the retrieval pipeline · **essentials**
+## Slide 55 — Next: the retrieval pipeline · **essentials**
 
 
 That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.

@@ -57,6 +57,7 @@ function parseDeck() {
     const widget = (body.match(/id="(ix-[a-z]+)"/) || [])[1] || null;
 
     out.push({
+      waOnly: /data-only="workalong"/.test(attrs),
       essential: /data-track="essential"/.test(attrs),
       core: /data-track="(core|essential)"/.test(attrs),
       briefNotes,
@@ -284,9 +285,10 @@ function buildRead(all, edit) {
   const talk = /talk/.test(edit);
   const length = /essentials/.test(edit) ? 'essentials'
                : /short/.test(edit) ? 'short' : 'full';
-  const slides = length === 'essentials' ? all.filter((s) => s.essential)
-               : length === 'short' ? all.filter((s) => s.core)
-               : all;
+  const byLength = length === 'essentials' ? all.filter((s) => s.essential)
+                 : length === 'short' ? all.filter((s) => s.core)
+                 : all;
+  const slides = talk ? byLength.filter((s) => !s.waOnly) : byLength;
   const seg = (len) => (len === 'full' ? '' : len + '/');
   const base = '/read/' + (talk ? 'talk' + (length === 'full' ? '/' : '-' + seg(length))
                                 : seg(length));
@@ -436,18 +438,19 @@ function buildPresent(all) {
     ? (tier === 'full' ? '/deck/talk/' : `/deck/talk-${tier}/`)
     : (tier === 'full' ? '/deck/' : `/deck/${tier}/`);
 
+  const talkSlides = (ss) => ss.filter((s) => !s.waOnly);
   const rows = TIERS.map((t) => {
     const dm = demoMins(t.slides);
     return `<tr>
       <td><strong>${t.label}</strong><br><span class="muted">${t.slides.length} slides</span></td>
-      <td><a href="${url(t.key, true)}">~${minutes(t.slides, t.key, true)} min</a><br><span class="muted">talk only</span></td>
+      <td><a href="${url(t.key, true)}">~${minutes(talkSlides(t.slides), t.key, true)} min</a><br><span class="muted">talk only</span></td>
       <td><a href="${url(t.key, false)}">~${minutes(t.slides, t.key, false) + dm} min</a><br><span class="muted">work-along</span></td>
       <td>${t.blurb}</td>
     </tr>`;
   }).join('\n');
 
   const ess = TIERS[0];
-  const essTalk = minutes(ess.slides, 'essentials', true);
+  const essTalk = minutes(talkSlides(ess.slides), 'essentials', true);
   // the opening slide is the whole on-camera segment, so quote it in seconds
   const introSecs = Math.round(
     wordsOf(notesFor(all[0], 'essentials', true)) / WPM * 60 / 5) * 5;
@@ -527,7 +530,9 @@ function buildPresent(all) {
 
   <h2 style="margin-top:1.8em">Every cue, in order</h2>
   <p style="color:var(--ink-soft)">Where to switch to the terminal, and where to pick up the
-  mouse. Generated from the deck, so it stays in step. Slide numbers are per edition.</p>
+  mouse. Generated from the deck, so it stays in step. These are the <strong>work-along</strong>
+  editions — a talk edition has nothing to run, and drops the setup slide, so its slide
+  numbers run one lower from the start.</p>
   ${TIERS.map((t) => `<h3 style="margin-top:1.6em">${t.label} &middot; ${t.slides.length} slides</h3>
   <table class="cues">
     <tr><th>Slide</th><th>Title</th><th>What happens</th></tr>
@@ -557,6 +562,15 @@ function buildDeckVariant(rawHtml, { length, talk }) {
       : /data-track="(core|essential)"/;
     out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
       (whole, attrs) => (keep.test(attrs) ? whole : ''));
+  }
+
+  /* Some slides exist only because someone is about to type. Explaining the
+     two-window setup and the entry point is real information for a follower
+     and pure noise in a talk, where it reads as the deck defending itself
+     rather than teaching anything. */
+  if (talk) {
+    out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>\s*/g,
+      (whole, attrs) => (/data-only="workalong"/.test(attrs) ? '' : whole));
   }
 
   // 2. pick the narration for this edition, then remove the unused variants.
@@ -764,9 +778,12 @@ fs.writeFileSync(path.join(DIST, 'sitemap.xml'),
   ).join('\n') + '\n</urlset>\n');
 
 const widgets = slides.filter((s) => s.widget).length;
-const tier = (ss, key) =>
-  `${String(ss.length).padStart(2)} slides  ~${minutes(ss, key, true)} min talk` +
-  `  ~${minutes(ss, key, false) + Math.round(ss.filter((s) => s.cues.length).length * 1.5)} min work-along`;
+const tier = (ss, key) => {
+  const t = ss.filter((s) => !s.waOnly);
+  return `${String(t.length).padStart(2)}/${ss.length} slides  ` +
+    `~${minutes(t, key, true)} min talk  ` +
+    `~${minutes(ss, key, false) + Math.round(ss.filter((s) => s.cues.length).length * 1.5)} min work-along`;
+};
 console.log(`built dist/  (${pages.length} pages)`);
 console.log(`  essentials  ${tier(slides.filter((s) => s.essential), 'essentials')}`);
 console.log(`  short       ${tier(slides.filter((s) => s.core), 'short')}`);
