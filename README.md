@@ -15,8 +15,8 @@ gotchas, the API key and the practical rules.
 <!-- BEGIN:editions -->
 | | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Essentials** · 29 slides | [~25 min](https://ragverse.diy/read/talk-essentials/) | [~39 min](https://ragverse.diy/read/essentials/) |
-| **Short** · 37 slides | [~32 min](https://ragverse.diy/read/talk-short/) | [~46 min](https://ragverse.diy/read/short/) |
+| **Essentials** · 32 slides | [~27 min](https://ragverse.diy/read/talk-essentials/) | [~41 min](https://ragverse.diy/read/essentials/) |
+| **Short** · 40 slides | [~34 min](https://ragverse.diy/read/talk-short/) | [~48 min](https://ragverse.diy/read/short/) |
 | **Full** · 55 slides | [~87 min](https://ragverse.diy/read/talk/) | [~108 min](https://ragverse.diy/read/) |
 <!-- END:editions -->
 

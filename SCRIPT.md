@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 29 slides · ~25 min |
-| Short | 37 slides · ~32 min |
+| Essentials | 32 slides · ~27 min |
+| Short | 40 slides · ~34 min |
 | Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
@@ -189,13 +189,11 @@ Fine-tuning teaches a model a style. A format, a voice, a way of reasoning about
 
 > **Essentials edition — tighter narration:**
 >
-> Before any mechanics: why does anyone build one of these? You have almost certainly used one already.
+> So why does anyone build one? You have almost certainly used one already. The support chatbot that answered you and then linked the exact help article. A model that searches the web and cites what it found. A coding assistant that answers about your repository rather than a generic one.
 >
-> The support chatbot that answered you and then linked the exact help article — that was retrieval. A model that searches the web and cites what it found. A coding assistant that answers about your repository rather than a generic one.
+> Teams build them for three reasons. Your data — nothing was trained on your contracts or your tickets, and asked anyway a model will invent something plausible. Today's data — a policy changed this morning, and you are not retraining over that. And receipts — the retriever knows which chunks it used, so the answer can point at them. An answer nobody can check is worth close to nothing.
 >
-> Teams build them for three reasons. Your data — no model was trained on your contracts or your support tickets, and asked anyway it will invent something plausible. Today's data — a policy changed this morning, and you are not going to retrain a model over that; you index the document and the next question picks it up. And receipts — the retriever knows which chunks it used, so the answer can point at them. In most organisations an answer nobody can check is worth close to nothing.
->
-> Which answers the question I get every time: why not fine-tune? Fine-tuning teaches a model a style — a format, a voice. It is an expensive way to teach it a fact and a hopeless way to teach it one that changes on Tuesday, and it gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows.
+> Which answers the question I get every time: why not fine-tune? Fine-tuning teaches a model a style — a format, a voice. It is an expensive way to teach it a fact, a hopeless way to teach it one that changes on Tuesday, and it gives you nothing to cite. Fine-tuning changes how a model speaks. Retrieval changes what it knows.
 
 
 ## Slide 8 — Models do not read words · **essentials**
@@ -846,7 +844,7 @@ Let me run it.
 > Note the two guard clauses. One checks the folder exists; the other checks we actually loaded something. Without the second, an empty folder gives you a pipeline that runs happily, embeds nothing, and reports success.
 
 
-## Slide 34 — Five files in, five Documents out
+## Slide 34 — Five files in, five Documents out · **essentials**
 
 **Section:** 05 · What comes back
 
@@ -860,6 +858,15 @@ Dot page underscore content is the entire text of the file as one long string. N
 Dot metadata is a dictionary. Right now it holds one key, source, pointing at the file path — we put it there ourselves, which is worth noticing, because it means you can put anything you like in it. You can add your own keys later — page numbers, authors, dates, permissions — and that is how real systems do access control and citation.
 
 And here is the property that makes metadata worth caring about: metadata survives everything. When a document gets chunked in a moment, every single chunk inherits its parent's metadata. That is how a RAG system can tell a user which file an answer came from, even though the thing it retrieved was a four-hundred-character fragment.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Five files in, five Document objects out. Two attributes, and you will meet them everywhere from here.
+>
+> Page content is the whole file as one long string. Metadata is a dictionary — right now just the file it came from, and we put that there ourselves, so you can put anything you like in it.
+>
+> That matters because metadata survives chunking. Every chunk inherits its parent's. It is how the system can tell you which file an answer came from when what it actually retrieved was a four-hundred-character fragment.
 
 
 ## Slide 35 — Two things worth knowing
@@ -908,7 +915,7 @@ Let me run it.
 > You will also see the chunks are not all eight hundred. The splitter cuts on the separator first, then merges up to the target — it never breaks a paragraph to hit the number. So it is a target, not a cap.
 
 
-## Slide 37 — 800 is a target, not a cap
+## Slide 37 — 800 is a target, not a cap · **essentials**
 
 **Section:** 06 · The result
 
@@ -924,6 +931,15 @@ Here is why. CharacterTextSplitter splits on the separator first — blank lines
 Those warnings are warnings, not errors. I have suppressed them in the demo and counted them instead, because otherwise seventy-nine lines scroll past and you cannot see anything else. But you will see them if you write this yourself, and now you know they are expected.
 
 Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles this better — it tries a sequence of separators, falling back to smaller ones — and it is what you would reach for in a real project. We are staying on the simple one today so that the mechanics stay visible.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Five hundred and thirty-nine chunks. Now look at the spread, because this is where the mental model is usually wrong.
+>
+> Smallest fifteen characters, largest seventeen hundred, average six hundred and forty-three. We asked for eight hundred and got almost nothing that is actually eight hundred.
+>
+> The splitter cuts on the separator first, then merges back up towards your size. What it will not do is break a paragraph in half to hit the number. Chunk size is a target, not a cap.
 
 
 ## Slide 38 — What chunk_overlap actually does · **essentials**
@@ -1024,7 +1040,7 @@ Let me run it.
 > Look at what is stored per chunk: the vector, the original text, and the metadata — the source surviving all the way from the loader.
 
 
-## Slide 41 — One row per chunk
+## Slide 41 — One row per chunk · **essentials**
 
 **Section:** 07 · What landed on disk
 
@@ -1038,6 +1054,15 @@ There is the metadata surviving, exactly as promised. It went in at the loader, 
 Underneath, the folder structure. Chroma dot sqlite three holds the text, the metadata and the ids — it is an ordinary SQLite database, you can open it. And then a folder named after the collection's UUID holds the binary files: data level zero dot bin is the vectors themselves, and link lists dot bin is the search index, which is what makes proximity search fast rather than a brute-force scan of half a million numbers.
 
 And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
+
+
+> **Essentials edition — tighter narration:**
+>
+> Five hundred and forty-seven vectors on disk. And look at what is kept per chunk — this is that vector database table from earlier, now real.
+>
+> The vector, fifteen hundred and thirty-six numbers. The original text. And the metadata, still saying docs slash google dot txt. There it is surviving, exactly as promised — in at the loader, through the splitter untouched, now attached to a chunk in the database.
+>
+> The line to leave with: the original text is not optional. Without it you have numbers and nothing to send a model.
 
 
 ## Slide 42 — The three arguments that matter · **short**
