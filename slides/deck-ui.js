@@ -117,6 +117,14 @@
     home.href = '/';
     home.title = 'Back to the site';
 
+    /* Where to go, on every frame. Someone landing halfway through a recording
+       has no other way to find out, and the title slide has long gone. Faint,
+       top-right, and it never moves or fades - unlike the control bar, it is
+       meant to be in shot. */
+    var mark = el('div', 'deck-mark', 'ragverse<b>.diy</b>');
+    mark.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(mark);
+
     if (onSite) bar.appendChild(home);
     bar.appendChild(toggle);
     bar.appendChild(present);

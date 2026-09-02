@@ -32,6 +32,8 @@ Here is the one-line version of what RAG is for. How do you give a language mode
 
 This is a work-along session. I am going to switch between these slides and a terminal, and every number you see on a slide is something we actually run. Nothing here is asserted and left hanging — if I claim two pieces of text have similar embeddings, we measure it live.
 
+Everything is at ragverse dot d i y — these slides, the playgrounds, and all of the code. The address stays in the corner of every slide.
+
 You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under a cent in embeddings.
 
 Let's start with why this problem exists at all.
@@ -46,6 +48,8 @@ Let's start with why this problem exists at all.
 > So. We are going to build a Retrieval Augmented Generation system, and understand every piece of it.
 >
 > Here is the problem in one line. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt? That is the problem. Everything after it is mechanics.
+>
+> One thing before we start. Everything is at ragverse dot d i y — these slides, five playgrounds you can drive yourself, and all of the code. Open it in another tab now if you want to follow along; the address stays in the corner of every slide.
 
 
 ## Slide 2 — What you will be able to do

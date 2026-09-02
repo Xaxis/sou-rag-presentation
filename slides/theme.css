@@ -470,6 +470,31 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
   outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
 }
 
+/* The address, on every slide, for anyone who joined halfway through. */
+.deck-mark {
+  position: fixed; top: 14px; right: 18px; z-index: 55;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  /* no opacity: --ink-faint already sits exactly on the AA floor, and knocking
+     it back would put real information below it */
+  color: var(--ink-faint); pointer-events: none;
+}
+.deck-mark b { color: var(--accent-text); font-weight: 500; }
+
+/* Where to go, said once where there is room to read it. */
+.reveal .follow {
+  margin: 0.85em 0 0.1em; font-size: 0.46em; line-height: 1.5;
+  color: var(--ink-soft);
+}
+.reveal .follow b {
+  font-family: var(--mono); font-size: 0.82em; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
+}
+.reveal .follow a {
+  font-family: var(--mono); color: var(--accent-text);
+  font-weight: 700; text-decoration: none;
+  border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+}
+
 /* Title slide: who is talking. Kept to the left so a camera window can sit in
    the right-hand third during the spoken introduction without covering it. */
 .reveal .title-slide h1,
