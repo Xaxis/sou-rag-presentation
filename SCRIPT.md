@@ -6,9 +6,9 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 28 slides · ~22 min |
-| Short | 36 slides · ~29 min |
-| Full lesson | 54 slides · ~87 min |
+| Essentials | 28 slides · ~23 min |
+| Short | 36 slides · ~30 min |
+| Full lesson | 54 slides · ~88 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -20,7 +20,13 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 ## Slide 1 — Retrieval Augmented Generation · **essentials**
 
 
-Welcome. We are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
+Welcome. Before anything else, a quick word on who is talking.
+
+I am Wil Neeley. I have been working in AI for about a decade, which means I started well before GPTs made any of this fashionable — back when you built your own models and your own data pipelines because there was nothing to call. More recently I have been working on incentivised data training structures with NEAR AI: the mechanisms that reward people for contributing the data and the compute that models are actually trained on. And running through all of it, I have built a lot of retrieval and ingestion systems, on a lot of different stacks.
+
+I mention that for one reason. This is not a lesson I read and repeated. It is the shape of a system I have built more than once — and every mistake in it is a mistake I have made.
+
+So: we are going to build a Retrieval Augmented Generation system from nothing, and more importantly, understand every piece of it.
 
 Here is the one-line version of what RAG is for. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents into the prompt? That is the problem. Everything else is mechanics.
 
@@ -33,11 +39,13 @@ Let's start with why this problem exists at all.
 
 > **Essentials edition — tighter narration:**
 >
-> We are going to build a Retrieval Augmented Generation system, and understand every piece of it.
+> Quick word on who is talking first. I am Wil Neeley. About a decade in AI — well before GPTs, back when you built your own models and your own data pipelines. More recently, incentivised data training structures with NEAR AI. And throughout, a lot of retrieval and ingestion systems on a lot of different stacks.
 >
-> Here is the problem in one line. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt?
+> Which matters for one reason: this is not a lesson I read and repeated. It is a system I have built more than once, and every mistake in it is one I have made.
 >
-> Everything on these slides is real output from real code. If I claim two pieces of text have similar embeddings, you will see it measured.
+> So. We are going to build a Retrieval Augmented Generation system, and understand every piece of it.
+>
+> Here is the problem in one line. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt? That is the problem. Everything after it is mechanics.
 
 
 ## Slide 2 — What you will be able to do
@@ -81,7 +89,7 @@ Let me run the check, and we will begin.
 
 > **Essentials edition — tighter narration:**
 >
-> One word on how this runs. Every orange bar you see names a command, and the block beside it is what that command actually printed.
+> One word on how this runs. Wherever a terminal block appears on a slide, the line above it names the command that printed it.
 >
 > Behind them is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, all behind a single entry point. Whether the demos get run here or you run them afterwards, the output is the same. The address is on the last slide.
 >
@@ -723,7 +731,7 @@ In this repo, dot env is already gitignored and there is a dot env dot example t
 >
 > The API key. Create one on the OpenAI platform, copy it immediately — you cannot view it again — and put it in a file called dot env.
 >
-> Two things to do now rather than later.
+> Two things that catch people out, and both are worth doing before you write a line.
 >
 > Add credit. The API is prepaid and entirely separate from a ChatGPT subscription; paying for Plus gives you no API credit, which catches people constantly. Embedding these five documents costs well under a cent.
 >

@@ -15,6 +15,11 @@ all you need.
 Press **S** for the speaker window first, *then* **F** for fullscreen —
 opening a window from a fullscreen tab can drop you back out of it.
 
+The opening slide is the on-camera slide: it carries the presenter's name and
+background, and its right-hand third and lower band are deliberately clear so a
+camera window can sit there. It is the only slide written to be spoken to a
+camera. Everything after it is voice over slides.
+
 Keys: `→ / ←` navigate · `S` speaker view · `F` fullscreen · `O` overview ·
 `B` blank the screen.
 
@@ -134,7 +139,17 @@ that tell the audience to type something. `data-talk-title` on a section swaps
 the heading too, used where a title assumes a live terminal.
 
 In talk builds the demo cue bar is relabelled from "Demo 01" to "Output of" and
-restyled as quiet provenance rather than an instruction.
+restyled as quiet provenance rather than an instruction — **but only where the
+slide also carries terminal output**. On a slide with no output the bar is an
+instruction to run something, which in a talk is an instruction to nobody: it
+rendered as "OUTPUT OF ./run.sh check" with nothing beneath it. The build drops
+those bars from the talk editions entirely. If you add a cue to a slide, that
+is the rule it will be judged by.
+
+The same goes for anything else that only makes sense with a terminal open —
+prerequisites, install commands, "do this now" callouts. The opening two slides
+carry `.mode-wa` and `.mode-talk` variants for exactly this reason. A talk
+viewer should never be shown setup they are not doing.
 
 Slide **body** text is not rewritten by the build, so a line that only makes
 sense in one mode carries a class and the deck hides the other one:

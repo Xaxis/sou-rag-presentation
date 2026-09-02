@@ -78,6 +78,39 @@ const strip = (f) =>
    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
    .replace(/&gt;/g, '>').replace(/&#183;/g, '·').replace(/\s+/g, ' ').trim();
 
+/* The eyebrow number groups related slides, and the source deck restarts the
+   run at Part Four - so "05 · What an embedding is" and "05 · Step one" are
+   different sections wearing the same number. Cut the slides that carry the
+   restart, as the tightened editions do, and the sequence visibly runs
+   backwards: 05, 05, 07, 08, 05, 06. Renumber per edition instead: keep the
+   author's grouping by only incrementing when the number changes, which makes
+   the run monotonic whatever the edition drops.
+
+   Takes the ordered eyebrow numbers of one edition ('' for a divider) and
+   returns the replacements. */
+function renumberDeckHtml(html) {
+  const EB = /(<span class="eyebrow"><b>)(\d\d)(<\/b>)/;
+  const nums = [];
+  html.replace(/<section\b[^>]*>([\s\S]*?)<\/section>/g, (whole, body) => {
+    const m = EB.exec(body); nums.push(m ? m[2] : ''); return whole;
+  });
+  const next = renumberSections(nums);
+  let k = 0;
+  return html.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
+    const to = next[k++];
+    return to ? `<section${attrs}>${body.replace(EB, `$1${to}$3`)}</section>` : whole;
+  });
+}
+
+function renumberSections(nums) {
+  let counter = -1, last = null;
+  return nums.map((n) => {
+    if (!n) return '';
+    if (n !== last) { counter += 1; last = n; }
+    return String(counter).padStart(2, '0');
+  });
+}
+
 /* -------------------------------------------------------------- shell */
 const FONTS = [
   '<link rel="preload" as="font" type="font/woff2" crossorigin href="/deck/fonts/bricolage-grotesque-latin-4efd1a.woff2">',
@@ -266,6 +299,12 @@ function buildRead(all, edit) {
   const stage = /^\[[A-Z0-9][^\]]*\]$/;
   const parts = [];
   const chapters = [];
+  // same renumbering the deck gets, so a slide wears the same section number
+  // whichever surface you meet it on
+  const ebNums = renumberSections(
+    slides.map((s) => (s.eyebrow.match(/^(\d\d)\b/) || ['', ''])[1]));
+  const eyebrowOf = (s, i) => (ebNums[i]
+    ? s.eyebrow.replace(/^\d\d\b/, ebNums[i]) : s.eyebrow);
 
   slides.forEach((s, i) => {
     const isDivider = /divider/.test(s.body) || s.body.indexOf('class="rule"') !== -1;
@@ -298,7 +337,7 @@ function buildRead(all, edit) {
       const id = 'c' + (chapters.length + 1);
       chapters.push({ id, title: s.title, n: i + 1 });
       parts.push(`<section class="read-chapter" id="${id}">
-  <span class="read-chapter-k">${esc(s.eyebrow || 'Part')}
+  <span class="read-chapter-k">${esc(eyebrowOf(s, i) || 'Part')}
     <a href="#contents">contents &uarr;</a></span>
   <h2>${heading}</h2>
   ${body}
@@ -312,7 +351,7 @@ function buildRead(all, edit) {
     // screen reader. Until the first chapter, a slide IS the top-level section.
     const hl = chapters.length ? 3 : 2;
     parts.push(`<section class="read-slide" id="s${i + 1}">
-  <div class="read-meta"><span class="n">${i + 1}</span>${s.eyebrow ? esc(s.eyebrow) : ''}</div>
+  <div class="read-meta"><span class="n">${i + 1}</span>${s.eyebrow ? esc(eyebrowOf(s, i)) : ''}</div>
   <h${hl}>${heading}</h${hl}>
   ${body ? `<div class="read-visual">${body}</div>` : ''}
   ${notes ? `<div class="read-narration">${notes}</div>` : ''}
@@ -409,6 +448,9 @@ function buildPresent(all) {
 
   const ess = TIERS[0];
   const essTalk = minutes(ess.slides, 'essentials', true);
+  // the opening slide is the whole on-camera segment, so quote it in seconds
+  const introSecs = Math.round(
+    wordsOf(notesFor(all[0], 'essentials', true)) / WPM * 60 / 5) * 5;
   const body = `<div class="wrap tx" style="max-width:900px">
   <span class="eyebrow"><b>For the presenter</b> &middot; recording setup</span>
   <h1>Record it from here.</h1>
@@ -445,6 +487,11 @@ function buildPresent(all) {
       drop you back out of it.</li>
     <li><strong>Click back into the deck</strong> and press <kbd>F</kbd> for fullscreen.</li>
     <li><strong>Record the deck window only</strong>, not the speaker window.</li>
+    <li><strong>Going on camera for the introduction?</strong> The opening slide keeps
+      its right-hand third and its whole lower band clear, so a camera window sits there
+      without covering anything, and it is the only slide written to be spoken to a
+      camera — about ${introSecs} seconds. Close the window as you advance to slide 2;
+      everything after it is voice over slides.</li>
     <li><strong>One monitor?</strong> Skip the speaker window and press <kbd>T</kbd>
       instead — the same narration, in a drawer under the slide. Close it before you
       start recording and read from <a href="/read/talk-essentials/">the lesson page</a>
@@ -547,12 +594,28 @@ function buildDeckVariant(rawHtml, { length, talk }) {
     return `<section${attrs}>${b}</section>`;
   });
 
+  out = renumberDeckHtml(out);   // 2b
+
   // 3. lift relative asset paths one level, since variants live in a subdir
   out = out.replace(/\b(href|src)="(?!https?:|\/|data:|#)([^"]+)"/g,
                     (m, attr, url) => `${attr}="../${url}"`);
 
   if (talk) {
     out = out.replace(/<body>/, '<body data-mode="talk">');
+
+    /* A cue bar means one of two things. On a slide that also carries terminal
+       output it is provenance - "this is the command that printed that" - and
+       in a talk it gets relabelled to say so. On a slide with no output it is
+       an instruction to go and run something, which in a talk is an
+       instruction to nobody: it rendered as "OUTPUT OF ./run.sh check" with
+       nothing beneath it. Those come out entirely. */
+    out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
+      const ai = body.indexOf('<aside');
+      const visible = ai === -1 ? body : body.slice(0, ai);
+      if (!/class="cue"/.test(visible) || /class="term/.test(visible)) return whole;
+      return `<section${attrs}>${body.replace(/<div class="cue">[\s\S]*?<\/div>\s*/g, '')}</section>`;
+    });
+
     out = out.replace(/<span class="label">Demo&nbsp;\d+<\/span>/g,
                       '<span class="label">Output of</span>');
     out = out.replace(/<span class="label">Demo<\/span>/g,
@@ -596,7 +659,7 @@ for (const [dir, opts] of DECK_VARIANTS) {
 }
 // the default deck still needs its talk asides stripped out
 fs.writeFileSync(path.join(DIST, 'deck', 'index.html'),
-  rawDeck.replace(/\s*<aside class="(talk|brief)">[\s\S]*?<\/aside>/g, ''));
+  renumberDeckHtml(rawDeck.replace(/\s*<aside class="(talk|brief)">[\s\S]*?<\/aside>/g, '')));
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
