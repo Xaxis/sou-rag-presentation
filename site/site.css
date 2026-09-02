@@ -415,3 +415,10 @@ body[data-mode="talk"] .read .cue .cmd { color: var(--ink-soft); font-weight: 40
 .read .mode-talk { display: none; }
 body[data-mode="talk"] .read .mode-talk { display: revert; }
 body[data-mode="talk"] .read .mode-wa   { display: none; }
+
+/* --- reduced motion ----------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  a.card:hover { transform: none; }
+  html { scroll-behavior: auto; }
+}

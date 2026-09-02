@@ -324,6 +324,13 @@ npx serve dist -l 8912          # or python3 -m http.server 8912 -d dist
 node tools/make_og.mjs          # -> site/og.png, commit it
 ```
 
+`site/og.html` carries the same `{{PLACEHOLDERS}}` as the landing page and is
+filled by the same build pass, so the card cannot advertise numbers the site no
+longer has. The scheme is pinned to dark in `make_og.mjs`; without that the
+committed PNG would flip depending on the OS of whoever re-rendered it. The
+retrieval event fires at a random point, so **look at the card before you
+commit it** — an earlier render put the glow underneath the wordmark.
+
 ---
 
 ## Where the numbers differ from the source lessons

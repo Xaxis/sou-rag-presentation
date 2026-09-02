@@ -1092,7 +1092,7 @@ One honesty note before I start clicking. The four preset questions were embedde
 Watch the ranking jump. The equipment chunk goes to the top and the prompt underneath rebuilds itself in real time.
 
 [DRAG top k FROM 2 TO 6]
-Now raise top k. More chunks get highlighted, and look at the "sent to model" figure — we are now sending most of the document. That is the failure mode of a large k: you have reinvented pasting the whole thing in.
+Now raise top k. More chunks get highlighted, and watch the "sent to model" figure climb — by six it reads a hundred percent. Every part of the document is in the prompt. That is the failure mode of a large k: you have reinvented pasting the whole thing in.
 
 [SET top k BACK TO 2, CLICK 'what is the capital of France']
 And here is the one I really want you to see. That question is not answerable from this document at all — there is nothing about France anywhere in it.

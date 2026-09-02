@@ -353,10 +353,23 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
 .ix-note b { color: var(--accent-text); }
 
 .ix-prompt {
-  margin-top: 0.6em; background: var(--term-bg); color: var(--term-fg); border-radius: 4px;
+  margin-top: 0.6em; color: var(--term-fg); border-radius: 4px;
   padding: 0.6em 0.8em; font-family: var(--mono); font-size: 0.78em;
   line-height: 1.5; max-height: 180px; overflow-y: auto; white-space: pre-wrap;
   font-variant-ligatures: none;
+  /* The prompt is longer than the box on purpose - that is the point of the
+     slide. Scroll shadows so it reads as "there is more" rather than as a
+     line cut in half, which matters most in a recording where nobody watching
+     can scroll it. The covers scroll with the content and uncover the shadow
+     only at the end you have not reached. */
+  background:
+    linear-gradient(var(--term-bg) 30%, rgba(0, 0, 0, 0)) local,
+    linear-gradient(rgba(0, 0, 0, 0), var(--term-bg) 70%) 0 100% local,
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)) scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)) 0 100% scroll;
+  background-repeat: no-repeat;
+  background-size: 100% 32px, 100% 32px, 100% 13px, 100% 13px;
+  background-color: var(--term-bg);
 }
 .ix-prompt .lbl { color: var(--term-hi); }
 .ix-prompt .q { color: var(--term-ok); }
@@ -500,3 +513,16 @@ button.ix-chip {
 /* the retrieval playground says whether the scores are real or approximate */
 .ix-hint.ix-real { color: var(--teal); }
 .ix-hint.ix-real b { color: var(--teal); font-weight: 700; }
+
+/* --- reduced motion ------------------------------------------------------
+   Reveal keeps its half-second cross-fade whatever the OS asks for, and the
+   control bar and drawer animate too. Honour the setting: the deck is a
+   teaching tool, and nothing here depends on the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .slides section,
+  .reveal .slides,
+  .deck-bar, .deck-notes, .deck-btn, .ix-chip, .reveal .progress span {
+    transition: none !important;
+    animation: none !important;
+  }
+}

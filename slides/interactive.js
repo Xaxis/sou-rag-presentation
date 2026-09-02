@@ -1,8 +1,10 @@
 /* Interactive widgets for the RAG deck.
  *
- * Five of them, all driven from the slide markup by id. Two use real
- * precomputed OpenAI vectors (data.js); the chunking and retrieval
- * playgrounds run entirely in the browser with no API key, and say so.
+ * Five of them, all driven from the slide markup by id. Three run on the real
+ * precomputed OpenAI vectors in data.js - the neighbourhood map, the retrieval
+ * playground's preset questions, and the mismatch toggle. Everything runs in
+ * the browser with no API key, so a question the visitor types cannot be
+ * embedded; that one case falls back to a local measure and says so on screen.
  */
 (function () {
   'use strict';
@@ -333,8 +335,15 @@ Reviews. Formal reviews happen twice a year, in June and December. Promotion dec
 
       $('rt-ptok').textContent = fmt(tokens(prompt.length));
       $('rt-dtok').textContent = fmt(tokens(RETR_DOC.length));
-      $('rt-pct').textContent =
-        Math.round((context.length / RETR_DOC.length) * 100) + '%';
+      // Chunks overlap, so summing their lengths double-counts and can exceed
+      // the document. Measure the union of the spans they actually cover.
+      const spans = ranked.map((r) => chunks[r.i]).sort((a, b) => a.start - b.start);
+      let covered = 0, reach = 0;
+      for (const c of spans) {
+        if (c.end > reach) { covered += c.end - Math.max(c.start, reach); reach = c.end; }
+      }
+      const pct = Math.round((covered / RETR_DOC.length) * 100);
+      $('rt-pct').textContent = pct + '%';
       $('rt-top').textContent = (ranked[0] ? ranked[0].s : 0).toFixed(3);
 
       const best = ranked[0] ? ranked[0].s : 0;
@@ -342,6 +351,9 @@ Reviews. Formal reviews happen twice a year, in June and December. Promotion dec
       $('rt-note').innerHTML = best < floor
         ? 'Top score is <b>' + best.toFixed(3) + '</b> — nothing here really answers that. ' +
           'Note that you still got ' + topk + ' results back. A retriever always returns k.'
+        : pct >= 100
+        ? 'Every part of the document is now in the prompt. At this <em>k</em> you have ' +
+          '<b>reinvented pasting the whole thing in</b>.'
         : 'Only the highlighted chunks are sent. Everything else in the document ' +
           'is never seen by the model.';
     }

@@ -125,15 +125,11 @@ const wordsOf = (t) => t.split(/\s+/).filter(Boolean).length;
 const minutes = (ss, length, talk) =>
   Math.round(ss.reduce((a, s) => a + wordsOf(notesFor(s, length, talk)), 0) / WPM);
 
-function page({ title, desc, active, body, extraCss = '', bodyAttr = '' }) {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-<meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${SITE}${active}">
+function page({ title, desc, active, body, extraCss = '', bodyAttr = '',
+                noindex = false }) {
+  const discovery = noindex
+    ? '<meta name="robots" content="noindex">'
+    : `<link rel="canonical" href="${SITE}${active}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${SITE}${active}">
 <meta property="og:title" content="${esc(title)}">
@@ -144,7 +140,15 @@ function page({ title, desc, active, body, extraCss = '', bodyAttr = '' }) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${SITE}/og.png">
+<meta name="twitter:image" content="${SITE}/og.png">`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+${discovery}
 <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
 ${FAVICON}
@@ -462,6 +466,9 @@ function buildPresent(all) {
     <tr><td><kbd>B</kbd></td><td>blank the screen</td></tr>
     <tr><td><kbd>T</kbd></td><td>narration drawer (for learners, not for recording)</td></tr>
   </table>
+  <p style="color:var(--ink-soft);margin-top:0.9em">Need a handout? Add
+  <code>?print-pdf</code> to the deck's address and print to PDF — one page per slide,
+  narration included.</p>
 
   <h2 style="margin-top:1.8em">Every cue, in order</h2>
   <p style="color:var(--ink-soft)">Where to switch to the terminal, and where to pick up the
@@ -585,8 +592,24 @@ fs.writeFileSync(path.join(DIST, 'deck', 'index.html'),
 fs.copyFileSync(path.join(ROOT, 'site', 'site.css'), path.join(DIST, 'site.css'));
 fs.copyFileSync(path.join(ROOT, 'site', 'theme.js'), path.join(DIST, 'theme.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
-fs.copyFileSync(path.join(ROOT, 'site', 'og.html'), path.join(DIST, 'og.html'));
-fs.copyFileSync(path.join(ROOT, 'site', '404.html'), path.join(DIST, '404.html'));
+fs.writeFileSync(path.join(DIST, '404.html'), page({
+  title: 'Not found — ragverse.diy',
+  desc: 'Nothing at this address.',
+  active: '/404',
+  noindex: true,
+  body: `<div class="wrap tx" style="max-width:640px">
+  <span class="eyebrow"><b>404</b> &nbsp;&middot;&nbsp; nothing retrieved</span>
+  <h1 style="font-size:clamp(2.2rem,6vw,3.4rem)">No chunk matched.</h1>
+  <p style="color:var(--ink-soft);font-size:1.08rem;max-width:38ch">
+  A retriever always returns something, even when nothing fits. This page is the
+  honest version of that — there is genuinely nothing here.</p>
+  <div class="cta" style="margin-top:2em">
+    <a class="btn primary" href="/read/essentials/">Start the lesson &rarr;</a>
+    <a class="btn ghost" href="/play/">Playgrounds</a>
+    <a class="btn ghost" href="/present/">Present or record</a>
+  </div>
+</div>`,
+}));
 
 if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
   fs.copyFileSync(path.join(ROOT, 'site', 'og.png'), path.join(DIST, 'og.png'));
@@ -600,14 +623,22 @@ if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
     FULL_MIN: minutes(slides, 'full', false),
     SHORT_MIN: minutes(coreSlides, 'short', false),
     ESS_MIN: minutes(essSlides, 'essentials', false),
+    PLAYGROUNDS: slides.filter((s) => s.widget).length,
+    // the numbered scripts are the source of truth for "eight demos"
+    DEMOS: fs.readdirSync(path.join(ROOT, 'demo'))
+             .filter((f) => /^\d\d_.*\.py$/.test(f)).length,
   };
-  let landing = read('site', 'index.html');
-  for (const [k, v] of Object.entries(vals)) {
-    landing = landing.split(`{{${k}}}`).join(String(v));
-  }
-  const left = landing.match(/\{\{[A-Z_]+\}\}/g);
-  if (left) throw new Error('unfilled placeholders on the landing page: ' + left.join(', '));
-  fs.writeFileSync(path.join(DIST, 'index.html'), landing);
+  const fill = (file) => {
+    let out = read('site', file);
+    for (const [k, v] of Object.entries(vals)) out = out.split(`{{${k}}}`).join(String(v));
+    const left = out.match(/\{\{[A-Z_]+\}\}/g);
+    if (left) throw new Error(`unfilled placeholders in site/${file}: ${left.join(', ')}`);
+    return out;
+  };
+  fs.writeFileSync(path.join(DIST, 'index.html'), fill('index.html'));
+  // the social card is generated from the same numbers, so it cannot drift
+  // from the site it advertises
+  fs.writeFileSync(path.join(DIST, 'og.html'), fill('og.html'));
 }
 
 fs.mkdirSync(path.join(DIST, 'play'), { recursive: true });
