@@ -30,7 +30,7 @@
     <b>COST</b> &nbsp;·&nbsp; Well under a cent of embeddings<br>
     <b>EIGHT DEMOS</b> &nbsp;·&nbsp; every claim on these slides is executed, not asserted
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Welcome. We are going to build a Retrieval Augmented Generation system from nothing, and more importantly, we are going to understand every piece of it.
 
 Here is the one-line version of what RAG is for. How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents into the prompt? That is the problem. Everything else is mechanics.
@@ -63,7 +63,7 @@ Everything on these slides is real output from real code. If I claim two pieces 
     <li>Build a working ingestion pipeline in about sixty lines of Python.</li>
     <li>Avoid the mistake that silently breaks most first RAG builds.</li>
   </ul>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 These are the outcomes. Six of them.
 
 By the end you will be able to explain why a bigger context window does not remove the need for RAG — that is the objection everyone raises first, and it has two answers.
@@ -101,7 +101,7 @@ And last, you will know the one mistake that silently breaks most first builds. 
     for any demo. <code>demo/ingestion_pipeline.py</code> is the finished
     file we build up to.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 A word on how this runs, so you can follow along rather than just watch.
 
 I have two windows: these slides, and a terminal. Whenever an orange bar appears on a slide, that is my cue to stop talking and run the command written in it. The output you then see on the slide is the genuine output of that command — I have not typed nice numbers into a slide anywhere.
@@ -136,7 +136,7 @@ The scripts stand alone, except that seven and eight need the database the sixth
   <span class="eyebrow"><b>Part one</b></span>
   <h2>Why RAG exists</h2>
   <p class="muted tight">The problem is not that models are stupid.<br>The problem is that they are small.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Part one. Why RAG exists at all.
 
 I want to frame this carefully, because the framing matters. The problem RAG solves is not that language models are stupid. Modern models are extraordinarily capable. The problem is that they are small — not in intelligence, but in how much they can look at in one go.
@@ -159,7 +159,7 @@ Worth framing carefully. The problem is not that language models are stupid — 
   The obvious move is to paste all of them into the model and ask.</p>
   <p><strong>That does not work</strong> — and the reason it does not work is the
   whole reason this lesson exists.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Picture a company with several hundred internal documents. Policy guidelines, technical specifications, customer support logs, contracts. Ordinary business documents.
 
 Somebody asks a question, and exactly one of those documents contains the answer. The obvious move — and this is genuinely what everyone tries first — is to paste all of them into the model and ask the question.
@@ -187,7 +187,7 @@ That does not work. Why it does not work is the whole reason this lesson exists.
   </div>
   <p class="tight">The model does not get everything. It gets the right few pages.</p>
   <p class="tight muted">That is the entire idea. Everything else in this session is mechanics.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Here is the definition. Retrieval Augmented Generation is a language model combined with a retrieval system. The retrieval system searches external sources — documents, databases, knowledge bases — and it pulls only the relevant pieces into the prompt, at the moment the model needs them.
 
 Read that last part again, because it is the part people skip. At the moment the model needs them. Nothing is loaded in advance into the model. Nothing is trained into the model. The relevant text is fetched, per question, and placed in the prompt.
@@ -223,7 +223,7 @@ The model does not get everything. It gets the right few pages. That is the enti
      split as : Ret | rie | val | _augmented | _generation | _is | _powerful</div>
   <p class="tight muted">One token is roughly three quarters of an English word. Common words are
   one token; rare or long words split into several. Spaces travel with the token that follows.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 A word you will need: the token.
 
 A token is the unit of text a model processes. Sometimes it is a whole word. Often it is a fragment of one. Models do not read letters, and they do not read words — they read tokens. This matters because every limit and every price you will ever meet is denominated in tokens, not words.
@@ -276,7 +276,7 @@ Rule of thumb: one token is about three quarters of an English word.
     <strong>10 million</strong>, though no published benchmark shows quality holding near that.
     <br><span class="muted">Verify before you quote it. These figures move every few months.</span>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The next word you will need: the context window.
 
 The context window is the total number of tokens a model can hold in a single request. And the critical detail is that everything counts toward it — everything you send in, and everything the model writes back out. They share one budget. Past that limit, the information is simply not there. Not summarised, not compressed. Not there.
@@ -313,7 +313,7 @@ A million sounds like plenty. Let us see how it compares to what a company actua
   <p class="tight"><strong>Each step to the right is ten times larger</strong>, not one step larger.
   The gap between a model window and an enterprise archive is not a gap you close by waiting
   for bigger models.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 This is the same demo still running — the second half of demo one.
 
 Now, this is a logarithmic scale, and I need you to read it carefully, because logarithmic scales are quietly deceptive. Each step to the right is ten times larger than the last, not one step larger. The bars look comparable. The numbers are not.
@@ -364,7 +364,7 @@ This is not a gap you close by waiting for bigger models. And there is a second 
   </div>
   <p class="tight muted">Embedding cost assumes <code>text-embedding-3-small</code> at
   $0.02 per million tokens. One-off, not per question.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Let's make that scale argument something you can feel rather than just read, because the numbers are so large they stop meaning anything.
 
 Drag the slider. It runs from one megabyte of text up to one petabyte.
@@ -412,7 +412,7 @@ The threshold where RAG stops being optional is lower than people expect. Somewh
     Sending 500,000 tokens of irrelevant context to answer one question is expensive,
     slow, and produces <strong>worse</strong> answers than sending the five right paragraphs.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 There is a second reason, and it matters just as much as the first, but people forget it because the first one is so dramatic.
 
 Even when everything does fit — even in the case where your documents are small enough — sending all of it is still the wrong move.
@@ -440,7 +440,7 @@ Bury the one relevant paragraph inside five hundred thousand tokens and the mode
   <span class="eyebrow"><b>Part two</b></span>
   <h2>The shape of the system</h2>
   <p class="muted tight">Two pipelines, not one.<br>Learn them separately and the rest is easy.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Part two. The shape of the system.
 
 If there is one slide in this whole session to photograph, it is the next one. A RAG system is two pipelines, not one. People collapse them into one in their heads, and that is precisely where the mental model breaks and the questions get confused.
@@ -481,7 +481,7 @@ Everything so far has been about why. This is the what — and it is one diagram
     The <strong>same embedding model</strong> appears in both rows. That is the single most
     important detail on this slide, and we will break it on purpose at the end to show you why.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Here it is. The whole system in one picture.
 
 The top row is the ingestion pipeline, and the thing to understand about it is that it runs once, ahead of time, before anybody asks anything. Source documents go in. They get chunked — cut into small pieces. Each piece goes through an embedding model, which turns it into a vector, a list of numbers. Those vectors get stored in a vector database. Done. That pipeline does not run again until your documents change.
@@ -518,7 +518,7 @@ Now look at the two orange boxes. The same embedding model appears in both rows.
   <p class="tight">Why cut at all? Because nobody wants an entire Wikipedia article returned
   because one sentence in it matched. The chunk is your <em>unit of retrieval</em> —
   it is the smallest thing the system can hand back.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Next word: the chunk.
 
 Chunking is breaking large documents into small pieces. You choose the size. If you set it to a thousand tokens, then ten million tokens of documents becomes ten thousand chunks. Simple arithmetic.
@@ -555,7 +555,7 @@ Why cut at all? Because the chunk is your unit of retrieval — the smallest thi
      [ -0.0616  +0.0554  +0.0004  +0.0124  +0.0016  -0.0123 ... ]</div>
   <p class="tight"><strong>Fixed length output.</strong> One word in or nine hundred words in,
   the vector that comes out is always the same length.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Next box in the diagram: the embedding model. And the first thing to say, because it trips everybody up, is that this is not an LLM. Different model, different job. It does not generate text. It does not chat. You give it text, and it gives you back a list of numbers. That is all it does.
 
 Let me run demo two.
@@ -609,7 +609,7 @@ That fixed length is the property the whole system rests on. Any two pieces of t
   </table>
   <p class="tight muted">Real dimensions are not labelled and nobody knows what any single one
   means. These labels are a teaching device only.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 So what is an embedding, actually? This is the part people get stuck on, so we will slow down here.
 
 A vector embedding is a list of numbers that stands in for a piece of text. Each number in that list is called a dimension. Two more words for the list — and dimension just means one position in it.
@@ -653,7 +653,7 @@ Real embeddings are not labelled and nobody knows what any single dimension mean
      DRINKS             inside <span class="ok">0.611</span>   outside <span class="dim">0.313</span></div>
   <p class="tight">Every group is <strong>tighter inside than out</strong>. That is a
   neighbourhood — and nobody labelled any of it.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Let's measure it. Demo three.
 
 [RUN DEMO 03]
@@ -720,7 +720,7 @@ But look at the bottom lines, because that is where the claim holds. Every group
   </div>
   <p class="tight muted">These are genuine 1,536-dimension OpenAI vectors, precomputed by
   <code>tools/export_slide_data.py</code>. The map is a 2-D projection of all 1,536.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Now you can play with it yourself. These are real vectors — genuine fifteen-hundred-dimension OpenAI embeddings, computed ahead of time and shipped with the slide so it works without an API key.
 
 Click any word and it becomes the probe. Everything re-ranks against it.
@@ -758,7 +758,7 @@ Try a few. The thing I want you to notice is that every ordering you see came ou
     3,072 model for 512 cuts your storage by six and usually costs very little accuracy.
     <br><span class="muted">Check current pricing and dimension options in the provider docs. These move.</span>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 There are many embedding models. These are the ones you will meet first.
 
 Text-embedding-3-small from OpenAI, fifteen hundred and thirty-six dimensions. Cheap, and fine for most projects. That is the one we are using today, and I want you to notice that I am telling you the model and the dimension count in the same breath. That habit will make sense shortly.
@@ -792,7 +792,7 @@ There is a trade-off underneath all of this. More dimensions capture more meanin
   </div>
   <p class="tight muted">Purpose built: Pinecone, Weaviate, <strong>Chroma</strong>, Qdrant.
   FAISS is a library rather than a service. Or add <code>pgvector</code> to a Postgres you already run.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Last box in the ingestion row: the vector database.
 
 A vector database stores embeddings and finds the closest ones to a given vector, fast. That is its specialty — not storing things, but searching them by proximity across a huge number of dimensions.
@@ -822,7 +822,7 @@ Options: Pinecone, Weaviate, Chroma, Qdrant. We use Chroma because it runs local
   <span class="eyebrow"><b>Part three</b></span>
   <h2>Retrieval, in principle</h2>
   <p class="muted tight">Ingestion is finished. Nothing above runs again<br>until your documents change.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Part three. Retrieval, in principle.
 
 We have walked the whole top row of the diagram now — documents, chunks, embedding model, vectors, database. Ingestion is finished. And I want to stress that word finished, because it is genuinely done: nothing in that top row runs again until your documents change.
@@ -858,7 +858,7 @@ All of that was preparation. Nothing we have built has answered a question yet.
      <span class="dim">0.42  Annual headcount summary.</span>
      <span class="dim">0.31  Refunds are issued within 30 days.</span>
      <span class="dim">0.19  Guest wifi resets every Monday.</span></div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Here is the whole retrieval pipeline in four steps.
 
 Step one. The question goes through the same embedding model the documents went through. Same model. I am going to keep repeating that until it is annoying, because it is the thing that breaks.
@@ -904,7 +904,7 @@ Notice the winning chunk says "revenue" while the question says "sales". A keywo
   </div>
   <p class="tight">So: a retriever that returns 10 chunks of which 4 are irrelevant is
   <strong>not broken</strong>. That is the expected shape of the output.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The number of chunks that come back is called top k. That is the last of the words worth collecting. You choose it. Ask for the top five and you get five results.
 
 And now the important half of that sentence: whether or not all five are any good.
@@ -949,7 +949,7 @@ So a retriever returning ten chunks of which four are irrelevant is not broken �
     plain English. The prompt that reaches the model is the question and a few
     paragraphs of ordinary text.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 This is the step everyone misreads, so I am giving it its own slide.
 
 There is a very common mental model in which the vectors somehow go to the language model — as if the LLM understands embeddings, or as if the numbers are a compressed form the model can read. That is wrong, and it is worth killing off explicitly.
@@ -972,7 +972,7 @@ Right. That is all the theory. Let's build it.
   <span class="eyebrow"><b>Part four</b></span>
   <h2>Build the ingestion pipeline</h2>
   <p class="muted tight">Five articles in. A searchable vector database out.<br>About sixty lines of Python and one API key.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Part four. Now we build it.
 
 Everything up to here has been the top half of the diagram explained. Now it is the top half of the diagram in code.
@@ -1014,7 +1014,7 @@ Five articles in, a searchable vector database out, in about sixty lines of Pyth
     <span class="label">Runs once</span>
     When this session finishes you will not run this code again unless your documents change.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Orienting you before we start typing. This is the same two-row diagram, with the concrete numbers for today filled in.
 
 Five text files in a docs folder. They become five hundred and forty-seven chunks. Those go through OpenAI's embedding model and become five hundred and forty-seven vectors, which land in a Chroma database on disk.
@@ -1042,7 +1042,7 @@ $ source venv/bin/activate
     The <code>(venv)</code> prefix on your prompt is how you know it worked.
     If it is not there, nothing below will behave as expected.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Make a folder, open it in your editor, and create one file. The layout is simple: ingestion pipeline dot py, where all the code goes. A dot-env file for your API key. A docs folder for your source documents. And a venv folder which we are about to create.
 
 A virtual environment keeps this project's packages separate from everything else on your machine. Create it with python three dash m venv venv, then activate it with source venv slash bin slash activate. On Windows that second command is venv backslash Scripts backslash activate.
@@ -1080,7 +1080,7 @@ A virtual environment that was created but never activated is the single most co
     <strong>archived in May 2026</strong>. LangChain v1 moved to one package per provider,
     and for reading text files you do not need a package at all.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Five packages, one pip install line.
 
 These map almost exactly onto the boxes in the diagram. Langchain gives us the core abstractions, including the Document object we will meet in a moment. Langchain-text-splitters is the chunking box. Langchain-openai is the embedding model client. Langchain-chroma is the vector database. And python-dotenv is the one that is not in the diagram — it reads your API key out of a file so you never type a secret into your source code.
@@ -1109,7 +1109,7 @@ If you are in this repo rather than typing from scratch, there is a requirements
     first commit, not after. A leaked key gets scraped from public repositories
     within minutes.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The API key. Go to the OpenAI platform, open Settings, then API keys, and create one. Call it something you will recognise later. Copy it immediately — you cannot view it again.
 
 It goes in a file called dot env in the project root, as OPENAI underscore API underscore KEY equals your key. That name has to be exact, because that is the variable the OpenAI client looks for.
@@ -1149,7 +1149,7 @@ And add dot env to your gitignore before your first commit. A leaked key gets sc
      <span class="hi">TOTAL             347,695 characters</span></div>
   <p class="tight">Any five text files will work. Company articles are convenient because they
   are long, factual, and <strong>full of specific numbers you can test the retriever against</strong>.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 You need some documents. Create a docs folder and put five plain text files in it. This walkthrough uses the Wikipedia articles for Google, Microsoft, Nvidia, SpaceX and Tesla, saved as dot txt.
 
 In this repo that is scripted, so anyone who clones it gets exactly the same corpus and therefore roughly the same chunk counts you see on these slides. Let me run it.
@@ -1198,7 +1198,7 @@ if __name__ == "__main__":
   <p class="tight muted">Run it. You should see <code>main function</code> and nothing else —
   that confirms your environment, your packages and your file are wired up correctly
   <em>before</em> you write anything real.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Open ingestion pipeline dot py and start with this. Imports, two constants, and an empty main.
 
 Each line of that import block maps to one box in the diagram, which is why I want you to type it all at once. Path and Document are how we read the files — a standard-library import and one LangChain class, no loader package. CharacterTextSplitter chunks them. OpenAIEmbeddings turns chunks into vectors. Chroma stores them.
@@ -1248,7 +1248,7 @@ Prove the skeleton runs before you fill it in.
     <span class="label">Demo&nbsp;04</span>
     <span class="cmd">python 04_load.py</span>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Step one. Load the files. And this is the step where I depart from most tutorials, so let me be explicit about why.
 
 Every RAG tutorial reaches for DirectoryLoader here. Look at what it actually does for a folder of text files: it globs for a pattern, reads each file, and wraps the text in a Document with the path as metadata. That is the whole job. So that is what we write — six lines, using pathlib from the standard library and the Document class.
@@ -1302,7 +1302,7 @@ Note the two guard clauses. One checks the folder exists; the other checks we ac
     <code>.metadata</code> is a dictionary — here, the file we read it from.
     This object shows up everywhere from here on.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Here is what comes back. Five files in, five Document objects out.
 
 That Document object shows up everywhere from here on, so learn its two attributes now — there are only two and they are both simple.
@@ -1333,7 +1333,7 @@ And here is the property that makes metadata worth caring about: metadata surviv
     <code>langchain-unstructured</code>, or <code>pypdf</code> directly. What comes out
     is the same thing — <code>Document</code> objects — so everything downstream is unchanged.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Two things worth knowing.
 
 First, that call to sorted is not decoration. DirectoryLoader walked the directory in whatever order the filesystem handed back — which meant index zero could be a different file on your machine than on mine, and the chunk order changed with it. For a lesson where we compare numbers, that is genuinely annoying. Sorting makes the run reproducible.
@@ -1366,7 +1366,7 @@ The important part is that what comes out the other side is the same thing: Docu
     <code>chunk_size=800</code> means <strong>800 characters, not 800 tokens</strong>.
     Roughly 200 tokens. Different splitters count differently — always check which unit you are in.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Step two. Chunk them.
 
 Five documents of sixty to ninety thousand characters each are far too large to be useful units of retrieval. Nobody wants an entire Wikipedia article returned because one sentence in it matched.
@@ -1419,7 +1419,7 @@ You will also see the chunks are not all eight hundred. The splitter cuts on the
     <br><span class="muted"><code>RecursiveCharacterTextSplitter</code> handles this better and
     is what you would use in a real project. We stay on the simple one so the mechanics show.</span>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Five hundred and thirty-nine chunks, from five documents.
 
 Now look at the spread, because this is where the mental model needs correcting. The smallest chunk is fifteen characters. The largest is one thousand seven hundred and nineteen. The average is six hundred and forty-three. We asked for eight hundred and got almost nothing that is actually eight hundred.
@@ -1451,7 +1451,7 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
   <strong>half in one chunk and half in another</strong> — and neither half matches the question well.</p>
   <p class="tight muted">Rule of thumb: 10–20% of chunk size. For 800 characters, 100 is a
   reasonable default.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 This is the part of demo five I actually care about, and it is shown on a short passage with a small chunk size so the whole thing fits on one screen. The mechanism is identical at eight hundred characters.
 
 Top block, overlap zero. Read the seam between chunk zero and chunk one. Chunk zero ends with "its name is a tribute to the". Chunk one begins with "inventor Nikola Tesla". The sentence is cut clean in half.
@@ -1505,7 +1505,7 @@ That is all overlap does — each chunk repeats the last n characters of the one
     <div class="ix-list" id="ck-list" role="region" aria-label="Resulting chunks" tabindex="0"></div>
     <div class="ix-note" id="ck-note" aria-live="polite"></div>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 This is the same two numbers you just saw in code, except now you can move them and watch what they cost you.
 
 The document is the opening of the Tesla article — the same text demo five used.
@@ -1559,7 +1559,7 @@ There is no correct answer here — only a shape. Big enough to stand alone, sma
     <span class="label">This is the step that costs money and takes time</span>
     Every chunk is a call to OpenAI. Expect thirty seconds to a couple of minutes.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Step three. Embed and store.
 
 These are two conceptual steps — two separate boxes in the diagram — and one line of code. Chroma dot from underscore documents embeds every chunk and writes the results to disk in a single call. It is doing a lot more than it looks like it is doing.
@@ -1609,7 +1609,7 @@ Look at what is stored per chunk: the vector, the original text, and the metadat
     └── link_lists.bin      the search index</code></pre>
   <p class="tight"><strong>The original text is not optional.</strong> Without it you have
   numbers and nothing to send an LLM.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Five hundred and forty-seven vectors stored. And a folder has appeared that was not there a moment ago.
 
 Look at what is stored per chunk, because this is the vector database table from earlier, now real. The vector: fifteen hundred and thirty-six numbers. The original text: the opening of the Google article. And the metadata: source, docs slash google dot txt.
@@ -1640,7 +1640,7 @@ And the line to remember: the original text is not optional. Without it you have
         <td>The distance measure used to compare vectors. <em>Cosine similarity</em> is the
         standard choice for text. Set it and move on.</td></tr>
   </table>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Three arguments in that call matter, and each one has a failure mode attached to it.
 
 Embedding is the model. We are using text-embedding-3-small, which returns fifteen hundred and thirty-six dimensions. Write that choice down. I am serious about that — write it in a comment, put it in your README. Next lesson you must embed the user's question with exactly the same model, or retrieval returns nonsense with no error message. That is the whole finale of today.
@@ -1680,7 +1680,7 @@ And the distance measure, cosine, which is the standard for text because it comp
      <span class="dim">0.591</span> █████████████   <span class="dim">spacex.txt  In early 2012, approximately two-thirds...</span></div>
   <p class="tight">All five from <code>spacex.txt</code>, out of a store containing four other
   companies. <strong>Your ingestion pipeline is finished and correct.</strong></p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Let's confirm it worked. This is the top of the next lesson really, but we need to prove the store is queryable.
 
 [RUN DEMO 07]
@@ -1735,7 +1735,7 @@ One note on the scores. Zero point six six is the top match, and that might feel
      prompt length: 2,972 characters, built from the top 3 chunks</div>
   <p class="tight"><strong>Sent:</strong> the question, plus the original English text.
   &nbsp;<strong>Not sent:</strong> the vectors. Their job finished the moment the matching was done.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 And here it is. The actual prompt. Every character of it, printed by the demo.
 
 I promised earlier we would look at this, because it is the step everyone misreads. Read what is on that screen. An instruction: "answer the question using only the context below." Then the word CONTEXT, and then three paragraphs of completely ordinary English lifted straight out of the Wikipedia article. Then the word QUESTION, and the user's question.
@@ -1798,7 +1798,7 @@ This is the step everyone misreads. Vectors are only used for finding; their job
   <code>text-embedding-3-small</code>, so those scores are <strong>real</strong>. A question you
   type cannot be embedded in a browser — that needs an API call — so it falls back to a rough
   local measure, and the panel says which one you are looking at.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Last interactive one, and it puts the whole retrieval pipeline in your hands.
 
 Small policy document, cut into chunks. Type a question, and every chunk gets scored against it. The highlighted ones are the ones that would be sent.
@@ -1838,7 +1838,7 @@ That is the point from earlier, made concrete. A retriever always returns k resu
   </div>
   <p class="tight muted">The demo script clears the folder by default for exactly this reason —
   <code>--append</code> opts back in to the mistake so you can see it happen.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 One trap before we move on, and it is a trap I have watched people fall into more than once.
 
 From documents adds to an existing collection. It does not replace it. So if you run your ingestion script twice — which you will, because you will tweak the chunk size and re-run — you end up with one thousand and ninety-four vectors, half of them exact duplicates. And you paid to embed all of them twice.
@@ -1866,7 +1866,7 @@ While you are experimenting, delete the database folder before each run. In prod
   <span class="eyebrow"><b>Part five</b></span>
   <h2>The mistake that breaks<br>most first builds</h2>
   <p class="muted tight">Nothing crashes. There is no error message.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Part five. And this is the one I most want you to leave with.
 
 The mistake that breaks most first RAG builds. I have been foreshadowing it all session — the two orange boxes in the diagram, "write that choice down", "the same model, every time".
@@ -1903,7 +1903,7 @@ Everything else that goes wrong in this stack tells you. This one does not.
     A vector written by one model means <strong>nothing</strong> to another. The two systems
     cannot understand each other, and <strong>neither one will tell you</strong>.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The consistency rule. Use the same embedding model and the same dimension count for your documents and for your queries. Every time. No exceptions.
 
 The scenario that produces the failure is completely ordinary. You embed your documents in January with one model. Two months later you come back, you are writing the query side, and you reach for a model — maybe a cheaper one, maybe you just do not remember which you used. Different model. Now your documents and your questions are in two different systems.
@@ -1946,7 +1946,7 @@ Think of embedding models as separate languages. A vector written by one means n
         0.052  <span class="hi">microsoft.txt  Microsoft became the third publicly ...  ← WRONG FILE</span></div>
   <p class="tight">Scores collapse from <strong>0.66</strong> to <strong>0.06</strong>, and a
   <strong>Microsoft</strong> chunk is returned for a question about SpaceX.</p>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Demo eight. This builds a store the right way, then queries it the wrong way.
 
 One detail so you know this is a fair test. The wrong model is text-embedding-3-large, but I have asked it for fifteen hundred and thirty-six dimensions instead of its default three thousand. So the vector is exactly the same shape as the ones in the database. Chroma has no dimension mismatch to complain about. It has no way whatsoever to know it is being handed a different language.
@@ -2025,7 +2025,7 @@ That is why this breaks first builds. Not because it is hard to fix, but because
     </div>
     <div class="ix-note" id="mm-note" aria-live="polite"></div>
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 And finally, the failure, as a switch you can flip.
 
 The documents on the left were embedded once, correctly, with text-embedding-3-small. The only thing this toggle changes is which model embeds the question.
@@ -2079,7 +2079,7 @@ Now look at the errors-raised number. Zero. That is what a silent failure looks 
     build the store, and assert on it when you query. Ten lines of code that turn a silent
     failure into a loud one.
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 So what does that mean in practice? Four rules.
 
 One. Choose your embedding model before you ingest a single document. This is an architectural decision, not an implementation detail you get to defer.
@@ -2129,7 +2129,7 @@ One suggestion not in the lesson: store the model name and dimension count in th
         <td>A <strong>warning</strong>, not an error. A single paragraph exceeded the target.
         Expected behaviour.</td></tr>
   </table>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The five things that go wrong, and what each one actually means.
 
 OpenAI error, api key must be set. That is no dot env file, or the wrong variable name, or you forgot to call load dot env. The name has to be exactly OPENAI underscore API underscore KEY.
@@ -2158,7 +2158,7 @@ And created a chunk of size N longer than eight hundred. That is a warning, not 
     <li>You leave out <code>persist_directory</code>. What happens when the script ends?</li>
     <li>You embedded documents with model A and queries with model B. What is the symptom?</li>
   </ol>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 Before you move on, check yourself against these. If you are watching a recording of this, pause here — genuinely try to answer them out loud before reading on.
 
 One. Why does a two million token window not remove the need for RAG? Two reasons: scale, because real corpora are orders of magnitude larger; and cost and quality, because sending irrelevant context is expensive, slow, and produces worse answers.
@@ -2195,7 +2195,7 @@ Eight. Documents with model A, queries with model B. The symptom is that there i
     <li>Set <code>chunk_overlap</code> so sentences on the seam survive. Set <code>persist_directory</code> or you lose the work.</li>
     <li><strong>One embedding model, one dimension count, everywhere.</strong> Breaking this fails silently.</li>
   </ol>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 The whole session in ten lines. This is your revision card.
 
 Models have a token limit, and real document stores are millions of times larger. So you retrieve the relevant pieces instead of sending everything.
@@ -2244,7 +2244,7 @@ And the one that will actually cost you an afternoon: one embedding model, one d
     <b>BRING</b> &nbsp;·&nbsp; a set of documents you actually want to ask questions about<br>
     <b>ALL OF IT</b> &nbsp;·&nbsp; ragverse.diy
   </div>
-  <aside class="notes">
+  <aside class="notes" data-markdown>
 That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.
 
 And you have locked in a decision: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That choice now applies to the whole project.

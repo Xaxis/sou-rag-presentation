@@ -50,7 +50,18 @@
 
     var present = el('button', 'deck-btn', '<b>S</b> Speaker view');
     present.title = 'Open the speaker window for presenting or recording (S)';
+    // Reveal's speaker window opens on the layout that gives the notes about a
+    // quarter of the screen. "Wide" runs them across the full width in large
+    // type, which is what you want when you are reading them aloud. It is the
+    // speaker window's own localStorage and we share an origin, so seed it -
+    // only when unset, so a presenter's own choice always wins.
+    try {
+      if (!localStorage.getItem('reveal-speaker-layout')) {
+        localStorage.setItem('reveal-speaker-layout', 'wide');
+      }
+    } catch (e) {}
     present.addEventListener('click', function () {
+      setOpen(false);
       // Reveal's notes plugin owns the popup; ask it the same way S does.
       var ev = new KeyboardEvent('keydown', { keyCode: 83, which: 83, key: 's' });
       document.dispatchEvent(ev);
@@ -181,8 +192,32 @@
     wake();
   }
 
+  /* The speaker window can show a pacing clock - how much longer you should
+     still be on this slide - but only if the deck declares timings. Derive
+     them from the narration each slide actually carries, at the same 125
+     words per minute the site quotes everywhere else, plus the minute and a
+     half a demo costs when you are running it live rather than explaining
+     output. Doing it here rather than in the build means the raw deck gets
+     it too, and there is nothing to keep in step with the narration. */
+  function setPacing() {
+    var WPM = 125;
+    var sections = document.querySelectorAll('.reveal .slides > section');
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      var n = s.querySelector('aside.notes');
+      var words = n ? (n.textContent.match(/\S+/g) || []).length : 0;
+      var t = Math.max(25, Math.round(words * 60 / WPM));
+      if (!isTalk && s.querySelector('.cue')) t += 90;
+      s.setAttribute('data-timing', String(t));
+    }
+    // pacing stays hidden unless the config declares a timing of some kind;
+    // every slide carries its own, so this is only the switch that turns it on
+    if (window.Reveal && Reveal.configure) Reveal.configure({ defaultTiming: 60 });
+  }
+
   function boot() {
     build();
+    setPacing();
     autoHide(document.querySelector('.deck-bar'));
 
     setOpen(open);
@@ -206,6 +241,9 @@
       var t = e.target;
       if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
       if (e.key === 't' || e.key === 'T') { e.preventDefault(); setOpen(!open); }
+      // S opens the speaker window, which carries the same notes and is on the
+      // other monitor. Leaving the drawer open would only put them in frame.
+      if (e.key === 's' || e.key === 'S') { setOpen(false); }
     });
   }
 

@@ -12,11 +12,37 @@ all you need.
 ./run.sh slides
 ```
 
-Press **S** for the speaker window — narration, timer, and a preview of the
-next slide. That is the window for your second monitor while recording.
+Press **S** for the speaker window first, *then* **F** for fullscreen —
+opening a window from a fullscreen tab can drop you back out of it.
 
 Keys: `→ / ←` navigate · `S` speaker view · `F` fullscreen · `O` overview ·
 `B` blank the screen.
+
+Three things the deck does to make the speaker window worth reading:
+
+- **The narration renders as paragraphs.** Reveal collapses the whitespace in
+  `<aside class="notes">`, so a 200-word note arrived as one unbroken wall and
+  overflowed the pane. The asides carry `data-markdown`, which routes them
+  through the `marked` already bundled in the notes plugin. The narration is
+  written blank-line separated, so it needs no other markup — but that does
+  mean it is now parsed as Markdown, so a line beginning `-` or `#` will
+  become a list or a heading.
+- **The layout defaults to "Wide"**, which runs the notes across the full
+  width in large type instead of a quarter column. It is the speaker window's
+  own `localStorage` and we share an origin, so `deck-ui.js` seeds it — only
+  when unset, so a presenter's own choice from the dropdown always wins.
+- **Pacing is on.** The speaker window shows how long you should still be on
+  the current slide, counting down and turning red when you fall behind.
+  Reveal only shows it when the deck declares timings, so `deck-ui.js` sets
+  `data-timing` on every section from the narration that section actually
+  carries, at the same 125 wpm the site quotes, plus 90 seconds where a
+  work-along edition has a demo cue. Doing it at runtime rather than in the
+  build means the raw deck gets it too and there is nothing to keep in step —
+  and the totals land within a minute of the figures the build computes
+  independently, which is a useful cross-check.
+
+Pressing `S` also closes the inline **Narration** drawer, since the same words
+are now on the other monitor and the drawer would otherwise be in frame.
 
 You can also open `slides/index.html` directly. Every slide and all five
 widgets work over `file://`; the only thing that needs the server is the

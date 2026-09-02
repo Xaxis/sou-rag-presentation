@@ -58,7 +58,7 @@ def parse(deck_html):
     slides = []
     # Sections are not nested in this deck, so a non-greedy split is safe.
     for attrs, raw in re.findall(r"<section\b([^>]*)>(.*?)</section>", deck_html, re.S):
-        notes_match = re.search(r'<aside class="notes">(.*?)</aside>', raw, re.S)
+        notes_match = re.search(r'<aside class="notes"[^>]*>(.*?)</aside>', raw, re.S)
         notes = html.unescape(notes_match.group(1)).strip() if notes_match else ""
 
         body = raw[: notes_match.start()] if notes_match else raw
@@ -70,12 +70,12 @@ def parse(deck_html):
         widgets = re.findall(r'id="(ix-[a-z]+)"', body)
         core = 'data-track="core"' in attrs or 'data-track="essential"' in attrs
         essential = 'data-track="essential"' in attrs
-        bi = raw.find('<aside class="brief">')
-        brief = "" if bi == -1 else raw[bi + len('<aside class="brief">'):
-                                        raw.find('</aside>', bi)].strip()
-        ti = raw.find('<aside class="talk">')
-        talk = "" if ti == -1 else raw[ti + len('<aside class="talk">'):
-                                       raw.find('</aside>', ti)].strip()
+        def aside(cls):
+            m = re.search(r'<aside class="%s"[^>]*>(.*?)</aside>' % cls, raw, re.S)
+            return m.group(1).strip() if m else ""
+
+        brief = aside("brief")
+        talk = aside("talk")
 
         slides.append({
             "title": strip_tags(heading.group(1)) if heading else "(untitled)",

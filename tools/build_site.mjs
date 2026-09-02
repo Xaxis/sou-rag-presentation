@@ -22,6 +22,19 @@ const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
 const spell = (n) => WORDS[n] || String(n);
 
 /* ------------------------------------------------------------ parse deck */
+/* Locate one narration aside by class, tolerating attributes on the tag.
+   Returns [openIndex, contentStart, contentEnd] or null. */
+function findAside(html, cls) {
+  const m = new RegExp(`<aside class="${cls}"[^>]*>`).exec(html);
+  if (!m) return null;
+  const start = m.index + m[0].length;
+  return [m.index, start, html.indexOf('</aside>', start)];
+}
+const asideText = (html, cls) => {
+  const at = findAside(html, cls);
+  return at ? html.slice(at[1], at[2]).trim() : '';
+};
+
 function parseDeck() {
   const html = read('slides', 'index.html');
   const out = [];
@@ -30,19 +43,12 @@ function parseDeck() {
   while ((m = re.exec(html))) {
     const attrs = m[1] || '';
     const raw = m[2];
-    const ai = raw.indexOf('<aside class="notes">');
-    const body = ai === -1 ? raw : raw.slice(0, ai);
+    const at = findAside(raw, 'notes');
+    const body = at ? raw.slice(0, at[0]) : raw;
     // a slide may carry a second <aside class="talk">, so stop at our own close
-    const notes = ai === -1 ? ''
-      : raw.slice(ai + '<aside class="notes">'.length,
-                  raw.indexOf('</aside>', ai)).trim();
-    const bi = raw.indexOf('<aside class="brief">');
-    const briefNotes = bi === -1 ? ''
-      : raw.slice(bi + '<aside class="brief">'.length, raw.indexOf('</aside>', bi)).trim();
-    const ti = raw.indexOf('<aside class="talk">');
-    const talkNotes = ti === -1 ? ''
-      : raw.slice(ti + '<aside class="talk">'.length,
-                  raw.indexOf('</aside>', ti)).trim();
+    const notes = asideText(raw, 'notes');
+    const briefNotes = asideText(raw, 'brief');
+    const talkNotes = asideText(raw, 'talk');
     const talkTitle = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1] || '';
 
     const h = body.match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/);
@@ -394,6 +400,7 @@ function buildPresent(all) {
   }).join('\n');
 
   const ess = TIERS[0];
+  const essTalk = minutes(ess.slides, 'essentials', true);
   const body = `<div class="wrap tx" style="max-width:900px">
   <span class="eyebrow"><b>For the presenter</b> &middot; recording setup</span>
   <h1>Record it from here.</h1>
@@ -401,7 +408,18 @@ function buildPresent(all) {
   Slides, live playgrounds and the terminal output are all on screen — you only need a
   second window for your notes.</p>
 
-  <h2 style="margin-top:1.8em">Pick an edition</h2>
+  <div class="pick">
+    <span class="k">Start here</span>
+    <h2>Essentials, talk only</h2>
+    <p class="n">${essTalk} min &middot; ${ess.slides.length} slides &middot; nothing to run</p>
+    <p>The whole argument and all eight demos, with the output already on screen and the
+    prose written tight. Nothing to set up, and nothing that can fail on camera.</p>
+    <p><a class="btn primary" href="${url('essentials', true)}">Open the deck &rarr;</a>
+    <a class="btn ghost" href="${url('essentials', false)}">Run the demos live instead
+    &middot; ${minutes(ess.slides, 'essentials', false) + demoMins(ess.slides)} min</a></p>
+  </div>
+
+  <h2 style="margin-top:2em">Or pick another edition</h2>
   <p style="color:var(--ink-soft)">Two questions: how long, and do you run the code live?
   Every combination is a complete lesson — the slides and the output are identical.
   <strong>Talk only</strong> means the output is already on screen and you explain it;
@@ -410,18 +428,14 @@ function buildPresent(all) {
     <tr><th>Edition</th><th>Talk only</th><th>Work-along</th><th>What it carries</th></tr>
     ${rows}
   </table>
-  <div class="callout" style="margin:1.2em 0 0">
-    <span class="label">Most effective for a recorded video</span>
-    <strong>Essentials, talk only — about ${minutes(ess.slides, 'essentials', true)} minutes.</strong>
-    It keeps every demo and the whole argument, with the prose written tight rather than
-    conversational. Work-along adds roughly ${demoMins(ess.slides)} minutes of running things.
-  </div>
 
   <h2 style="margin-top:1.8em">Setup</h2>
   <ol class="steps">
-    <li><strong>Open the deck</strong> and go fullscreen with <kbd>F</kbd>.</li>
-    <li><strong>Press <kbd>S</kbd></strong> for the speaker window — narration, a timer, and
-      the next slide. Put it on your second monitor. Allow the popup the first time.</li>
+    <li><strong>Open the deck</strong> and press <kbd>S</kbd> for the speaker window. Allow
+      the popup the first time, and drag it to your second monitor.
+      <em>Do this before going fullscreen</em> — opening a window from a fullscreen tab can
+      drop you back out of it.</li>
+    <li><strong>Click back into the deck</strong> and press <kbd>F</kbd> for fullscreen.</li>
     <li><strong>Record the deck window only</strong>, not the speaker window.</li>
     <li><strong>Work-along editions only:</strong> run <code>./run.sh check</code> first — it
       makes a real API call and catches a dead key before you are on camera. Rehearse once and
@@ -429,9 +443,14 @@ function buildPresent(all) {
   </ol>
 
   <div class="callout" style="margin:1.6em 0">
-    <span class="label">One thing to know</span>
-    The deck also has a <strong>Narration</strong> button (<kbd>T</kbd>) showing the same notes
-    inline, for people working through it alone. Leave it closed while you record.
+    <span class="label">What the speaker window gives you</span>
+    Your narration in full paragraphs, at reading size — the same words the deck's
+    <strong>Narration</strong> drawer (<kbd>T</kbd>) shows, so pressing <kbd>S</kbd> closes
+    that drawer for you rather than leaving it in frame. Beside the clock is a
+    <strong>pacing</strong> readout: how long you should still be on the slide you are on.
+    It counts down as you talk and turns red when you are running behind, so a
+    ${essTalk}-minute talk actually lands near ${essTalk} minutes without you watching
+    a stopwatch.
   </div>
 
   <h2 style="margin-top:1.8em">Keys</h2>
@@ -483,17 +502,13 @@ function buildDeckVariant(rawHtml, { length, talk }) {
   //    otherwise talk mode swaps in the talk notes where a slide has them.
   out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
     const pull = (b, cls) => {
-      const i = b.indexOf(`<aside class="${cls}">`);
-      if (i === -1) return [b, null];
-      const j = b.indexOf('</aside>', i);
-      return [b.slice(0, i) + b.slice(j + 8),
-              b.slice(i + `<aside class="${cls}">`.length, j)];
+      const at = findAside(b, cls);
+      if (!at) return [b, null];
+      return [b.slice(0, at[0]) + b.slice(at[2] + 8), b.slice(at[1], at[2])];
     };
     const setNotes = (b, text) => {
-      const i = b.indexOf('<aside class="notes">');
-      if (i === -1) return b;
-      const j = b.indexOf('</aside>', i);
-      return b.slice(0, i) + '<aside class="notes">' + text + '</aside>' + b.slice(j + 8);
+      const at = findAside(b, 'notes');
+      return at ? b.slice(0, at[1]) + text + b.slice(at[2]) : b;
     };
 
     let [b, brief] = pull(body, 'brief');
