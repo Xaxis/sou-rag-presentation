@@ -624,9 +624,13 @@ if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
     SHORT_MIN: minutes(coreSlides, 'short', false),
     ESS_MIN: minutes(essSlides, 'essentials', false),
     PLAYGROUNDS: slides.filter((s) => s.widget).length,
-    // the numbered scripts are the source of truth for "eight demos"
-    DEMOS: fs.readdirSync(path.join(ROOT, 'demo'))
-             .filter((f) => /^\d\d_.*\.py$/.test(f)).length,
+    // Count the numbered demos the lesson actually runs, from the deck's own
+    // cues. Reading demo/ would be the more obvious source and is wrong:
+    // .vercelignore excludes that directory, so the build would work locally
+    // and fail on deploy - which is exactly what it did.
+    DEMOS: new Set(slides.flatMap((s) => s.cues)
+             .flatMap((c) => c.match(/\b(\d\d)_[a-z_]+\.py\b/) || [])
+             .filter((m) => /^\d\d$/.test(m))).size,
   };
   const fill = (file) => {
     let out = read('site', file);

@@ -227,8 +227,20 @@ Two things that will bite you if you change the config:
 - **Anchor `.vercelignore` paths with a leading slash.** An unanchored `dist/`
   also matches `slides/vendor/reveal/dist/` and strips reveal.js from the
   upload.
+- **The build must not read anything `.vercelignore` excludes.** `/demo` is
+  not uploaded, so a build that reads `demo/` works locally and fails on
+  deploy. Prove it before pushing:
 
-Neither shows up locally. Check the deployed URL, not just localhost.
+  ```bash
+  rsync -a --exclude '/demo' --exclude '/dist' --exclude '/.git' \
+        --exclude '/.vercel' --exclude '/SCRIPT.md' . /tmp/deploycheck/
+  cd /tmp/deploycheck && node tools/build_site.mjs
+  diff -rq dist <the real repo>/dist        # should print nothing
+  ```
+
+  (Note the leading slashes on those excludes, for the same reason as above.)
+
+None of these show up locally. Check the deployed URL, not just localhost.
 
 ---
 
