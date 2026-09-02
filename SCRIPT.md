@@ -862,7 +862,7 @@ And here is the property that makes metadata worth caring about: metadata surviv
 
 > **Essentials edition — tighter narration:**
 >
-> Five files in, five Document objects out. Two attributes, and you will meet them everywhere from here.
+> Step one is loading the files, and here is what comes back: five files in, five Document objects out. Two attributes, and you will meet them everywhere from here.
 >
 > Page content is the whole file as one long string. Metadata is a dictionary — right now just the file it came from, and we put that there ourselves, so you can put anything you like in it.
 >
@@ -935,7 +935,7 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 
 > **Essentials edition — tighter narration:**
 >
-> Five hundred and thirty-nine chunks. Now look at the spread, because this is where the mental model is usually wrong.
+> Step two, chunk them — and this is the result. Five hundred and thirty-nine chunks out of five documents. Now look at the spread, because this is where the mental model is usually wrong.
 >
 > Smallest fifteen characters, largest seventeen hundred, average six hundred and forty-three. We asked for eight hundred and got almost nothing that is actually eight hundred.
 >
@@ -1058,7 +1058,7 @@ And the line to remember: the original text is not optional. Without it you have
 
 > **Essentials edition — tighter narration:**
 >
-> Five hundred and forty-seven vectors on disk. And look at what is kept per chunk — this is that vector database table from earlier, now real.
+> Step three is embed and store, and that one call does both jobs. Five hundred and forty-seven vectors on disk. Look at what is kept per chunk — this is that vector database table from earlier, now real.
 >
 > The vector, fifteen hundred and thirty-six numbers. The original text. And the metadata, still saying docs slash google dot txt. There it is surviving, exactly as promised — in at the loader, through the splitter untouched, now attached to a chunk in the database.
 >
