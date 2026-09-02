@@ -307,9 +307,13 @@ function buildRead(all, edit) {
       return;
     }
 
+    // Slides sit under chapters, so they are h3 - but the opening slides come
+    // before any chapter exists, and jumping h1 -> h3 is a real skip for a
+    // screen reader. Until the first chapter, a slide IS the top-level section.
+    const hl = chapters.length ? 3 : 2;
     parts.push(`<section class="read-slide" id="s${i + 1}">
   <div class="read-meta"><span class="n">${i + 1}</span>${s.eyebrow ? esc(s.eyebrow) : ''}</div>
-  <h3>${heading}</h3>
+  <h${hl}>${heading}</h${hl}>
   ${body ? `<div class="read-visual">${body}</div>` : ''}
   ${notes ? `<div class="read-narration">${notes}</div>` : ''}
 </section>`);
@@ -441,6 +445,10 @@ function buildPresent(all) {
       drop you back out of it.</li>
     <li><strong>Click back into the deck</strong> and press <kbd>F</kbd> for fullscreen.</li>
     <li><strong>Record the deck window only</strong>, not the speaker window.</li>
+    <li><strong>One monitor?</strong> Skip the speaker window and press <kbd>T</kbd>
+      instead — the same narration, in a drawer under the slide. Close it before you
+      start recording and read from <a href="/read/talk-essentials/">the lesson page</a>
+      on a phone or tablet.</li>
     <li><strong>Work-along editions only:</strong> run <code>./run.sh check</code> first — it
       makes a real API call and catches a dead key before you are on camera. Rehearse once and
       the embedding cache means the take cannot fail on network.</li>

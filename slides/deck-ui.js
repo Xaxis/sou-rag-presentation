@@ -215,9 +215,41 @@
     if (window.Reveal && Reveal.configure) Reveal.configure({ defaultTiming: 60 });
   }
 
+  /* Reveal's notes plugin calls window.open and then writes into the result
+     without checking it. With pop-ups blocked that throws a TypeError, the
+     deck carries on, and the presenter sees S do absolutely nothing - which
+     is a miserable thing to discover with a camera running. Wrap open once
+     and say what happened. */
+  function watchForBlockedPopup() {
+    var nativeOpen = window.open;
+    if (!nativeOpen) return;
+    window.open = function () {
+      var w = null;
+      try { w = nativeOpen.apply(window, arguments); } catch (e) { w = null; }
+      if (w) { var a = document.querySelector('.deck-alert'); if (a) a.remove(); }
+      else { showBlocked(); }
+      return w;
+    };
+  }
+
+  function showBlocked() {
+    if (document.querySelector('.deck-alert')) return;
+    var a = el('div', 'deck-alert',
+      '<b>The speaker window was blocked.</b> Allow pop-ups for this site — ' +
+      'your browser will offer it in the address bar — then press <b>S</b> again. ' +
+      'Or press <b>T</b> to read the narration here instead.');
+    var x = el('button', 'deck-alert-close', '&times;');
+    x.setAttribute('aria-label', 'Dismiss');
+    x.addEventListener('click', function () { a.remove(); });
+    a.appendChild(x);
+    a.setAttribute('role', 'status');
+    document.body.appendChild(a);
+  }
+
   function boot() {
     build();
     setPacing();
+    watchForBlockedPopup();
     autoHide(document.querySelector('.deck-bar'));
 
     setOpen(open);

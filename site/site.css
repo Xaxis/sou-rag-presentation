@@ -209,6 +209,7 @@ footer .row .sp { margin-left: auto; }
   color: var(--accent-text); font-weight: 700;
   border: 1px solid var(--rule); border-radius: 3px; padding: 0.15em 0.5em;
 }
+.read-slide h2,
 .read-slide h3 { font-size: clamp(1.28rem, 3vw, 1.66rem); font-weight: 800; margin-bottom: 0.7em; }
 .read-visual { margin-bottom: 1.5em; }
 

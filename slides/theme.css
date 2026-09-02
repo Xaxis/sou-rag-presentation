@@ -514,6 +514,25 @@ button.ix-chip {
 .ix-hint.ix-real { color: var(--teal); }
 .ix-hint.ix-real b { color: var(--teal); font-weight: 700; }
 
+/* Something the presenter has to know about right now - only ever shown when
+   the speaker window could not open. */
+.deck-alert {
+  /* clear of the control bar, which sits at bottom:12px and is about 30px tall */
+  position: fixed; left: 50%; bottom: 58px; transform: translateX(-50%);
+  z-index: 60; max-width: 42em; padding: 0.85em 2.6em 0.85em 1.1em;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+  font-family: var(--body); font-size: 15px; line-height: 1.5;
+}
+.deck-alert b { color: var(--accent-text); }
+.deck-alert-close {
+  position: absolute; top: 0.35em; right: 0.5em;
+  background: none; border: 0; cursor: pointer; padding: 0.2em 0.35em;
+  color: var(--ink-faint); font-size: 18px; line-height: 1;
+}
+.deck-alert-close:hover { color: var(--accent-text); }
+
 /* --- reduced motion ------------------------------------------------------
    Reveal keeps its half-second cross-fade whatever the OS asks for, and the
    control bar and drawer animate too. Honour the setting: the deck is a
