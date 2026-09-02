@@ -7,6 +7,10 @@ so that rehearsing a demo twenty times costs money exactly once.
 import logging
 import warnings
 
+# Dependency deprecation chatter (urllib3, pydantic) has nothing to do with the
+# lesson and eats the top of the screen on camera. Note that this only applies
+# to the demo scripts - ingestion_pipeline.py, the file you keep, does not
+# import this module and suppresses nothing.
 warnings.filterwarnings("ignore")
 
 # CharacterTextSplitter logs one line per oversized chunk. That is expected
@@ -89,8 +93,8 @@ def _friendly_excepthook(exc_type, exc, tb):
                  "This is not a rate limit, despite the error name.")
     elif "rate limit" in msg or name == "RateLimitError":
         known = ("OpenAI is rate limiting this key.",
-                 "Wait a moment and re-run. Cached embeddings mean a re-run "
-                 "only retries what failed.")
+                 "Wait a moment and re-run. Anything embedded on an earlier "
+                 "successful run is cached and is not paid for twice.")
     elif any(w in msg for w in ("connection", "timeout", "network", "getaddrinfo",
                                 "temporarily unavailable")):
         known = ("Could not reach OpenAI.",

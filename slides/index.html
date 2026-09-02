@@ -167,11 +167,11 @@ Somebody asks a question, and exactly one of those documents contains the answer
 That does not work. And the reason it does not work is the whole reason this lesson exists. So let me give you the definition to hold on to, and then we will take apart why the obvious approach fails.
   </aside>
   <aside class="brief">
-Picture a company with a few hundred internal documents. Policies, specs, support logs, contracts. Ordinary things.
+Picture a company with a few hundred internal documents. Policies, specs, support logs, contracts. Ordinary things, none of them written for a machine to read.
 
-Somebody asks a question, and exactly one of those documents holds the answer. The obvious move — and genuinely what everyone tries first — is to paste them all in and ask.
+Nobody has read all of them. Whoever wrote any one of them has probably left. And the answer to a question somebody asks this afternoon is sitting in exactly one of them, and no one knows which.
 
-That does not work. Why it does not work is the whole reason this lesson exists.
+That is the situation this is built for. Hold onto it — the next slide is the whole idea in a sentence.
   </aside>
 </section>
 
@@ -916,11 +916,11 @@ This catches people out constantly. Somebody builds their first RAG system, asks
 So if a retriever returns ten chunks and four are irrelevant — that is normal. Filtering on a score threshold, or re-ranking, is how you handle it, and that is a later topic in the track. But knowing that it happens is not a later topic. That is today.
   </aside>
   <aside class="brief">
-The number of chunks that come back is called top k. You choose it. Ask for five and you get five.
+One more beat on top k, because this is the thing that catches people building their first system.
 
-And now the half people miss: whether or not any of them are good. A retriever always returns something. It has no concept of "nothing here fits". If your corpus contains nothing relevant, you still get k results, neatly ranked and looking respectable. They are the least-bad of a bad set.
+They ask something the documents genuinely do not answer, get five confident-looking chunks back, and conclude the retriever is broken. It is not. Ten chunks of which four are irrelevant is the expected shape of the output, not a bug. They are the least-bad of a bad set, and they look exactly like good ones.
 
-So a retriever returning ten chunks of which four are irrelevant is not broken — that is the expected shape of the output. Filtering on a score threshold is how you handle it.
+What you do about it — filter on a score threshold, or re-rank — is a later topic. Knowing that it happens is not.
   </aside>
 </section>
 
@@ -1264,7 +1264,7 @@ Let me run it.
   <aside class="talk">
 Step one. Load the files. And this is where I depart from most tutorials, so let me be explicit about why.
 
-Every RAG tutorial reaches for DirectoryLoader from langchain-community here. That package was archived in May twenty twenty-six. And look at what it actually did for a folder of text files: glob for a pattern, read each file, wrap the text in a Document with the path as metadata. That is the whole job.
+This is where the archived package would have come in: every RAG tutorial reaches for DirectoryLoader from langchain-community at exactly this step. So look at what that loader actually did for a folder of text files. Glob for a pattern, read each file, wrap the text in a Document with the path as metadata. That is the whole job.
 
 So that is what this code does directly — six lines, using pathlib from the standard library and the Document class. Same objects out, one fewer dependency, and nothing hidden. When somebody says "the loader", this is what they mean.
 

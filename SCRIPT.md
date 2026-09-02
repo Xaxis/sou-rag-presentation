@@ -121,11 +121,11 @@ That does not work. And the reason it does not work is the whole reason this les
 
 > **Essentials edition — tighter narration:**
 >
-> Picture a company with a few hundred internal documents. Policies, specs, support logs, contracts. Ordinary things.
+> Picture a company with a few hundred internal documents. Policies, specs, support logs, contracts. Ordinary things, none of them written for a machine to read.
 >
-> Somebody asks a question, and exactly one of those documents holds the answer. The obvious move — and genuinely what everyone tries first — is to paste them all in and ask.
+> Nobody has read all of them. Whoever wrote any one of them has probably left. And the answer to a question somebody asks this afternoon is sitting in exactly one of them, and no one knows which.
 >
-> That does not work. Why it does not work is the whole reason this lesson exists.
+> That is the situation this is built for. Hold onto it — the next slide is the whole idea in a sentence.
 
 
 ## Slide 6 — Retrieval Augmented Generation · **essentials**
@@ -607,11 +607,11 @@ So if a retriever returns ten chunks and four are irrelevant — that is normal.
 
 > **Essentials edition — tighter narration:**
 >
-> The number of chunks that come back is called top k. You choose it. Ask for five and you get five.
+> One more beat on top k, because this is the thing that catches people building their first system.
 >
-> And now the half people miss: whether or not any of them are good. A retriever always returns something. It has no concept of "nothing here fits". If your corpus contains nothing relevant, you still get k results, neatly ranked and looking respectable. They are the least-bad of a bad set.
+> They ask something the documents genuinely do not answer, get five confident-looking chunks back, and conclude the retriever is broken. It is not. Ten chunks of which four are irrelevant is the expected shape of the output, not a bug. They are the least-bad of a bad set, and they look exactly like good ones.
 >
-> So a retriever returning ten chunks of which four are irrelevant is not broken — that is the expected shape of the output. Filtering on a score threshold is how you handle it.
+> What you do about it — filter on a score threshold, or re-rank — is a later topic. Knowing that it happens is not.
 
 
 ## Slide 24 — Vectors find. Text is what gets sent.
