@@ -603,11 +603,24 @@ function buildDeckVariant(rawHtml, { length, talk }) {
       b = setNotes(b, talkText);
     }
 
-    // a title that assumes a live terminal is wrong in every talk edition,
-    // whichever narration that edition happens to be using
+    /* A talk is not a walkthrough of a repository. Anything phrased for
+       someone with a terminal open - the heading, the section label, the line
+       naming which script printed a block - can be replaced with the version
+       that teaches instead. */
     if (talk) {
       const t = (attrs.match(/data-talk-title="([^"]*)"/) || [])[1];
       if (t) b = b.replace(/(<h[12][^>]*>)[\s\S]*?(<\/h[12]>)/, `$1${t}$2`);
+      /* Plain text only: an attribute value with a > in it would break the
+         section regex that got us here. "07 · Step one" becomes the same
+         markup the deck writes by hand. */
+      const e = (attrs.match(/data-talk-eyebrow="([^"]*)"/) || [])[1];
+      if (e) {
+        const parts = e.split('\u00b7');
+        const html = parts.length > 1
+          ? `<b>${parts[0].trim()}</b> &nbsp;&middot;&nbsp; ${parts.slice(1).join('\u00b7').trim()}`
+          : e;
+        b = b.replace(/(<span class="eyebrow">)[\s\S]*?(<\/span>)/, `$1${html}$2`);
+      }
     }
     return `<section${attrs}>${b}</section>`;
   });
@@ -634,10 +647,17 @@ function buildDeckVariant(rawHtml, { length, talk }) {
       return `<section${attrs}>${body.replace(/<div class="cue">[\s\S]*?<\/div>\s*/g, '')}</section>`;
     });
 
-    out = out.replace(/<span class="label">Demo&nbsp;\d+<\/span>/g,
-                      '<span class="label">Output of</span>');
-    out = out.replace(/<span class="label">Demo<\/span>/g,
-                      '<span class="label">Output of</span>');
+    /* "OUTPUT OF python 03_similar_meaning.py" is provenance for someone who
+       will open the repo. For everyone else it is a filename. A slide can say
+       what actually produced the numbers instead - the model, the tokenizer -
+       and a slide that says nothing loses the bar altogether. */
+    out = out.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g, (whole, attrs, body) => {
+      const c = (attrs.match(/data-talk-cue="([^"]*)"/) || [])[1];
+      return `<section${attrs}>${body.replace(
+        /<div class="cue">[\s\S]*?<\/div>/g,
+        c ? `<div class="cue"><span class="label">${c}</span></div>` : ''
+      )}</section>`;
+    });
   }
 
   const edit = `${length}-${talk ? 'talk' : 'workalong'}`;

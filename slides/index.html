@@ -294,7 +294,7 @@ Which answers the question I get every time: why not fine-tune? Fine-tuning teac
 </section>
 
 <!-- ==================================================== 07 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-cue="Counted with the cl100k_base tokenizer">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; Tokens</span>
   <h2>Models do not read words</h2>
   <p class="tight">A <em>token</em> is the unit of text a model processes. Sometimes a whole
@@ -625,7 +625,7 @@ Why cut at all? Because the chunk is your unit of retrieval — the smallest thi
 </section>
 
 <!-- ==================================================== 14 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-cue="Measured with text-embedding-3-small">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; The embedding model</span>
   <h2>This is not an LLM</h2>
   <p class="tight">Different model, different job. It <strong>does not generate text</strong>.
@@ -724,7 +724,7 @@ Real embeddings are not labelled and nobody knows what any single dimension mean
 </section>
 
 <!-- ==================================================== 16 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-cue="Real embeddings &middot; cosine similarity &middot; text-embedding-3-small">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; Eight real words</span>
   <h2>Does that actually hold?</h2>
   <div class="cue">
@@ -1057,11 +1057,12 @@ Right. That is all the theory. Let's build it.
 </section>
 
 <!-- ==================================================== 23 -->
-<section data-track="essential" class="divider">
+<section data-track="essential" class="divider" data-talk-title="What actually happens to your documents">
   <div class="rule"></div>
   <span class="eyebrow"><b>Part four</b></span>
   <h2>Build the ingestion pipeline</h2>
-  <p class="muted tight">Five articles in. A searchable vector database out.<br>About sixty lines of Python and one API key.</p>
+  <p class="muted tight mode-wa">Five articles in. A searchable vector database out.<br>About sixty lines of Python and one API key.</p>
+  <p class="muted tight mode-talk">Five articles go in. A searchable database comes out.<br>Three steps &mdash; and what each one actually produces.</p>
   <aside class="notes" data-markdown>
 Part four. Now we build it.
 
@@ -1374,7 +1375,7 @@ Note the two guard clauses. One checks the folder exists; the other checks we ac
 </section>
 
 <!-- ==================================================== 31 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-eyebrow="07 · Step one: reading the documents" data-talk-title="A document is its text, plus where it came from">
   <span class="eyebrow"><b>05</b> &nbsp;·&nbsp; What comes back</span>
   <h2>Five files in, five Documents out</h2>
   <div class="term">     Loaded <span class="hi">5</span> documents
@@ -1497,7 +1498,7 @@ You will also see the chunks are not all eight hundred. The splitter cuts on the
 </section>
 
 <!-- ==================================================== 34 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-eyebrow="08 · Step two: cutting them up">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; The result</span>
   <h2>800 is a target, not a cap</h2>
   <div class="term">     Split 5 documents into <span class="hi">539</span> chunks
@@ -1539,7 +1540,7 @@ The splitter cuts on the separator first, then merges back up towards your size.
 </section>
 
 <!-- ==================================================== 35 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-title="What overlap actually does" data-talk-eyebrow="08 · Overlap">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Overlap</span>
   <h2>What <code>chunk_overlap</code> actually does</h2>
   <div class="term"><span class="dim">chunk_overlap = 0</span>
@@ -1697,7 +1698,7 @@ Look at what is stored per chunk: the vector, the original text, and the metadat
 </section>
 
 <!-- ==================================================== 37 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-eyebrow="09 · Step three: turning chunks into vectors" data-talk-title="Every chunk becomes numbers, text and a source">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; What landed on disk</span>
   <h2>One row per chunk</h2>
   <div class="term">     Stored <span class="hi">547</span> vectors in db_chroma/
@@ -1774,7 +1775,7 @@ And the distance measure, cosine, which is the standard for text because it comp
 </section>
 
 <!-- ==================================================== 39 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-cue="Searched across 547 chunks of five real articles" data-talk-eyebrow="10 · Retrieval, for real" data-talk-title="Ask it who founded SpaceX">
   <span class="eyebrow"><b>08</b> &nbsp;·&nbsp; Confirm it worked</span>
   <h2>Ask it something</h2>
   <div class="cue">
@@ -2037,7 +2038,7 @@ Think of embedding models as separate languages. A vector written by one means n
 </section>
 
 <!-- ==================================================== 44 -->
-<section data-track="essential">
+<section data-track="essential" data-talk-cue="The same 547 chunks &middot; only the query model changed">
   <span class="eyebrow"><b>09</b> &nbsp;·&nbsp; Break it on purpose</span>
   <h2>Same store. Same question. Nothing crashes.</h2>
   <div class="cue">
