@@ -281,7 +281,7 @@ section.divider .rule { width: 4em; height: 5px; background: var(--accent); marg
   background: var(--paper); color: var(--ink-soft); transition: all .12s;
   user-select: none;
 }
-.ix-chip:hover { border-color: var(--accent); color: var(--accent); }
+.ix-chip:hover { border-color: var(--accent); color: var(--accent-text); }
 .ix-chip.on { background: var(--accent-text); border-color: var(--accent-text); color: var(--on-accent); }
 
 /* --- stat strip -------------------------------------------------------- */
@@ -426,7 +426,7 @@ body.notes-open .deck-bar { bottom: calc(34vh + 12px); }
   border: none; background: none; font-size: 22px; line-height: 1;
   color: var(--ink-faint); cursor: pointer; padding: 0 4px;
 }
-.deck-notes-close:hover { color: var(--accent); }
+.deck-notes-close:hover { color: var(--accent-text); }
 
 .deck-notes-body {
   flex: 1 1 auto; overflow-y: auto; padding: 12px 20px 20px;
@@ -469,6 +469,17 @@ body[data-mode="talk"] .cue .label {
   color: var(--ink-faint); font-weight: 500; letter-spacing: 0.14em;
 }
 body[data-mode="talk"] .cue .cmd { color: var(--ink-soft); font-weight: 400; }
+
+/* reveal only knows to hide aside.notes. The alternate narrations are ours, so
+   the deck has to hide them itself - the built editions strip them out, but
+   ./run.sh slides serves this file as-is. */
+.reveal aside.brief, .reveal aside.talk { display: none; }
+
+/* a line that only makes sense in one mode. The deck ships both and hides one,
+   so the two editions never have to be two different slides. */
+.mode-talk { display: none; }
+body[data-mode="talk"] .mode-talk { display: revert; }
+body[data-mode="talk"] .mode-wa   { display: none; }
 
 /* a worked illustration, not a program run - visibly different from real output */
 .term.illustrative {

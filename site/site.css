@@ -374,3 +374,8 @@ body[data-mode="talk"] .read .cue {
 }
 body[data-mode="talk"] .read .cue .label { color: var(--ink-faint); font-weight: 500; }
 body[data-mode="talk"] .read .cue .cmd { color: var(--ink-soft); font-weight: 400; }
+
+/* the same one-mode-only lines as the deck, for the reading view */
+.read .mode-talk { display: none; }
+body[data-mode="talk"] .read .mode-talk { display: revert; }
+body[data-mode="talk"] .read .mode-wa   { display: none; }

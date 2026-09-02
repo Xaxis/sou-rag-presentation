@@ -8,16 +8,16 @@ with it. You end up with a working ingestion pipeline: five documents in, a
 searchable vector database out, in about sixty lines of Python.
 
 It comes in **six editions** — three lengths, each as a talk or a work-along.
-For a recorded video, **essentials as a talk (~20 min)** or **short as a talk
-(~30 min)** are the most effective. Both keep every demo and the whole argument;
-short adds the gotchas, the API key and the practical rules.
+For a recorded video, **essentials as a talk** or **short as a talk** are the
+most effective. Both keep every demo and the whole argument; short adds the
+gotchas, the API key and the practical rules.
 
 <!-- BEGIN:editions -->
 | | Talk only (no terminal) | Work-along (you run the demos) |
 |---|---|---|
-| **Essentials** · 26 slides | [~20 min](https://ragverse.diy/read/talk-essentials/) | [~32 min](https://ragverse.diy/read/essentials/) |
-| **Short** · 36 slides | [~29 min](https://ragverse.diy/read/talk-short/) | [~41 min](https://ragverse.diy/read/short/) |
-| **Full** · 54 slides | [~86 min](https://ragverse.diy/read/talk/) | [~98 min](https://ragverse.diy/read/) |
+| **Essentials** · 28 slides | [~22 min](https://ragverse.diy/read/talk-essentials/) | [~36 min](https://ragverse.diy/read/essentials/) |
+| **Short** · 36 slides | [~29 min](https://ragverse.diy/read/talk-short/) | [~43 min](https://ragverse.diy/read/short/) |
+| **Full** · 54 slides | [~82 min](https://ragverse.diy/read/talk/) | [~104 min](https://ragverse.diy/read/) |
 <!-- END:editions -->
 
 Same slides, same output, same rigour. **Neither short nor essentials is a
@@ -57,12 +57,15 @@ Want the slides on screen at the same time? In a second terminal:
 - **An OpenAI API key.** Put it in `demo/.env` — `setup` creates that file for
   you from `.env.example`. Get one at
   [platform.openai.com](https://platform.openai.com) → Settings → API keys.
-- **About one cent.** The API is prepaid and separate from any ChatGPT
+- **Well under a cent.** The API is prepaid and separate from any ChatGPT
   subscription; the minimum top-up is around $5 and will last you months.
 
 ---
 
 ## What you build
+
+Slide numbers below are the full edition; `./run.sh follow` names each slide by
+title instead, so it is right whichever edition you have on screen.
 
 <!-- BEGIN:demo-table -->
 | Demo | Slide | Command | What it shows |
@@ -79,8 +82,8 @@ Want the slides on screen at the same time? In a second terminal:
 <!-- END:demo-table -->
 
 Run any one on its own with `./run.sh demo 5`, or all of them with
-`./run.sh demo all`. **All eight are in both edits** — only the slides differ,
-so the terminal half of the session is identical either way.
+`./run.sh demo all`. **All eight are in all three editions** — only the slides
+differ, so the terminal half of the session is identical whichever you pick.
 
 Two flags worth knowing:
 
@@ -127,7 +130,7 @@ would need an API call — and the panel says which one you are looking at.
 | `RateLimitError: quota exceeded` | The key is fine; the account has no credit. **This is not a rate limit.** |
 | `ModuleNotFoundError` | Run `./run.sh setup` again. |
 | `No .txt files found` | Run `python3 tools/fetch_docs.py`. |
-| `Created a chunk of size N, longer than 800` | A warning, not an error. Expected — see slide 36. |
+| `Created a chunk of size N, longer than 800` | A warning, not an error. Expected — see *800 is a target, not a cap*. |
 
 `./run.sh check` catches most of these before you start, including a key that
 is still the placeholder or an account with no credit. If something does fail

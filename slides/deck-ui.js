@@ -27,6 +27,11 @@
   var lengthOf = /essentials/.test(editAttr) ? 'essentials'
                : /short/.test(editAttr) ? 'short' : 'full';
   var isShort = lengthOf !== 'full';
+  // The site serves every edition under /deck/...  Served on its own by
+  // ./run.sh slides, this file IS the only edition, and the controls that jump
+  // between editions - or back to the site - would all be dead ends. So they
+  // only appear when the rest of the site is actually there.
+  var onSite = /^\/deck(\/|$)/.test(location.pathname);
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -101,12 +106,11 @@
     home.href = '/';
     home.title = 'Back to the site';
 
-    bar.appendChild(home);
+    if (onSite) bar.appendChild(home);
     bar.appendChild(toggle);
     bar.appendChild(present);
     bar.appendChild(theme);
-    bar.appendChild(lenBtn);
-    bar.appendChild(modeBtn);
+    if (onSite) { bar.appendChild(lenBtn); bar.appendChild(modeBtn); }
     document.body.appendChild(bar);
 
     drawer = el('aside', 'deck-notes');
@@ -185,7 +189,7 @@
 
     // A 1280x780 canvas scaled into a phone gives ~15px headings. The reading
     // view is the same lesson as a document, so point narrow screens at it.
-    if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
+    if (onSite && window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
       var nudge = el('a', 'deck-nudge',
         '<b>Small screen?</b> The lesson reads better as a document &rarr;');
       nudge.href = isTalk

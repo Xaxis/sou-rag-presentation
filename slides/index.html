@@ -27,7 +27,7 @@
   <div class="meta">
     <b>RETRIEVAL LESSON</b> &nbsp;·&nbsp; the theory, then the code<br>
     <b>YOU NEED</b> &nbsp;·&nbsp; Python 3.10+, an editor, one OpenAI API key<br>
-    <b>COST</b> &nbsp;·&nbsp; Under ten cents of embeddings<br>
+    <b>COST</b> &nbsp;·&nbsp; Well under a cent of embeddings<br>
     <b>EIGHT DEMOS</b> &nbsp;·&nbsp; every claim on these slides is executed, not asserted
   </div>
   <aside class="notes">
@@ -37,7 +37,7 @@ Here is the one-line version of what RAG is for. How do you give a language mode
 
 This is a work-along session. I am going to switch between these slides and a terminal, and every number you see on a slide is something we actually run. Nothing here is asserted and left hanging — if I claim two pieces of text have similar embeddings, we measure it live.
 
-You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under ten cents in embeddings.
+You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under a cent in embeddings.
 
 Let's start with why this problem exists at all.
   </aside>
@@ -81,12 +81,15 @@ And last, you will know the one mistake that silently breaks most first builds. 
 </section>
 
 <!-- ==================================================== 03 -->
-<section data-talk-title="Everything here is real output" data-track="core">
+<section data-talk-title="Everything here is real output" data-track="essential">
   <span class="eyebrow"><b>00</b> &nbsp;·&nbsp; How this session runs</span>
   <h2>Two windows, eight demos</h2>
-  <p class="tight">Slides on one side, a terminal on the other. Whenever you see an orange
-  bar, I stop talking and run the command in it. The output on the slide is
+  <p class="tight mode-wa">Slides on one side, a terminal on the other. Whenever you see an
+  orange bar, I stop talking and run the command in it. The output on the slide is
   the real output from that command.</p>
+  <p class="tight mode-talk">Every orange bar names a command that was really run, and the
+  block beside it is what that command actually printed. Nothing on these slides was typed
+  by hand to look convincing.</p>
   <div class="cue">
     <span class="label">Demo&nbsp;00</span>
     <span class="cmd">./run.sh check</span>
@@ -107,7 +110,7 @@ Everything lives in the repository, behind one entry point. Run dot s h setup on
 
 The demo folder has eight numbered scripts, one per concept, and ingestion underscore pipeline dot py is the finished sixty-line file that all of this builds toward.
 
-If you are working along, pause whenever you need to. The scripts are all independent except that six, seven and eight need the database that six builds.
+If you are working along, pause whenever you need to. The scripts are all independent except that seven and eight need the database that six builds.
 
 Let me run the check, and we will begin.
   </aside>
@@ -119,11 +122,11 @@ If you want to run it yourself, you can. The whole thing is a repository: eight 
 So: sit back for this one. Every command I reference is in the repo if you want it later.
   </aside>
   <aside class="brief">
-Everything on these slides is genuine output from real code. Nothing is a mock-up. If I claim two pieces of text have similar embeddings, you will see it measured.
+One word on how this runs. Every orange bar you see names a command, and the block beside it is what that command actually printed.
 
-The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, behind one entry point. Whether the demos get run here or you run them afterwards, the output is the same — there is a link at the end.
+Behind them is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, all behind a single entry point. Whether the demos get run here or you run them afterwards, the output is the same. The address is on the last slide.
 
-The orange bars mark where a command produced what you are looking at.
+The scripts stand alone, except that seven and eight need the database the sixth one builds.
   </aside>
 </section>
 
@@ -974,12 +977,12 @@ Part four. Now we build it.
 
 Everything up to here has been the top half of the diagram explained. Now it is the top half of the diagram in code.
 
-Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under ten cents in embedding costs.
+Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under a cent in embedding costs.
 
 By the end of this you will have a folder on disk holding the vector representation of every paragraph in your documents.
   </aside>
   <aside class="brief">
-That is the theory. Now we build it.
+Part four. That is the theory — now we build it.
 
 Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
   </aside>
@@ -1047,6 +1050,13 @@ A virtual environment keeps this project's packages separate from everything els
 Now — check this before you go any further. The venv prefix on your prompt is how you know it worked. If you do not see that, you are installing into your system Python and nothing below will behave as expected. The single most common failure in this whole lesson is a virtual environment that was created but never activated.
 
 For bigger projects you would reach for Poetry or uv instead. For learning, venv is fine.
+  </aside>
+  <aside class="talk">
+The layout is deliberately small. One Python file, where all the code goes. A dot-env file for the API key. A docs folder for the source documents. And a virtual environment.
+
+The virtual environment is worth a word even if you never type this yourself, because it is where most first attempts die. It keeps this project's packages separate from everything else on the machine. You create it, and then you have to activate it — and the venv prefix on the prompt is the only thing that tells you the second step worked.
+
+A virtual environment that was created but never activated is the single most common failure in this whole lesson.
   </aside>
 </section>
 
@@ -1200,6 +1210,15 @@ Now run it. You should see "main function" printed, and nothing else.
 That step looks pointless and it is not. It confirms three separate things before you have written any real logic: your virtual environment is active, all five packages installed correctly, and your file has no syntax errors. If something is wrong with your setup, you find out here — in two seconds, with a clear error — rather than forty lines later in the middle of an API call.
 
 Get in the habit. Prove the skeleton runs before you fill it in.
+  </aside>
+  <aside class="talk">
+The file starts with imports, two constants, and an empty main. Each line of that import block maps to one box in the diagram. Path and Document are how the files get read — a standard-library import and one LangChain class, no loader package. CharacterTextSplitter chunks them. OpenAIEmbeddings turns chunks into vectors. Chroma stores them.
+
+Load dot env is the odd one out. It pulls the key out of the dot-env file and into the environment, so the OpenAI client finds it without a secret ever appearing in code.
+
+And then the skeleton gets run, before any real logic exists. That looks pointless and it is not. It proves three things at once: the virtual environment is active, all five packages installed, and the file parses — in two seconds, with a clear error, rather than forty lines later in the middle of an API call.
+
+Prove the skeleton runs before you fill it in.
   </aside>
 </section>
 
@@ -2140,7 +2159,7 @@ And created a chunk of size N longer than eight hundred. That is a warning, not 
     <li>You embedded documents with model A and queries with model B. What is the symptom?</li>
   </ol>
   <aside class="notes">
-Before you move on, check yourself against these. If you are recording this, pause here — genuinely try to answer them out loud before reading on.
+Before you move on, check yourself against these. If you are watching a recording of this, pause here — genuinely try to answer them out loud before reading on.
 
 One. Why does a two million token window not remove the need for RAG? Two reasons: scale, because real corpora are orders of magnitude larger; and cost and quality, because sending irrelevant context is expensive, slow, and produces worse answers.
 
@@ -2215,14 +2234,15 @@ And the one that will actually cost you an afternoon: one embedding model, one d
 </section>
 
 <!-- ==================================================== 49 -->
-<section data-track="core" class="title-slide">
+<section data-track="essential" class="title-slide">
   <h1>Next: the retrieval<br>pipeline</h1>
   <p class="sub">You take a question, embed it with that same model, pull the closest chunks
   out of <code>db_chroma/</code>, and hand them to an LLM to answer.</p>
   <div class="meta">
-    <b>YOU BUILT</b> &nbsp;·&nbsp; 547 vectors on disk, searchable, with sources<br>
-    <b>YOU LOCKED IN</b> &nbsp;·&nbsp; text-embedding-3-small at 1,536 dimensions<br>
-    <b>BRING</b> &nbsp;·&nbsp; a set of documents you actually want to ask questions about
+    <b>THE RESULT</b> &nbsp;·&nbsp; 547 vectors on disk, searchable, with sources<br>
+    <b>LOCKED IN</b> &nbsp;·&nbsp; text-embedding-3-small at 1,536 dimensions<br>
+    <b>BRING</b> &nbsp;·&nbsp; a set of documents you actually want to ask questions about<br>
+    <b>ALL OF IT</b> &nbsp;·&nbsp; ragverse.diy
   </div>
   <aside class="notes">
 That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.
@@ -2235,14 +2255,25 @@ If you are working along, the best thing you can do before then is swap my five 
 
 Thanks for working through it.
   </aside>
+  <aside class="talk">
+That is the ingestion pipeline, end to end. Five articles in; five hundred and forty-seven vectors on disk, searchable, each one still carrying the file it came from.
+
+And one decision is now locked in: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That applies to the whole project from here on.
+
+Next is the retrieval pipeline properly — a question in, embedded with that same model, the closest chunks pulled out, a prompt built, and an LLM to answer it. Including what to do when the retriever comes back with nothing good.
+
+If you want to run any of this, the whole repository is at ragverse dot d i y. The most useful thing you can do with it is point it at a set of documents you actually care about — everything here works unchanged.
+
+Thanks for watching.
+  </aside>
   <aside class="brief">
-That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — searchable, each one carrying the file it came from.
+That is the ingestion pipeline, end to end. Five articles in; five hundred and forty-seven vectors on disk, searchable, each one still carrying the file it came from.
 
-And you have locked in a decision: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That now applies to the whole project.
+And one decision is locked in: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That now applies to the whole project.
 
-Next is the retrieval pipeline properly — question in, embed with that same model, pull the closest chunks, build a prompt, hand it to an LLM. Including what to do when nothing good comes back.
+Next is the retrieval pipeline properly — question in, embed it with that same model, pull the closest chunks, build a prompt, hand it to an LLM. Including what to do when nothing good comes back.
 
-The best thing you can do before then is swap these five articles for documents you actually want to ask questions about. Everything here works unchanged.
+The best thing to do before then is point it at documents you actually care about. Everything here works unchanged. It is all at ragverse dot d i y.
   </aside>
 </section>
 

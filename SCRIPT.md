@@ -6,9 +6,9 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 26 slides · ~20 min |
+| Essentials | 28 slides · ~22 min |
 | Short edit | 36 slides · ~29 min |
-| Full lesson | 54 slides · ~86 min |
+| Full lesson | 54 slides · ~87 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -26,7 +26,7 @@ Here is the one-line version of what RAG is for. How do you give a language mode
 
 This is a work-along session. I am going to switch between these slides and a terminal, and every number you see on a slide is something we actually run. Nothing here is asserted and left hanging — if I claim two pieces of text have similar embeddings, we measure it live.
 
-You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under ten cents in embeddings.
+You will need Python three point ten or newer, an editor, and one OpenAI API key. The whole thing costs well under a cent in embeddings.
 
 Let's start with why this problem exists at all.
 
@@ -60,7 +60,7 @@ You will have built a working ingestion pipeline — real code, on your machine,
 And last, you will know the one mistake that silently breaks most first builds. Silently is the important word there. We will break it on purpose at the end so you know what it looks like.
 
 
-## Slide 3 — Two windows, eight demos · **short edit**
+## Slide 3 — Two windows, eight demos · **essentials**
 
 **Section:** 00 · How this session runs  
 **Run:** `./run.sh check`
@@ -74,18 +74,18 @@ Everything lives in the repository, behind one entry point. Run dot s h setup on
 
 The demo folder has eight numbered scripts, one per concept, and ingestion underscore pipeline dot py is the finished sixty-line file that all of this builds toward.
 
-If you are working along, pause whenever you need to. The scripts are all independent except that six, seven and eight need the database that six builds.
+If you are working along, pause whenever you need to. The scripts are all independent except that seven and eight need the database that six builds.
 
 Let me run the check, and we will begin.
 
 
 > **Essentials edition — tighter narration:**
 >
-> Everything on these slides is genuine output from real code. Nothing is a mock-up. If I claim two pieces of text have similar embeddings, you will see it measured.
+> One word on how this runs. Every orange bar you see names a command, and the block beside it is what that command actually printed.
 >
-> The whole thing is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, behind one entry point. Whether the demos get run here or you run them afterwards, the output is the same — there is a link at the end.
+> Behind them is a repository: eight numbered scripts, one per concept, and a finished sixty-line pipeline, all behind a single entry point. Whether the demos get run here or you run them afterwards, the output is the same. The address is on the last slide.
 >
-> The orange bars mark where a command produced what you are looking at.
+> The scripts stand alone, except that seven and eight need the database the sixth one builds.
 
 
 ## Slide 4 — Why RAG exists · **essentials**
@@ -643,14 +643,14 @@ Part four. Now we build it.
 
 Everything up to here has been the top half of the diagram explained. Now it is the top half of the diagram in code.
 
-Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under ten cents in embedding costs.
+Five Wikipedia articles go in. A searchable vector database comes out. About sixty lines of Python and one API key. Budget sixty to ninety minutes if you are typing along, and well under a cent in embedding costs.
 
 By the end of this you will have a folder on disk holding the vector representation of every paragraph in your documents.
 
 
 > **Essentials edition — tighter narration:**
 >
-> That is the theory. Now we build it.
+> Part four. That is the theory — now we build it.
 >
 > Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
 
@@ -1307,7 +1307,7 @@ And created a chunk of size N longer than eight hundred. That is a warning, not 
 **Section:** 10 · Check yourself
 
 
-Before you move on, check yourself against these. If you are recording this, pause here — genuinely try to answer them out loud before reading on.
+Before you move on, check yourself against these. If you are watching a recording of this, pause here — genuinely try to answer them out loud before reading on.
 
 One. Why does a two million token window not remove the need for RAG? Two reasons: scale, because real corpora are orders of magnitude larger; and cost and quality, because sending irrelevant context is expensive, slow, and produces worse answers.
 
@@ -1369,7 +1369,7 @@ And the last one, which is the one that will actually cost you an afternoon: one
 > And the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking that fails silently.
 
 
-## Slide 54 — Next: the retrieval pipeline · **short edit**
+## Slide 54 — Next: the retrieval pipeline · **essentials**
 
 
 That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — five hundred and forty-seven of them, searchable, each one carrying the file it came from.
@@ -1385,10 +1385,10 @@ Thanks for working through it.
 
 > **Essentials edition — tighter narration:**
 >
-> That is the ingestion pipeline. You have a folder on disk holding the vector representation of every paragraph in five documents — searchable, each one carrying the file it came from.
+> That is the ingestion pipeline, end to end. Five articles in; five hundred and forty-seven vectors on disk, searchable, each one still carrying the file it came from.
 >
-> And you have locked in a decision: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That now applies to the whole project.
+> And one decision is locked in: text-embedding-3-small at fifteen hundred and thirty-six dimensions. That now applies to the whole project.
 >
-> Next is the retrieval pipeline properly — question in, embed with that same model, pull the closest chunks, build a prompt, hand it to an LLM. Including what to do when nothing good comes back.
+> Next is the retrieval pipeline properly — question in, embed it with that same model, pull the closest chunks, build a prompt, hand it to an LLM. Including what to do when nothing good comes back.
 >
-> The best thing you can do before then is swap these five articles for documents you actually want to ask questions about. Everything here works unchanged.
+> The best thing to do before then is point it at documents you actually care about. Everything here works unchanged. It is all at ragverse dot d i y.

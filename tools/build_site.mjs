@@ -102,6 +102,18 @@ function nav(active) {
 const SITE = 'https://ragverse.diy';
 const WPM = 125;   // presenting pace, including pauses
 
+/* Which narration a given edition actually speaks. buildDeckVariant, the reading
+   view and every timing on the site all have to agree about this, so it lives in
+   exactly one place. The tightened prose is written mode-neutral, which is why it
+   wins over the talk variant in the short and essentials editions. */
+const notesFor = (s, length, talk) =>
+  (length !== 'full' && s.briefNotes) ? s.briefNotes
+    : (talk && s.talkNotes) ? s.talkNotes
+      : s.notes;
+const wordsOf = (t) => t.split(/\s+/).filter(Boolean).length;
+const minutes = (ss, length, talk) =>
+  Math.round(ss.reduce((a, s) => a + wordsOf(notesFor(s, length, talk)), 0) / WPM);
+
 function page({ title, desc, active, body, extraCss = '', bodyAttr = '' }) {
   return `<!doctype html>
 <html lang="en">
@@ -142,8 +154,8 @@ ${body}
 </main>
 <footer><div class="wrap row">
   <span>Built as a work-along lesson. Every claim executed, not asserted.</span>
-  <span class="sp"><a href="/deck/">Lesson</a> &middot; <a href="/play/">Playgrounds</a>
-  &middot; <a href="/script/">Transcript</a>
+  <span class="sp"><a href="/read/">The lesson</a> &middot; <a href="/play/">Playgrounds</a>
+  &middot; <a href="/deck/">Deck</a> &middot; <a href="/present/">Present</a>
   &middot; <a href="https://github.com/Xaxis/sou-rag-presentation">Source</a></span>
 </div></footer>
 <script src="/theme.js"></script>
@@ -240,9 +252,7 @@ function buildRead(all, edit) {
         .replace(/<span class="label">Demo<\/span>/g, '<span class="label">Output of</span>');
     }
 
-    const useNotes = length !== 'full' && s.briefNotes ? s.briefNotes
-                   : talk && s.talkNotes ? s.talkNotes : s.notes;
-    const notes = useNotes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+    const notes = notesFor(s, length, talk).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
       .map((p) => {
         const line = p.replace(/\s+/g, ' ');
         return stage.test(line)
@@ -275,19 +285,17 @@ function buildRead(all, edit) {
   const toc = chapters.map((c) =>
     `<a href="#${c.id}"><b>${String(c.n).padStart(2, '0')}</b> ${esc(c.title)}</a>`).join('\n');
 
-  const words = slides.reduce((a, s) => a + ((
-    length !== 'full' && s.briefNotes ? s.briefNotes
-      : talk && s.talkNotes ? s.talkNotes : s.notes
-  ).split(/\s+/).filter(Boolean).length), 0);
+  const words = slides.reduce((a, s) => a + wordsOf(notesFor(s, length, talk)), 0);
+  const spoken = Math.round(words / WPM);
 
   const body = `<div class="wrap read">
   <header class="read-head">
     <span class="eyebrow"><b>${length === 'essentials' ? 'The essentials'
-      : length === 'short' ? 'The short lesson' : 'The whole lesson'}${talk ? ', as a talk' : ''}</b> &middot; ${slides.length} slides &middot; ~${Math.round(words / WPM)} min spoken &middot; ~${Math.round(words / 220)} min to read</span>
+      : length === 'short' ? 'The short lesson' : 'The whole lesson'}${talk ? ', as a talk' : ''}</b> &middot; ${slides.length} slides &middot; ~${spoken} min spoken &middot; ~${Math.round(words / 220)} min to read</span>
     <h1>${length === 'essentials' ? 'RAG, the short way.'
          : length === 'short' ? 'RAG, the fast way.' : 'RAG, end to end.'}</h1>
     <p class="read-lede">${length === 'essentials'
-      ? 'The whole arc in about twenty minutes: why RAG exists, both pipelines, what an embedding really is, the build, and the mistake that fails silently. All eight demos, tightened prose, nothing skipped that matters.'
+      ? `The whole arc in about ${spoken} minutes: why RAG exists, both pipelines, what an embedding really is, the build, and the mistake that fails silently. All eight demos, tightened prose, nothing skipped that matters.`
       : talk
       ? 'Narrated as a talk: the code is shown and explained, not typed live. Every terminal block is genuine output. Follow along in the repo if you want to, or just read.'
       : length === 'short'
@@ -302,11 +310,11 @@ function buildRead(all, edit) {
 </div>`;
 
   return page({
-    title: length === 'essentials' ? 'The essentials — RAG in about 20 minutes'
+    title: length === 'essentials' ? `The essentials — RAG in about ${spoken} minutes`
          : length === 'short' ? 'The short lesson — RAG, built in front of you'
          : 'The lesson — RAG, built in front of you',
     desc: length === 'essentials'
-      ? 'The whole RAG lesson in about twenty minutes: both pipelines, what an embedding is, the build, and the silent failure.'
+      ? `The whole RAG lesson in about ${spoken} minutes: both pipelines, what an embedding is, the build, and the silent failure.`
       : length === 'short'
       ? 'The RAG lesson, tightened: every demo and the two strongest playgrounds, same depth, fewer detours.'
       : 'The whole RAG lesson as a document: every slide, the narration, and five interactive playgrounds. Nothing to install.',
@@ -346,9 +354,6 @@ function buildPresent(all) {
   ];
 
   // one demo takes roughly a minute and a half including talking through it
-  const speak = (ss, tier) => Math.round(ss.reduce((a, s) =>
-    a + ((tier !== 'full' && s.briefNotes ? s.briefNotes : s.notes)
-         .split(/\s+/).filter(Boolean).length), 0) / WPM);
   const demoMins = (ss) => Math.round(ss.filter((s) => s.cues.length).length * 1.5);
 
   const url = (tier, talk) => talk
@@ -356,12 +361,11 @@ function buildPresent(all) {
     : (tier === 'full' ? '/deck/' : `/deck/${tier}/`);
 
   const rows = TIERS.map((t) => {
-    const sp = speak(t.slides, t.key);
     const dm = demoMins(t.slides);
     return `<tr>
       <td><strong>${t.label}</strong><br><span class="muted">${t.slides.length} slides</span></td>
-      <td><a href="${url(t.key, true)}">~${sp} min</a><br><span class="muted">talk only</span></td>
-      <td><a href="${url(t.key, false)}">~${sp + dm} min</a><br><span class="muted">work-along</span></td>
+      <td><a href="${url(t.key, true)}">~${minutes(t.slides, t.key, true)} min</a><br><span class="muted">talk only</span></td>
+      <td><a href="${url(t.key, false)}">~${minutes(t.slides, t.key, false) + dm} min</a><br><span class="muted">work-along</span></td>
       <td>${t.blurb}</td>
     </tr>`;
   }).join('\n');
@@ -385,7 +389,7 @@ function buildPresent(all) {
   </table>
   <div class="callout" style="margin:1.2em 0 0">
     <span class="label">Most effective for a recorded video</span>
-    <strong>Essentials, talk only — about ${speak(ess.slides, 'essentials')} minutes.</strong>
+    <strong>Essentials, talk only — about ${minutes(ess.slides, 'essentials', true)} minutes.</strong>
     It keeps every demo and the whole argument, with the prose written tight rather than
     conversational. Work-along adds roughly ${demoMins(ess.slides)} minutes of running things.
   </div>
@@ -546,34 +550,18 @@ fs.copyFileSync(path.join(ROOT, 'site', 'hero.js'), path.join(DIST, 'hero.js'));
 fs.copyFileSync(path.join(ROOT, 'site', 'og.html'), path.join(DIST, 'og.html'));
 fs.copyFileSync(path.join(ROOT, 'site', '404.html'), path.join(DIST, '404.html'));
 
-// robots + sitemap, generated so new routes cannot be forgotten
-const ROUTES = ['/', '/read/', '/read/short/', '/read/talk/', '/read/talk-short/',
-                '/deck/', '/deck/short/', '/deck/talk/', '/deck/talk-short/',
-                '/play/', '/present/'];
-fs.writeFileSync(path.join(DIST, 'robots.txt'),
-  `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
-fs.writeFileSync(path.join(DIST, 'sitemap.xml'),
-  '<?xml version="1.0" encoding="UTF-8"?>\n' +
-  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  ROUTES.map((r) =>
-    `  <url><loc>${SITE}${r}</loc><changefreq>monthly</changefreq>` +
-    `<priority>${r === '/' ? '1.0' : r.startsWith('/read') ? '0.9' : '0.7'}</priority></url>`
-  ).join('\n') + '\n</urlset>\n');
 if (fs.existsSync(path.join(ROOT, 'site', 'og.png'))) {
   fs.copyFileSync(path.join(ROOT, 'site', 'og.png'), path.join(DIST, 'og.png'));
 }
 {
   const coreSlides = slides.filter((s) => s.core);
-  const mins = (ss) => Math.round(
-    ss.reduce((a, s) => a + s.notes.split(/\s+/).filter(Boolean).length, 0) / WPM);
   const essSlides = slides.filter((s) => s.essential);
-  const brief = (ss) => Math.round(ss.reduce((a, s) =>
-    a + ((s.briefNotes || s.notes).split(/\s+/).filter(Boolean).length), 0) / WPM);
-  const essMins = brief(essSlides);
   const vals = {
     FULL_SLIDES: slides.length, SHORT_SLIDES: coreSlides.length,
     ESS_SLIDES: essSlides.length,
-    FULL_MIN: mins(slides), SHORT_MIN: brief(coreSlides), ESS_MIN: essMins,
+    FULL_MIN: minutes(slides, 'full', false),
+    SHORT_MIN: minutes(coreSlides, 'short', false),
+    ESS_MIN: minutes(essSlides, 'essentials', false),
   };
   let landing = read('site', 'index.html');
   for (const [k, v] of Object.entries(vals)) {
@@ -607,10 +595,36 @@ fs.writeFileSync(path.join(DIST, 'script', 'index.html'),
 fs.mkdirSync(path.join(DIST, 'present'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'present', 'index.html'), buildPresent(slides));
 
+/* robots + sitemap, walked out of dist/ once everything is written, so a new
+   route is in the sitemap the moment it exists rather than when someone
+   remembers to add it to a list. */
+const routes = [];
+(function walk(dir, url) {
+  if (fs.existsSync(path.join(dir, 'index.html'))) routes.push(url);
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.isDirectory() && e.name !== 'fonts' && e.name !== 'vendor') {
+      walk(path.join(dir, e.name), `${url}${e.name}/`);
+    }
+  }
+})(DIST, '/');
+// /script/ is a redirect stub kept alive for old links; it is not a page
+const pages = routes.filter((r) => r !== '/script/').sort();
+fs.writeFileSync(path.join(DIST, 'robots.txt'),
+  `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+fs.writeFileSync(path.join(DIST, 'sitemap.xml'),
+  '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+  pages.map((r) =>
+    `  <url><loc>${SITE}${r}</loc><changefreq>monthly</changefreq>` +
+    `<priority>${r === '/' ? '1.0' : r.startsWith('/read') ? '0.9' : '0.7'}</priority></url>`
+  ).join('\n') + '\n</urlset>\n');
+
 const widgets = slides.filter((s) => s.widget).length;
-const coreN = slides.filter((s) => s.core).length;
-console.log(`built dist/`);
-console.log(`  deck    ${slides.length} slides   (short edit: ${coreN})`);
-console.log(`  play    ${widgets} playgrounds`);
-console.log(`  read    ${slides.length} slides as a document`);
-console.log(`  present cue sheet`);
+const tier = (ss, key) =>
+  `${String(ss.length).padStart(2)} slides  ~${minutes(ss, key, true)} min talk` +
+  `  ~${minutes(ss, key, false) + Math.round(ss.filter((s) => s.cues.length).length * 1.5)} min work-along`;
+console.log(`built dist/  (${pages.length} pages)`);
+console.log(`  essentials  ${tier(slides.filter((s) => s.essential), 'essentials')}`);
+console.log(`  short       ${tier(slides.filter((s) => s.core), 'short')}`);
+console.log(`  full        ${tier(slides, 'full')}`);
+console.log(`  play        ${widgets} playgrounds`);

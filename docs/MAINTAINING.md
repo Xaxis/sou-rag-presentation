@@ -22,6 +22,10 @@ You can also open `slides/index.html` directly. Every slide and all five
 widgets work over `file://`; the only thing that needs the server is the
 speaker window, because it opens a second page.
 
+Served on its own, the deck is the *full work-along* edition and the control
+bar drops the buttons that would be dead ends — the edition and mode switches,
+the link home. Those need the built site, where the other editions exist.
+
 **The deck is genuinely offline.** Reveal is vendored and the webfonts are
 self-hosted in `slides/fonts/`, so presenting needs no network at all — worth
 knowing before you rely on conference wifi. If you change the type stack in
@@ -70,7 +74,7 @@ out of one source file.
 **Essentials and short both use tighter narration**; only the full edition keeps
 the unhurried phrasing. Cutting slides alone does not control runtime — the
 median slide in the full edition carries about 200 spoken words, so 36 slides
-of it still runs 52 minutes:
+of it still runs 56 minutes:
 
 ```html
 <aside class="notes">…the unhurried version…</aside>
@@ -99,12 +103,25 @@ narration block:
 ```
 
 A slide with no `<aside class="talk">` uses the same narration in both modes,
-which is most of them — only the eleven slides with a demo cue needed a talk
-variant. `data-talk-title` on a section swaps the heading too, used where a
-title assumes a live terminal.
+which is most of them — the slides that need one are the demo cues plus the few
+that tell the audience to type something. `data-talk-title` on a section swaps
+the heading too, used where a title assumes a live terminal.
 
 In talk builds the demo cue bar is relabelled from "Demo 01" to "Output of" and
 restyled as quiet provenance rather than an instruction.
+
+Slide **body** text is not rewritten by the build, so a line that only makes
+sense in one mode carries a class and the deck hides the other one:
+
+```html
+<p class="mode-wa">…a terminal on the other; I stop and run the command…</p>
+<p class="mode-talk">…every orange bar names a command that was really run…</p>
+```
+
+Which narration an edition speaks is decided in exactly one function —
+`notesFor()` in `build_site.mjs`, mirrored by `notes_for()` in
+`build_script.py`. Every runtime quoted anywhere (the site, `/present/`, the
+README table) is derived from it, so the numbers cannot disagree.
 
 | | Work-along | Talk only |
 |---|---|---|
@@ -158,11 +175,16 @@ node tools/build_site.mjs          # -> dist/
 npx serve dist                     # or any static server
 ```
 
-Routes: `/` landing · `/deck/` the slides · `/play/` the five playgrounds on
-one page · `/script/` the narration.
+Routes: `/` landing · `/deck/` the slides · `/read/` the lesson as a document ·
+`/play/` the five playgrounds on one page · `/present/` the presenter's cue
+sheet. Each of the six editions has its own `/deck/…` and `/read/…` path.
+`/script/` is a redirect kept alive for old links.
 
-The playground and transcript pages are **derived from `slides/index.html`** at
-build time, so they cannot drift from the deck.
+`robots.txt` and `sitemap.xml` are walked out of `dist/` after everything is
+written, so a new route is listed the moment it exists.
+
+The reading, playground and presenter pages are **derived from
+`slides/index.html`** at build time, so they cannot drift from the deck.
 
 ### Deploying
 
@@ -218,6 +240,13 @@ node tools/build_highlight.mjs ./package
 ```
 
 918KB becomes 107KB, and the deck's payload drops from ~1.2MB to ~230KB.
+
+`slides/vendor/` holds only the five files the deck actually loads. Reveal's
+distribution also ships unbundled ES source (`plugin/*/plugin.js`, which
+`import`s from npm and cannot run in a browser), an ESM copy of the notes
+plugin, a standalone `speaker-view.html` that `notes.js` inlines anyway, and
+two dark syntax themes this deck does not use. They were deleted; if you
+re-vendor reveal, delete them again.
 
 Colours live in `slides/syntax.css`, drawn from the site palette. Reveal's
 bundled zenburn is a *dark* theme and rendered pale yellow on white paper —

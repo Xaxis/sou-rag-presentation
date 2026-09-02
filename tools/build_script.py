@@ -73,6 +73,9 @@ def parse(deck_html):
         bi = raw.find('<aside class="brief">')
         brief = "" if bi == -1 else raw[bi + len('<aside class="brief">'):
                                         raw.find('</aside>', bi)].strip()
+        ti = raw.find('<aside class="talk">')
+        talk = "" if ti == -1 else raw[ti + len('<aside class="talk">'):
+                                       raw.find('</aside>', ti)].strip()
 
         slides.append({
             "title": strip_tags(heading.group(1)) if heading else "(untitled)",
@@ -82,6 +85,7 @@ def parse(deck_html):
             "core": core,
             "essential": essential,
             "brief": brief,
+            "talk": talk,
             "notes": notes,
         })
     return slides
@@ -130,14 +134,32 @@ def main():
         sys.exit(f"deck not found: {DECK}")
     slides = parse(DECK.read_text(encoding="utf-8"))
 
+    def notes_for(s, length, talk):
+        """Which narration an edition speaks. Mirrors notesFor() in
+        tools/build_site.mjs - the two must agree or the README and the site
+        will quote different runtimes for the same deck."""
+        if length != "full" and s["brief"]:
+            return s["brief"]
+        if talk and s["talk"]:
+            return s["talk"]
+        return s["notes"]
+
+    def mins(ss, length, talk):
+        return round(sum(len(notes_for(s, length, talk).split()) for s in ss)
+                     / WORDS_PER_MINUTE)
+
+    # a demo costs about a minute and a half once you have talked through it.
+    # Half-up, to match Math.round() in tools/build_site.mjs - Python's round()
+    # is half-to-even and would disagree by a minute on an odd demo count.
+    def demo_mins(ss):
+        return int(sum(1 for s in ss if s["cues"]) * 1.5 + 0.5)
+
     total_words = sum(len(s["notes"].split()) for s in slides)
     minutes = round(total_words / WORDS_PER_MINUTE)
     core = [s for s in slides if s["core"]]
-    core_minutes = round(
-        sum(len((s["brief"] or s["notes"]).split()) for s in core) / WORDS_PER_MINUTE)
+    core_minutes = mins(core, "short", False)
     ess = [s for s in slides if s["essential"]]
-    ess_minutes = round(
-        sum(len((s["brief"] or s["notes"]).split()) for s in ess) / WORDS_PER_MINUTE)
+    ess_minutes = mins(ess, "essentials", False)
 
     out = []
     out.append("# Recording script\n")
@@ -189,17 +211,20 @@ def main():
     if README.exists():
         demo_tbl, ix_tbl = render_tables(slides)
         S = "https://ragverse.diy"
-        editions = (
-            "| | Talk only (no terminal) | Work-along (you run the demos) |\n"
-            "|---|---|---|\n"
-            f"| **Essentials** · {len(ess)} slides | "
-            f"[~{ess_minutes} min]({S}/read/talk-essentials/) "
-            f"| [~{ess_minutes + 12} min]({S}/read/essentials/) |\n"
-            f"| **Short** · {len(core)} slides | [~{core_minutes} min]({S}/read/talk-short/) "
-            f"| [~{core_minutes + 12} min]({S}/read/short/) |\n"
-            f"| **Full** · {len(slides)} slides | [~{minutes} min]({S}/read/talk/) "
-            f"| [~{minutes + 12} min]({S}/read/) |"
-        )
+        def row(label, ss, key):
+            return (f"| **{label}** · {len(ss)} slides "
+                    f"| [~{mins(ss, key, True)} min]({S}/read/"
+                    f"{'talk/' if key == 'full' else 'talk-' + key + '/'}) "
+                    f"| [~{mins(ss, key, False) + demo_mins(ss)} min]({S}/read/"
+                    f"{'' if key == 'full' else key + '/'}) |")
+
+        editions = "\n".join([
+            "| | Talk only (no terminal) | Work-along (you run the demos) |",
+            "|---|---|---|",
+            row("Essentials", ess, "essentials"),
+            row("Short", core, "short"),
+            row("Full", slides, "full"),
+        ])
         text = README.read_text(encoding="utf-8")
         text, ok1 = splice(text, "demo-table", demo_tbl)
         text, ok2 = splice(text, "ix-table", ix_tbl)
