@@ -1,23 +1,34 @@
 /* Theme toggle. The no-flash part runs inline in <head>; this adds the
-   control and keeps every open surface in step. */
+   control and keeps every open surface in step.
+ *
+ * Three states, not two: light, dark, and *system*. Only an explicit click
+ * writes data-theme or localStorage - loading the page must not, or the first
+ * visit silently pins you to whatever your OS happened to be that day and the
+ * site stops following it afterwards. With nothing stored, the CSS media
+ * queries do the work on their own.
+ */
 (function () {
   'use strict';
   var KEY = 'ragverse.theme';
+  var mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
 
   function current() {
     var set = document.documentElement.getAttribute('data-theme');
     if (set) return set;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark' : 'light';
+    return mq && mq.matches ? 'dark' : 'light';
+  }
+
+  function label(mode) {
+    document.querySelectorAll('.theme-btn').forEach(function (b) {
+      b.setAttribute('aria-label', mode === 'dark' ? 'Switch to light' : 'Switch to dark');
+      b.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
+    });
   }
 
   function apply(mode) {
     document.documentElement.setAttribute('data-theme', mode);
     try { localStorage.setItem(KEY, mode); } catch (e) {}
-    document.querySelectorAll('.theme-btn').forEach(function (b) {
-      b.setAttribute('aria-label', mode === 'dark' ? 'Switch to light' : 'Switch to dark');
-      b.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
-    });
+    label(mode);
     window.dispatchEvent(new CustomEvent('themechange', { detail: mode }));
   }
 
@@ -34,7 +45,17 @@
         apply(current() === 'dark' ? 'light' : 'dark');
       });
     });
-    apply(current());
+    label(current());
+
+    // still on system: follow the OS live, and tell the hero canvas to recolour
+    if (mq && mq.addEventListener) {
+      mq.addEventListener('change', function (e) {
+        if (document.documentElement.getAttribute('data-theme')) return;
+        label(e.matches ? 'dark' : 'light');
+        window.dispatchEvent(new CustomEvent('themechange',
+          { detail: e.matches ? 'dark' : 'light' }));
+      });
+    }
   }
 
   if (document.readyState === 'loading') {

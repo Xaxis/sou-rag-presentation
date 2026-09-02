@@ -15,6 +15,10 @@ DEMO="$ROOT/demo"
 PY="$DEMO/venv/bin/python"
 PORT="${PORT:-8000}"
 
+# Every command is written against the repo root, so make that true no matter
+# where run.sh was invoked from.
+cd "$ROOT" || exit 1
+
 bold() { printf '\033[1m%s\033[0m\n' "$*"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 bad()  { printf '  \033[31m✗\033[0m %s\n' "$*"; }

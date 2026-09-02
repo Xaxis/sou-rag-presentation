@@ -146,7 +146,12 @@ footer .row { display: flex; flex-wrap: wrap; gap: 1.4em; align-items: baseline;
 footer .row .sp { margin-left: auto; }
 
 /* --- playground page ---------------------------------------------------- */
-.pg { padding: 2.4em 0 1em; }
+/* padding-block, not the shorthand: .pg and .read sit ON .wrap, and the
+   shorthand would wipe its 24px gutter and run the text into the edge of a
+   phone screen. */
+.pg { padding-block: 2.4em 1em; }
+.pg-jump { margin-bottom: 0.6em; }
+.pg-jump a { text-transform: none; }
 .pg-item { padding: 2.2em 0; border-top: 1px solid var(--rule); }
 .pg-item:first-of-type { border-top: none; }
 .pg-item .ix { font-size: 15px; }
@@ -160,10 +165,11 @@ footer .row .sp { margin-left: auto; }
    The deck's CSS sizes everything in em against .reveal's 30px canvas. In a
    document that context is gone, so the pieces we reuse get explicit sizes.
    ---------------------------------------------------------------------- */
-.read { max-width: 760px; padding: 2.6em 0 5em; }
+.read { max-width: 760px; padding-block: 2.6em 5em; }
 
 .read-head { margin-bottom: 3.4em; }
 .read-lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 34ch; }
+#contents { scroll-margin-top: 76px; }
 .read-toc {
   display: grid; gap: 0.1em; margin: 2em 0 1.4em;
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
@@ -183,6 +189,12 @@ footer .row .sp { margin-left: auto; }
   font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--accent-text); font-weight: 700;
 }
+/* a way out of a long scroll, at every chapter break */
+.read-chapter-k a {
+  float: right; font-weight: 500; letter-spacing: 0.06em;
+  color: var(--ink-faint); text-decoration: none;
+}
+.read-chapter-k a:hover { color: var(--accent-text); }
 .read-chapter h2 { font-size: clamp(1.8rem, 4.4vw, 2.5rem); margin: 0.3em 0 0.5em; }
 .read-chapter .muted { font-size: 1.02rem; color: var(--ink-soft); }
 
@@ -346,6 +358,8 @@ table.cues td:nth-child(2) { width: 40%; }
 :root[data-theme="dark"] .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 :root[data-theme="dark"] .btn.ghost { background: transparent; color: var(--ink); border-color: var(--rule); }
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .card,
+  :root:not([data-theme="light"]) section.band.tint { background: var(--card); }
   :root:not([data-theme="light"]) .btn { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   :root:not([data-theme="light"]) .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   :root:not([data-theme="light"]) .btn.ghost { background: transparent; color: var(--ink); border-color: var(--rule); }

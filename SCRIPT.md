@@ -7,7 +7,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 | | |
 |---|---|
 | Essentials | 28 slides · ~22 min |
-| Short edit | 36 slides · ~29 min |
+| Short | 36 slides · ~29 min |
 | Full lesson | 54 slides · ~87 min |
 | Live demos | 11 slides carry a command |
 
@@ -107,7 +107,7 @@ Let's make that concrete.
 > Worth framing carefully. The problem is not that language models are stupid — modern models are extraordinarily capable. The problem is that they are small: not in intelligence, but in how much they can look at in one go.
 
 
-## Slide 5 — Several hundred internal documents · **short edit**
+## Slide 5 — Several hundred internal documents · **short**
 
 **Section:** 01 · The problem
 
@@ -268,7 +268,7 @@ Watch the cost figure while you drag, because that is the one people do not thin
 The threshold where RAG stops being optional is lower than people expect. Somewhere around a few megabytes, this stops being a choice.
 
 
-## Slide 11 — You also pay per token · **short edit**
+## Slide 11 — You also pay per token · **short**
 
 **Section:** 02 · The second reason
 
@@ -589,7 +589,7 @@ How closeness is actually calculated is a later topic. For now: it is distance b
 > Notice the winning chunk says "revenue" while the question says "sales". A keyword search misses that. Matching on meaning is what embeddings buy you.
 
 
-## Slide 23 — You choose how many come back · **short edit**
+## Slide 23 — You choose how many come back · **short**
 
 **Section:** 08 · Top k
 
@@ -701,7 +701,7 @@ It still imports today. But I am not going to teach you to build on an archived 
 If you are in this repo rather than typing from scratch, there is a requirements dot txt.
 
 
-## Slide 29 — One secret, in one place · **short edit**
+## Slide 29 — One secret, in one place · **short**
 
 **Section:** 02 · The API key
 
@@ -908,7 +908,7 @@ So we change the default to a hundred, and re-run.
 > That is all overlap does — each chunk repeats the last n characters of the one before. Rule of thumb: ten to twenty percent of chunk size. You pay for the duplication in storage and embedding calls, and it is almost always worth it.
 
 
-## Slide 38 — Try it: watch the chunks re-cut · **short edit**
+## Slide 38 — Try it: watch the chunks re-cut · **short**
 
 **Section:** 06 · Interactive
 
@@ -991,7 +991,7 @@ Underneath, the folder structure. Chroma dot sqlite three holds the text, the me
 And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
 
 
-## Slide 41 — The three arguments that matter · **short edit**
+## Slide 41 — The three arguments that matter · **short**
 
 **Section:** 07 · The three arguments
 
@@ -1209,7 +1209,7 @@ That is why this is the mistake that breaks most first builds. Not because it is
 > That is why this breaks first builds. Not because it is hard to fix, but because it is invisible until someone checks an answer by hand.
 
 
-## Slide 49 — Try it: flip the model, break the system · **short edit**
+## Slide 49 — Try it: flip the model, break the system · **short**
 
 **Section:** 09 · Interactive
 
@@ -1251,7 +1251,7 @@ That is why the rule is absolute. One embedding model, one dimension count, ever
 > Now look at the errors-raised number. Zero. That is what a silent failure looks like.
 
 
-## Slide 50 — What this means in practice · **short edit**
+## Slide 50 — What this means in practice · **short**
 
 **Section:** 09 · In practice
 

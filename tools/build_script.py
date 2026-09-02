@@ -171,7 +171,7 @@ def main():
     out.append(
         f"| | |\n|---|---|\n"
         f"| Essentials | {len(ess)} slides · ~{ess_minutes} min |\n"
-        f"| Short edit | {len(core)} slides · ~{core_minutes} min |\n"
+        f"| Short | {len(core)} slides · ~{core_minutes} min |\n"
         f"| Full lesson | {len(slides)} slides · ~{minutes} min |\n"
         f"| Live demos | {sum(1 for s in slides if s['cues'])} slides carry a command |\n"
     )
@@ -184,7 +184,7 @@ def main():
         if s["essential"]:
             mark = " · **essentials**"
         elif s["core"]:
-            mark = " · **short edit**"
+            mark = " · **short**"
         else:
             mark = ""
         out.append(f"\n## Slide {i} — {s['title']}{mark}\n")

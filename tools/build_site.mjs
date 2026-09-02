@@ -15,6 +15,11 @@ const DIST = path.join(ROOT, 'dist');
 
 const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+// counts read as words in prose and as numerals in tables
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+               'eight', 'nine', 'ten'];
+const spell = (n) => WORDS[n] || String(n);
 
 /* ------------------------------------------------------------ parse deck */
 function parseDeck() {
@@ -164,41 +169,58 @@ ${body}
 }
 
 /* --------------------------------------------------------- playgrounds */
-const PLAY_META = {
-  'ix-scale':    { id: 'scale',    n: '01' },
-  'ix-embed':    { id: 'embed',    n: '02' },
-  'ix-chunk':    { id: 'chunk',    n: '03' },
-  'ix-retr':     { id: 'retr',     n: '04' },
-  'ix-mismatch': { id: 'mismatch', n: '05' },
-};
+/* Numbering, anchors and titles come from the deck's own order. A widget added
+   to a slide appears here without touching this file - there is no list to
+   forget. The one thing markup cannot tell us is which widgets run on the
+   precomputed vectors, because they read window.RAG_DATA at runtime; that set
+   is named here and checked against the deck, so a rename fails the build
+   rather than quietly mislabelling a playground as a simulation. */
+const REAL_VECTOR_WIDGETS = ['ix-embed', 'ix-retr', 'ix-mismatch'];
 
 function buildPlay(slides) {
-  const items = slides
-    .filter((s) => s.widget && PLAY_META[s.widget])
-    .map((s) => {
-      const meta = PLAY_META[s.widget];
-      // drop the eyebrow and the heading; we re-render those ourselves
-      let body = s.body
-        .replace(/<span class="eyebrow">[\s\S]*?<\/span>\s*/, '')
-        .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>\s*/, '');
-      const title = s.title.replace(/^Try it:\s*/i, '');
-      return `<article class="pg-item" id="${meta.id}">
-  <span class="pg-num">Playground ${meta.n}</span>
-  <h2>${title.charAt(0).toUpperCase()}${title.slice(1)}</h2>
+  const found = slides.filter((s) => s.widget);
+  const ids = found.map((s) => s.widget);
+  for (const w of REAL_VECTOR_WIDGETS) {
+    if (!ids.includes(w)) {
+      throw new Error(`REAL_VECTOR_WIDGETS names ${w}, which is not in the deck`);
+    }
+  }
+  const meta = found.map((s, i) => ({
+    id: s.widget.replace(/^ix-/, ''),
+    n: String(i + 1).padStart(2, '0'),
+    title: cap(s.title.replace(/^Try it:\s*/i, '')),
+    real: REAL_VECTOR_WIDGETS.includes(s.widget),
+    slide: s,
+  }));
+
+  const items = meta.map((m) => {
+    // drop the eyebrow and the heading; we re-render those ourselves
+    const body = m.slide.body
+      .replace(/<span class="eyebrow">[\s\S]*?<\/span>\s*/, '')
+      .replace(/<h[12][^>]*>[\s\S]*?<\/h[12]>\s*/, '');
+    return `<article class="pg-item" id="${m.id}">
+  <span class="pg-num">Playground ${m.n}${m.real ? ' &middot; real vectors' : ''}</span>
+  <h2>${m.title}</h2>
   ${body.trim()}
 </article>`;
-    })
-    .join('\n');
+  }).join('\n');
+
+  const jump = meta.map((m) =>
+    `<a href="#${m.id}"><b>${m.n}</b> ${esc(m.title)}</a>`).join('\n');
+  const realN = meta.filter((m) => m.real);
+  const list = (ns) => ns.length < 2 ? ns[0]
+    : ns.slice(0, -1).join(', ') + ' and ' + ns[ns.length - 1];
 
   const body = `<div class="wrap pg">
   <span class="eyebrow"><b>Interactive</b> &middot; no API key, no install</span>
   <h1>Take it apart.</h1>
   <p style="max-width:56ch;color:var(--ink-soft);font-size:1.1rem">
-  The five playgrounds from the lesson, on one page. Everything runs in your browser.
-  Playgrounds 02, 04 and 05 use <strong>real precomputed OpenAI vectors</strong>; the
-  chunking is exact browser code.</p>
+  The ${spell(meta.length)} playgrounds from the lesson, on one page. Everything runs in your
+  browser. Playground${realN.length > 1 ? 's' : ''} ${list(realN.map((m) => m.n))} use
+  <strong>real precomputed OpenAI vectors</strong>; the chunking is exact browser code.</p>
+  <nav class="read-toc pg-jump">${jump}</nav>
   ${items}
-  <p style="margin-top:2.4em"><a class="btn primary" href="/deck/">Now take the lesson &rarr;</a></p>
+  <p style="margin-top:2.4em"><a class="btn primary" href="/read/essentials/">Now take the lesson &rarr;</a></p>
 </div>`;
 
   return page({
@@ -229,7 +251,7 @@ function buildRead(all, edit) {
     `<a href="/read/${talk ? 'talk' + (len === 'full' ? '/' : '-' + seg(len)) : seg(len)}">${label}</a>`;
   const others = ['essentials', 'short', 'full'].filter((l) => l !== length)
     .map((l) => link(l, l === 'full' ? 'the full lesson'
-                     : l === 'short' ? 'the short edit' : 'the essentials'));
+                     : l === 'short' ? 'the short edition' : 'the essentials'));
   const other = 'Also available as ' + others.join(' or ') + '.';
   const stage = /^\[[A-Z0-9][^\]]*\]$/;
   const parts = [];
@@ -266,7 +288,8 @@ function buildRead(all, edit) {
       const id = 'c' + (chapters.length + 1);
       chapters.push({ id, title: s.title, n: i + 1 });
       parts.push(`<section class="read-chapter" id="${id}">
-  <span class="read-chapter-k">${esc(s.eyebrow || 'Part')}</span>
+  <span class="read-chapter-k">${esc(s.eyebrow || 'Part')}
+    <a href="#contents">contents &uarr;</a></span>
   <h2>${heading}</h2>
   ${body}
   <div class="read-narration">${notes}</div>
@@ -302,7 +325,7 @@ function buildRead(all, edit) {
       ? 'The spine plus the material that makes it stick — the gotchas, the API key, the practical rules — at the same tight pace as the essentials.'
       : 'Every slide, with what the presenter says underneath it, and the playgrounds where they belong. Nothing to install.'}</p>
     <p class="read-alt">${other}</p>
-    <nav class="read-toc">${toc}</nav>
+    <nav class="read-toc" id="contents">${toc}</nav>
     <p class="read-alt">Presenting instead? <a href="/deck/${talk ? 'talk' + (length === 'full' ? '/' : '-' + seg(length)) : seg(length)}">Open the deck &rarr;</a></p>
   </header>
   ${parts.join('\n')}
