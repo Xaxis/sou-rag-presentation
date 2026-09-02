@@ -6,9 +6,9 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 29 slides · ~24 min |
-| Short | 37 slides · ~31 min |
-| Full lesson | 55 slides · ~90 min |
+| Essentials | 29 slides · ~25 min |
+| Short | 37 slides · ~32 min |
+| Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
 
@@ -404,7 +404,7 @@ Chunk size is therefore a real design decision, and there are techniques for cut
 >
 > Chunking is cutting documents into small pieces, and you choose the size. The important nuance: a chunk is a slice, not a section. Chunks are cut by size, not meaning. They do not respect headings or arguments, and a naive splitter will cut through the middle of a sentence without hesitating.
 >
-> Why cut at all? Because the chunk is your unit of retrieval — the smallest thing the system can hand back. If your chunks are whole articles, a question about one sentence returns the whole article, and you are back to stuffing the context window.
+> Why cut at all? Because the chunk is your unit of retrieval — the smallest thing the system can hand back. Make a whole document one chunk and a question about one line drags the entire forty-page employee handbook into the prompt, because one sentence in it matched. You are back to stuffing the context window, which is the thing you were trying to avoid.
 
 
 ## Slide 16 — This is not an LLM · **essentials**
@@ -446,7 +446,9 @@ So what is an embedding, actually? This is the part people get stuck on, so we w
 
 A vector embedding is a list of numbers that stands in for a piece of text. Each number in that list is called a dimension. Two more words for the list — and dimension just means one position in it.
 
-And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers. That is the property. That is what an embedding model is trained to do.
+And here is the sentence that matters more than anything else in this session: text with similar meaning produces similar numbers.
+
+It is worth being concrete about why that is the whole ballgame. Somebody types "my card got declined". The help article that answers them says "payment failures". Not one word in common. A keyword search — the thing every support site had for twenty years — returns nothing at all, and the customer gives up. An embedding model puts those two pieces of text next to each other, because it was trained on how words are used rather than how they are spelled. Matching on meaning instead of spelling is the entire thing you are buying here. That is the property. That is what an embedding model is trained to do.
 
 Now, this table is a teaching device, and it is a fake. I have made up three dimensions and labelled them size, domesticated, and sound. Real embeddings do not work like this — the dimensions are not labelled, and nobody knows what any individual one means. But the fake is useful for building intuition, so read it column by column.
 
@@ -460,6 +462,8 @@ That is the intuition. Now let's check whether it survives contact with a real e
 > So what is an embedding? A list of numbers standing in for a piece of text. Each number is called a dimension — that is two more words for your list.
 >
 > And here is the sentence that matters more than any other today: text with similar meaning produces similar numbers.
+>
+> That one sentence is why any of this works. Somebody types "my card got declined". The help article says "payment failures". Not a single word in common — a keyword search returns nothing at all. An embedding puts those two next to each other, because they mean the same thing. That is what you are buying.
 >
 > This table is a teaching device and the numbers in it are invented. Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
 >
