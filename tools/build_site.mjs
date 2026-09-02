@@ -512,7 +512,10 @@ function buildPresent(all) {
     <strong>pacing</strong> readout: how long you should still be on the slide you are on.
     It counts down as you talk and turns red when you are running behind, so a
     ${essTalk}-minute talk actually lands near ${essTalk} minutes without you watching
-    a stopwatch.
+    a stopwatch.<br><br>
+    <strong>Drag the divider</strong> between the slides and the notes to give the notes
+    more room — grab the small handle on the edge between them. Each layout remembers its
+    own position; double-click the handle to put it back.
   </div>
 
   <h2 style="margin-top:1.8em">Keys</h2>

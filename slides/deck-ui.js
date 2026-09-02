@@ -234,10 +234,143 @@
     window.open = function () {
       var w = null;
       try { w = nativeOpen.apply(window, arguments); } catch (e) { w = null; }
-      if (w) { var a = document.querySelector('.deck-alert'); if (a) a.remove(); }
-      else { showBlocked(); }
+      if (w) {
+        var a = document.querySelector('.deck-alert'); if (a) a.remove();
+        enhanceSpeakerWindow(w);
+      } else { showBlocked(); }
       return w;
     };
+  }
+
+  /* ---- draggable divider in the speaker window -------------------------
+     Reveal's speaker view splits at a fixed ratio you cannot change, and how
+     much room the notes get is the one thing a presenter actually wants to
+     adjust. The window is same-origin and we are handed it by the wrapper
+     above, so this goes in from here rather than by patching the vendored
+     plugin - which means it survives re-vendoring reveal.
+
+     Which edge divides the panes depends on the layout: Wide stacks the
+     slides above the notes, Default and Tall put them side by side. So the
+     handle knows its axis, and each layout remembers its own ratio. */
+  var SPLIT_KEY = 'ragverse.speakerSplit';
+  var LAYOUTS = {
+    'default':    { axis: 'x', def: 60 },
+    'wide':       { axis: 'y', def: 45 },
+    'tall':       { axis: 'x', def: 45 },
+    'notes-only': null
+  };
+
+  function splitCss() {
+    return [
+      /* Same specificity as the plugin's own rules and injected after them,
+         so these win without !important. */
+      'body[data-speaker-layout="default"] #current-slide{width:var(--rv-split,60%)}',
+      'body[data-speaker-layout="default"] #upcoming-slide,',
+      'body[data-speaker-layout="default"] #speaker-controls{width:calc(100% - var(--rv-split,60%))}',
+      'body[data-speaker-layout="wide"] #current-slide,',
+      'body[data-speaker-layout="wide"] #upcoming-slide{height:var(--rv-split,45%)}',
+      'body[data-speaker-layout="wide"] #speaker-controls{top:var(--rv-split,45%);' +
+        'height:calc(95% - var(--rv-split,45%))}',
+      'body[data-speaker-layout="tall"] #current-slide,',
+      'body[data-speaker-layout="tall"] #upcoming-slide{width:var(--rv-split,45%)}',
+      'body[data-speaker-layout="tall"] #speaker-controls{left:var(--rv-split,45%);' +
+        'width:calc(100% - var(--rv-split,45%))}',
+      '.rv-grip{position:fixed;z-index:30;background:transparent;touch-action:none}',
+      '.rv-grip::after{content:"";position:absolute;background:#c8c8c8;border-radius:2px;' +
+        'transition:background .12s}',
+      '.rv-grip:hover::after,.rv-grip.rv-on::after{background:#e8590c}',
+      '.rv-grip[data-axis="x"]{top:0;height:100%;width:11px;cursor:col-resize}',
+      '.rv-grip[data-axis="x"]::after{top:50%;margin-top:-22px;left:4px;width:3px;height:44px}',
+      '.rv-grip[data-axis="y"]{left:0;width:100%;height:11px;cursor:row-resize}',
+      '.rv-grip[data-axis="y"]::after{left:50%;margin-left:-22px;top:4px;height:3px;width:44px}',
+      '.rv-grip[hidden]{display:none}',
+      'body.rv-dragging iframe{pointer-events:none}',
+      'body.rv-dragging{user-select:none}'
+    ].join('\n');
+  }
+
+  function enhanceSpeakerWindow(w) {
+    var tries = 0;
+    var timer = setInterval(function () {
+      var d;
+      try { d = w.document; } catch (e) { clearInterval(timer); return; }
+      if (w.closed || ++tries > 100) { clearInterval(timer); return; }
+      if (!d || !d.body || !d.getElementById('speaker-controls')) return;
+      if (d.getElementById('rv-split-style')) { clearInterval(timer); return; }
+      clearInterval(timer);
+      try { installSplitter(w, d); } catch (e) {}
+    }, 100);
+  }
+
+  function installSplitter(w, d) {
+    var style = d.createElement('style');
+    style.id = 'rv-split-style';
+    style.textContent = splitCss();
+    d.head.appendChild(style);
+
+    var grip = d.createElement('div');
+    grip.className = 'rv-grip';
+    grip.title = 'Drag to resize · double-click to reset';
+    d.body.appendChild(grip);
+
+    var saved = {};
+    try { saved = JSON.parse(w.localStorage.getItem(SPLIT_KEY) || '{}') || {}; } catch (e) {}
+
+    function layout() { return d.body.getAttribute('data-speaker-layout') || 'default'; }
+
+    function apply() {
+      var name = layout(), cfg = LAYOUTS[name];
+      if (!cfg) { grip.hidden = true; d.documentElement.style.removeProperty('--rv-split'); return; }
+      var pct = typeof saved[name] === 'number' ? saved[name] : cfg.def;
+      d.documentElement.style.setProperty('--rv-split', pct + '%');
+      grip.hidden = false;
+      grip.setAttribute('data-axis', cfg.axis);
+      grip.style.left = cfg.axis === 'x' ? 'calc(' + pct + '% - 5px)' : '0';
+      grip.style.top  = cfg.axis === 'y' ? 'calc(' + pct + '% - 5px)' : '0';
+    }
+
+    function set(pct) {
+      var name = layout();
+      saved[name] = Math.max(15, Math.min(85, pct));
+      try { w.localStorage.setItem(SPLIT_KEY, JSON.stringify(saved)); } catch (e) {}
+      apply();
+    }
+
+    grip.addEventListener('pointerdown', function (e) {
+      var cfg = LAYOUTS[layout()]; if (!cfg) return;
+      e.preventDefault();
+      grip.setPointerCapture(e.pointerId);
+      grip.classList.add('rv-on');
+      d.body.classList.add('rv-dragging');
+      function move(ev) {
+        set(cfg.axis === 'x'
+          ? (ev.clientX / w.innerWidth) * 100
+          : (ev.clientY / w.innerHeight) * 100);
+      }
+      function up() {
+        grip.classList.remove('rv-on');
+        d.body.classList.remove('rv-dragging');
+        d.removeEventListener('pointermove', move);
+        d.removeEventListener('pointerup', up);
+        d.removeEventListener('pointercancel', up);
+      }
+      d.addEventListener('pointermove', move);
+      d.addEventListener('pointerup', up);
+      d.addEventListener('pointercancel', up);
+    });
+
+    grip.addEventListener('dblclick', function () {
+      var name = layout();
+      delete saved[name];
+      try { w.localStorage.setItem(SPLIT_KEY, JSON.stringify(saved)); } catch (e) {}
+      apply();
+    });
+
+    // the layout dropdown rewrites the body attribute; follow it
+    new w.MutationObserver(apply)
+      .observe(d.body, { attributes: true, attributeFilter: ['data-speaker-layout'] });
+    w.addEventListener('resize', apply);
+    apply();
   }
 
   function showBlocked() {

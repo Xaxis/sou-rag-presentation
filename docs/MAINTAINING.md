@@ -46,6 +46,16 @@ Three things the deck does to make the speaker window worth reading:
   and the totals land within a minute of the figures the build computes
   independently, which is a useful cross-check.
 
+- **The divider is draggable.** Reveal splits the speaker view at a fixed ratio,
+  and how much room the notes get is the one thing a presenter actually wants to
+  change. `deck-ui.js` already wraps `window.open` (to catch a blocked pop-up),
+  so it is handed the speaker window and injects the handle from there — the
+  window is same-origin. Nothing in `vendor/` is patched, so this survives
+  re-vendoring reveal. Which edge divides the panes depends on the layout —
+  Wide stacks slides above notes, Default and Tall put them side by side — so
+  the handle picks its axis from `data-speaker-layout`, each layout stores its
+  own ratio in `localStorage`, and double-clicking resets that one layout.
+
 Pressing `S` also closes the inline **Narration** drawer, since the same words
 are now on the other monitor and the drawer would otherwise be in frame.
 
