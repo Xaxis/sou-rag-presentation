@@ -513,9 +513,10 @@ function buildPresent(all) {
     It counts down as you talk and turns red when you are running behind, so a
     ${essTalk}-minute talk actually lands near ${essTalk} minutes without you watching
     a stopwatch.<br><br>
-    <strong>Drag the divider</strong> between the slides and the notes to give the notes
-    more room — grab the small handle on the edge between them. Each layout remembers its
-    own position; double-click the handle to put it back.
+    <strong>Both dividers drag.</strong> One sets how much room the notes get; the other
+    sets how the two slide previews share their half. Grab the small handle on either edge.
+    Each layout remembers both of its own positions, and double-clicking a handle resets
+    just that one.
   </div>
 
   <h2 style="margin-top:1.8em">Keys</h2>

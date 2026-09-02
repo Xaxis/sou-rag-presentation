@@ -51,10 +51,12 @@ Three things the deck does to make the speaker window worth reading:
   change. `deck-ui.js` already wraps `window.open` (to catch a blocked pop-up),
   so it is handed the speaker window and injects the handle from there — the
   window is same-origin. Nothing in `vendor/` is patched, so this survives
-  re-vendoring reveal. Which edge divides the panes depends on the layout —
-  Wide stacks slides above notes, Default and Tall put them side by side — so
-  the handle picks its axis from `data-speaker-layout`, each layout stores its
-  own ratio in `localStorage`, and double-clicking resets that one layout.
+  re-vendoring reveal. Every layout divides **twice** — Wide stacks the two
+  slide previews above the notes and sets them side by side; Default and Tall
+  do it the other way round — so there are two handles, each taking its axis
+  from `data-speaker-layout`. The secondary handle spans only its own half, so
+  the two never overlap. Each layout stores both ratios in `localStorage`
+  (`{p, s}` per layout) and double-clicking a handle resets just that one.
 
 Pressing `S` also closes the inline **Narration** drawer, since the same words
 are now on the other monitor and the drawer would otherwise be in frame.

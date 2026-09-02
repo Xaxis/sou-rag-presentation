@@ -253,10 +253,15 @@
      slides above the notes, Default and Tall put them side by side. So the
      handle knows its axis, and each layout remembers its own ratio. */
   var SPLIT_KEY = 'ragverse.speakerSplit';
+
+  /* Every layout divides twice, not once. Wide stacks the two slide previews
+     above the notes (a horizontal edge) and sets them side by side (a vertical
+     one). Default and Tall divide the other way round. Both edges are
+     draggable; each layout remembers both of its own ratios. */
   var LAYOUTS = {
-    'default':    { axis: 'x', def: 60 },
-    'wide':       { axis: 'y', def: 45 },
-    'tall':       { axis: 'x', def: 45 },
+    'default':    { p: { axis: 'x', def: 60 }, s: { axis: 'y', def: 40 } },
+    'wide':       { p: { axis: 'y', def: 45 }, s: { axis: 'x', def: 50 } },
+    'tall':       { p: { axis: 'x', def: 45 }, s: { axis: 'y', def: 50 } },
     'notes-only': null
   };
 
@@ -264,24 +269,33 @@
     return [
       /* Same specificity as the plugin's own rules and injected after them,
          so these win without !important. */
-      'body[data-speaker-layout="default"] #current-slide{width:var(--rv-split,60%)}',
-      'body[data-speaker-layout="default"] #upcoming-slide,',
-      'body[data-speaker-layout="default"] #speaker-controls{width:calc(100% - var(--rv-split,60%))}',
-      'body[data-speaker-layout="wide"] #current-slide,',
-      'body[data-speaker-layout="wide"] #upcoming-slide{height:var(--rv-split,45%)}',
-      'body[data-speaker-layout="wide"] #speaker-controls{top:var(--rv-split,45%);' +
-        'height:calc(95% - var(--rv-split,45%))}',
-      'body[data-speaker-layout="tall"] #current-slide,',
-      'body[data-speaker-layout="tall"] #upcoming-slide{width:var(--rv-split,45%)}',
-      'body[data-speaker-layout="tall"] #speaker-controls{left:var(--rv-split,45%);' +
-        'width:calc(100% - var(--rv-split,45%))}',
+      'body[data-speaker-layout="default"] #current-slide{width:var(--rv-p,60%)}',
+      'body[data-speaker-layout="default"] #upcoming-slide{width:calc(100% - var(--rv-p,60%));' +
+        'height:var(--rv-s,40%)}',
+      'body[data-speaker-layout="default"] #speaker-controls{width:calc(100% - var(--rv-p,60%));' +
+        'top:var(--rv-s,40%);height:calc(100% - var(--rv-s,40%))}',
+
+      'body[data-speaker-layout="wide"] #current-slide{height:var(--rv-p,45%);' +
+        'width:var(--rv-s,50%)}',
+      'body[data-speaker-layout="wide"] #upcoming-slide{height:var(--rv-p,45%);' +
+        'left:var(--rv-s,50%);right:auto;width:calc(100% - var(--rv-s,50%))}',
+      'body[data-speaker-layout="wide"] #speaker-controls{top:var(--rv-p,45%);' +
+        'height:calc(95% - var(--rv-p,45%))}',
+
+      'body[data-speaker-layout="tall"] #current-slide{width:var(--rv-p,45%);' +
+        'height:var(--rv-s,50%)}',
+      'body[data-speaker-layout="tall"] #upcoming-slide{width:var(--rv-p,45%);' +
+        'top:var(--rv-s,50%);height:calc(100% - var(--rv-s,50%))}',
+      'body[data-speaker-layout="tall"] #speaker-controls{left:var(--rv-p,45%);' +
+        'width:calc(100% - var(--rv-p,45%))}',
+
       '.rv-grip{position:fixed;z-index:30;background:transparent;touch-action:none}',
       '.rv-grip::after{content:"";position:absolute;background:#c8c8c8;border-radius:2px;' +
         'transition:background .12s}',
       '.rv-grip:hover::after,.rv-grip.rv-on::after{background:#e8590c}',
-      '.rv-grip[data-axis="x"]{top:0;height:100%;width:11px;cursor:col-resize}',
+      '.rv-grip[data-axis="x"]{width:11px;cursor:col-resize}',
       '.rv-grip[data-axis="x"]::after{top:50%;margin-top:-22px;left:4px;width:3px;height:44px}',
-      '.rv-grip[data-axis="y"]{left:0;width:100%;height:11px;cursor:row-resize}',
+      '.rv-grip[data-axis="y"]{height:11px;cursor:row-resize}',
       '.rv-grip[data-axis="y"]::after{left:50%;margin-left:-22px;top:4px;height:3px;width:44px}',
       '.rv-grip[hidden]{display:none}',
       'body.rv-dragging iframe{pointer-events:none}',
@@ -308,83 +322,113 @@
     style.textContent = splitCss();
     d.head.appendChild(style);
 
-    var grip = d.createElement('div');
-    grip.className = 'rv-grip';
-    grip.title = 'Drag to resize · double-click to reset';
-    d.body.appendChild(grip);
-
     var saved = {};
     try { saved = JSON.parse(w.localStorage.getItem(SPLIT_KEY) || '{}') || {}; } catch (e) {}
 
     function layout() { return d.body.getAttribute('data-speaker-layout') || 'default'; }
+    function store(name) {
+      // an earlier version saved a bare number for the primary edge only
+      var v = saved[name];
+      if (typeof v === 'number') v = saved[name] = { p: v };
+      return v || (saved[name] = {});
+    }
+    function ratio(name, role) {
+      var v = store(name)[role];
+      return typeof v === 'number' ? v : LAYOUTS[name][role].def;
+    }
+
+    var grips = ['p', 's'].map(function (role) {
+      var g = d.createElement('div');
+      g.className = 'rv-grip';
+      g.setAttribute('data-role', role);
+      g.title = 'Drag to resize \u00b7 double-click to reset';
+      d.body.appendChild(g);
+      wire(g, role);
+      return g;
+    });
+
+    /* The secondary handle only spans its own half, so the two never sit on
+       top of each other; the 6px keeps them off each other's hit areas. */
+    function place(g, role) {
+      var name = layout(), cfg = LAYOUTS[name];
+      var p = ratio(name, 'p'), sec = ratio(name, 's');
+      var axis = cfg[role].axis, at = role === 'p' ? p : sec;
+      g.setAttribute('data-axis', axis);
+      var st = g.style;
+      st.left = st.top = st.width = st.height = '';
+      if (axis === 'x') { st.left = 'calc(' + at + '% - 5px)'; }
+      else { st.top = 'calc(' + at + '% - 5px)'; }
+      if (role === 'p') {
+        if (axis === 'x') { st.top = '0'; st.height = '100%'; }
+        else { st.left = '0'; st.width = '100%'; }
+      } else if (name === 'wide') {          // spans the slide row only
+        st.top = '0'; st.height = 'calc(' + p + '% - 6px)';
+      } else if (name === 'default') {       // spans the right-hand column
+        st.left = 'calc(' + p + '% + 6px)'; st.width = 'calc(' + (100 - p) + '% - 6px)';
+      } else {                               // tall: the left-hand column
+        st.left = '0'; st.width = 'calc(' + p + '% - 6px)';
+      }
+    }
 
     function apply() {
       var name = layout(), cfg = LAYOUTS[name];
-      if (!cfg) { grip.hidden = true; d.documentElement.style.removeProperty('--rv-split'); return; }
-      var pct = typeof saved[name] === 'number' ? saved[name] : cfg.def;
-      d.documentElement.style.setProperty('--rv-split', pct + '%');
-      grip.hidden = false;
-      grip.setAttribute('data-axis', cfg.axis);
-      grip.style.left = cfg.axis === 'x' ? 'calc(' + pct + '% - 5px)' : '0';
-      grip.style.top  = cfg.axis === 'y' ? 'calc(' + pct + '% - 5px)' : '0';
+      if (!cfg) {
+        grips.forEach(function (g) { g.hidden = true; });
+        d.documentElement.style.removeProperty('--rv-p');
+        d.documentElement.style.removeProperty('--rv-s');
+        return;
+      }
+      d.documentElement.style.setProperty('--rv-p', ratio(name, 'p') + '%');
+      d.documentElement.style.setProperty('--rv-s', ratio(name, 's') + '%');
+      grips.forEach(function (g, i) {
+        g.hidden = false;
+        place(g, i === 0 ? 'p' : 's');
+      });
     }
 
-    function set(pct) {
+    function set(role, pct) {
       var name = layout();
-      saved[name] = Math.max(15, Math.min(85, pct));
+      store(name)[role] = Math.max(15, Math.min(85, pct));
       try { w.localStorage.setItem(SPLIT_KEY, JSON.stringify(saved)); } catch (e) {}
       apply();
     }
 
-    grip.addEventListener('pointerdown', function (e) {
-      var cfg = LAYOUTS[layout()]; if (!cfg) return;
-      e.preventDefault();
-      grip.setPointerCapture(e.pointerId);
-      grip.classList.add('rv-on');
-      d.body.classList.add('rv-dragging');
-      function move(ev) {
-        set(cfg.axis === 'x'
-          ? (ev.clientX / w.innerWidth) * 100
-          : (ev.clientY / w.innerHeight) * 100);
-      }
-      function up() {
-        grip.classList.remove('rv-on');
-        d.body.classList.remove('rv-dragging');
-        d.removeEventListener('pointermove', move);
-        d.removeEventListener('pointerup', up);
-        d.removeEventListener('pointercancel', up);
-      }
-      d.addEventListener('pointermove', move);
-      d.addEventListener('pointerup', up);
-      d.addEventListener('pointercancel', up);
-    });
-
-    grip.addEventListener('dblclick', function () {
-      var name = layout();
-      delete saved[name];
-      try { w.localStorage.setItem(SPLIT_KEY, JSON.stringify(saved)); } catch (e) {}
-      apply();
-    });
+    function wire(g, role) {
+      g.addEventListener('pointerdown', function (e) {
+        var cfg = LAYOUTS[layout()]; if (!cfg) return;
+        e.preventDefault();
+        g.setPointerCapture(e.pointerId);
+        g.classList.add('rv-on');
+        d.body.classList.add('rv-dragging');
+        var axis = cfg[role].axis;
+        function move(ev) {
+          set(role, axis === 'x'
+            ? (ev.clientX / w.innerWidth) * 100
+            : (ev.clientY / w.innerHeight) * 100);
+        }
+        function up() {
+          g.classList.remove('rv-on');
+          d.body.classList.remove('rv-dragging');
+          d.removeEventListener('pointermove', move);
+          d.removeEventListener('pointerup', up);
+          d.removeEventListener('pointercancel', up);
+        }
+        d.addEventListener('pointermove', move);
+        d.addEventListener('pointerup', up);
+        d.addEventListener('pointercancel', up);
+      });
+      g.addEventListener('dblclick', function () {
+        delete store(layout())[role];
+        try { w.localStorage.setItem(SPLIT_KEY, JSON.stringify(saved)); } catch (e) {}
+        apply();
+      });
+    }
 
     // the layout dropdown rewrites the body attribute; follow it
     new w.MutationObserver(apply)
       .observe(d.body, { attributes: true, attributeFilter: ['data-speaker-layout'] });
     w.addEventListener('resize', apply);
     apply();
-  }
-
-  function showBlocked() {
-    if (document.querySelector('.deck-alert')) return;
-    var a = el('div', 'deck-alert',
-      '<b>The speaker window was blocked.</b> Allow pop-ups for this site — ' +
-      'your browser will offer it in the address bar — then press <b>S</b> again. ' +
-      'Or press <b>T</b> to read the narration here instead.');
-    var x = el('button', 'deck-alert-close', '&times;');
-    x.setAttribute('aria-label', 'Dismiss');
-    x.addEventListener('click', function () { a.remove(); });
-    a.appendChild(x);
-    a.setAttribute('role', 'status');
-    document.body.appendChild(a);
   }
 
   function boot() {
