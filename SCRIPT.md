@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 32 slides · ~29 min |
-| Short | 40 slides · ~36 min |
+| Essentials | 32 slides · ~33 min |
+| Short | 40 slides · ~40 min |
 | Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
@@ -41,14 +41,23 @@ Let's start with why this problem exists at all.
 
 > **Essentials edition — tighter narration:**
 >
-> **On camera. Who you are, the problem, the route, the address.**
+> Quick word on who is talking. **I am Wil.**
 >
-> - **I am Wil.** About **a decade in AI** — well before GPTs, when you built your own models and your own data pipelines.
-> - More recently, **incentivised data training structures with NEAR AI**. Throughout, a lot of retrieval and ingestion systems on a lot of stacks.
-> - **Why that matters:** this is not a lesson I read and repeated. Every mistake in it is one I have made.
-> - **The problem, in one line:** how do you give a model access to **a hundred thousand documents** without ever putting a hundred thousand documents in the prompt?
-> - **Where we are going:** why RAG exists · the shape of the system · what an embedding really is · five real documents pushed through · the mistake that breaks most first builds.
-> - **Address:** everything is at **ragverse dot d i y** — slides, five playgrounds, all the code. Tell them to open it now.
+> I have been working in AI for **about a decade** — which means I started well before GPTs made any of this fashionable, back when you built your own models and your own data pipelines.
+>
+> More recently I have been working on **incentivised data training structures with NEAR AI**. And running through all of it, I have built a lot of retrieval and ingestion systems, on a lot of different stacks.
+>
+> I mention that for one reason. **This is not a lesson I read and repeated.** It is a system I have built more than once, and **every mistake in it is one I have made.**
+>
+> Here is the problem in one line. **How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt?**
+>
+> That is the problem. Everything after it is mechanics.
+>
+> So here is where we are going. **Why RAG exists**, and why waiting for a bigger model will not fix it. **The shape of the system** — two pipelines, one diagram. **What an embedding really is**, tested against a real model.
+>
+> Then **five real documents pushed all the way through**, so you see what each step produces. And at the end, **the mistake that breaks most first builds** — the one that raises no error at all.
+>
+> One thing before we start. Everything is at **ragverse dot d i y** — these slides, five playgrounds you can drive yourself, and all the code. Open it in another tab now if you want to follow along.
 
 
 ## Slide 2 — What you will be able to do
@@ -113,10 +122,13 @@ Let's make that concrete.
 
 > **Essentials edition — tighter narration:**
 >
-> **Part one. Reframe the problem before explaining anything.**
+> Part one. **Why RAG exists at all.**
 >
-> - **Not** that language models are stupid — modern models are extraordinarily capable.
-> - **They are small.** Not in intelligence. In **how much they can look at in one go**.
+> And it is worth framing this carefully, because people get it backwards.
+>
+> **The problem is not that language models are stupid.** Modern models are extraordinarily capable.
+>
+> **The problem is that they are small.** Not in intelligence — in **how much they can look at in one go.**
 
 
 ## Slide 5 — Several hundred internal documents · **short**
@@ -156,14 +168,23 @@ That is the entire idea. I mean that literally — everything else in this sessi
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the definition, then how ordinary it is.**
+> Picture this. You work somewhere with a few hundred internal documents, and somebody asks a question that **exactly one of them** answers.
 >
-> - Set the scene: a few hundred internal documents, **exactly one** of them answers the question. Pasting them all in does not work.
-> - **The definition:** a language model **plus a retrieval system**. It searches your sources and pulls **only the relevant pieces** into the prompt, at the moment the model needs them.
-> - **The line:** the model does not get everything — **it gets the right few pages**.
-> - **Now widen it.** People file RAG away as one technique among many. It is not.
-> - **Almost every LLM product you have used does this underneath** — a model that searches the web, an assistant answering from your files, a support bot citing the article.
-> - **Close on:** retrieval is **the default way a model is given anything it was not trained on**.
+> The obvious move is to paste them all in and ask. **That does not work** — and why it does not work is the whole lesson.
+>
+> So here is the definition. Retrieval Augmented Generation is **a language model plus a retrieval system**.
+>
+> The retrieval system searches your documents and pulls **only the relevant pieces** into the prompt, at the moment the model needs them.
+>
+> The model does not get everything. **It gets the right few pages.**
+>
+> And I want to plant something early here, because people hear "RAG" and file it away as **one technique among many.** It is not.
+>
+> **Almost every language-model product you have used is doing this underneath.** A model that searches the web and cites what it found. An assistant that answers from your own files. A support bot that links the article it used.
+>
+> **Retrieval is the default way a model is given anything it was not trained on.**
+>
+> That is the entire idea. Everything after this is mechanics.
 
 
 ## Slide 7 — Where you have met one — and why · **essentials**
@@ -190,15 +211,23 @@ Fine-tuning teaches a model a style. A format, a voice, a way of reasoning about
 
 > **Essentials edition — tighter narration:**
 >
-> **Make the claim concrete, then answer the fine-tuning question.**
+> Let me make that concrete, and then answer the obvious question.
 >
-> - **Where they have met it:** the support bot that **linked the exact article**. A coding assistant answering about **your** repo. Internal Q and A over a company's own policies.
-> - **Three reasons teams build them:**
-> - **Your data** — nothing was trained on your contracts or tickets. Ask anyway and it invents something plausible.
-> - **Today's data** — a policy changed this morning. You are not retraining over that.
-> - **Receipts** — the retriever knows which chunks it used, so the answer can point at them. **An answer nobody can check is worth close to nothing.**
-> - **Then the question you always get: why not fine-tune?** Fine-tuning teaches a **style** — format, voice. Expensive way to teach a fact, hopeless for a fact that changes on Tuesday, and it gives you nothing to cite.
-> - **Close on:** fine-tuning changes **how a model speaks**. Retrieval changes **what it knows**.
+> You have met these. The support chatbot that answered you and then **linked the exact help article**. A coding assistant that answers about **your** repository rather than a generic one. Internal question-and-answer over a company's own policies.
+>
+> So why do teams build them? **Three reasons.**
+>
+> **The first is your data.** Nothing was trained on your contracts or your support tickets. Ask anyway, and a model will cheerfully invent something plausible.
+>
+> **The second is today's data.** A policy changed this morning. You are not going to retrain a model over that.
+>
+> **And the third is receipts.** The retriever knows exactly which chunks it used, so the answer can point at them. **An answer nobody can check is worth close to nothing.**
+>
+> Which answers the question I get every single time. **Why not just fine-tune?**
+>
+> Fine-tuning teaches a model **a style** — a format, a voice. It is an expensive way to teach it a fact, a hopeless way to teach it one that changes on Tuesday, and it gives you nothing to cite.
+>
+> **Fine-tuning changes how a model speaks. Retrieval changes what it knows.**
 
 
 ## Slide 8 — Models do not read words · **essentials**
@@ -224,14 +253,19 @@ The rule of thumb worth memorising: one token is roughly three quarters of an En
 
 > **Essentials edition — tighter narration:**
 >
-> **First vocabulary word: the token.**
+> The first word you need is **token**.
 >
-> - A token is the unit of text a model processes. Sometimes a whole word, often a fragment.
-> - **Models do not read words. They read tokens.**
-> - **Why it matters:** every limit and every price you meet is counted in tokens.
-> - **Point at the output:** five words, **seven tokens**. "Retrieval" splits into three pieces; "augmented" and "powerful" survive whole.
-> - Common words are one token. Rarer ones fragment.
-> - **Rule of thumb:** one token ≈ **three quarters of an English word**.
+> A token is the unit of text a model actually processes. Sometimes that is a whole word. Often it is a fragment of one.
+>
+> Models do not read letters. They do not read words. **They read tokens.**
+>
+> And that matters for a very practical reason. **Every limit you will ever hit, and every price you will ever pay, is counted in tokens.**
+>
+> Look at the output. Five words went in. **Seven tokens** came back.
+>
+> "Retrieval" split into three pieces. "Augmented" and "powerful" survived whole. Common words are one token; rarer ones fragment.
+>
+> So here is the rule of thumb to carry: **one token is about three quarters of an English word.**
 
 
 ## Slide 9 — Everything has to fit inside one window · **essentials**
@@ -254,12 +288,15 @@ So — two million tokens. That sounds like it should be plenty. Let's see how i
 
 > **Essentials edition — tighter narration:**
 >
-> **Second word: the context window. Set up the scale problem.**
+> Second word: **the context window.**
 >
-> - The **total tokens a model holds in one request** — everything you send *and* everything it writes back, sharing one budget.
-> - **Past that limit the information is simply not there.**
-> - In 2026 the major models have converged on **one million tokens**. A few advertise ten million — no benchmark shows quality holding near the top of those windows.
-> - **Hand off:** a million sounds like plenty. Let us see how it compares to what a company actually holds.
+> That is the total number of tokens a model can hold in **one request**. Everything you send, and everything it writes back, sharing one budget.
+>
+> **Past that limit, the information is simply not there.**
+>
+> In 2026 the major models have converged on **one million tokens**. A few advertise ten million — though no benchmark shows quality holding near the top of those windows.
+>
+> A million sounds like plenty. So let us see how it compares to what a company actually holds.
 
 
 ## Slide 10 — Read the scale carefully · **essentials**
@@ -286,14 +323,17 @@ So here is the thing to take away. That gap is not a gap you close by waiting fo
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the gap is not closing, and it is not only about size.**
+> Read this one carefully, because it is **a logarithmic scale**. Each step to the right is **ten times** the last — not one step.
 >
-> - **Warn them first:** this is a **logarithmic** scale. Each step right is **ten times** the last.
-> - Our five articles: **72,000 tokens**. Fits a frontier model easily.
-> - **Be honest:** for five documents you genuinely do not need RAG.
-> - **Now the jump.** A mid-sized company with a terabyte: **250 billion tokens** — **250,000×** a model window. An enterprise archive is a thousand times larger again.
-> - **The line:** this is **not a gap you close by waiting for bigger models**.
-> - **Second reason:** you pay per token — and burying one relevant paragraph in half a million irrelevant ones gives **worse** answers, not better.
+> Our five articles come to **seventy-two thousand tokens**. That fits inside a frontier model easily.
+>
+> And I will say the honest thing here: **for five documents you genuinely do not need RAG.** I would rather tell you that than pretend otherwise.
+>
+> Now watch what happens. A mid-sized company with a terabyte of documents: **two hundred and fifty billion tokens.** That is **two hundred and fifty thousand times** a model window. An enterprise archive is a thousand times larger again.
+>
+> **This is not a gap you close by waiting for bigger models.**
+>
+> And there is a second reason, which matters just as much. You pay per token — and burying the one relevant paragraph in half a million irrelevant ones gives you **worse** answers, not better.
 
 
 ## Slide 11 — Try it: when do you actually need RAG?
@@ -360,7 +400,9 @@ So: two pipelines. Learn them separately, and everything after this is easy.
 
 > **Essentials edition — tighter narration:**
 >
-> **Part two. Everything so far was why. This is what — and it is one diagram.**
+> Part two. **The shape of the system.**
+>
+> Everything so far has been about **why**. This is the **what** — and it is one diagram.
 
 
 ## Slide 14 — Two pipelines · **essentials**
@@ -381,13 +423,17 @@ Keep this diagram. Every RAG system you will ever build, from a weekend project 
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: two pipelines, not one. This is the slide to photograph.**
+> **This is the slide to photograph.**
 >
-> - **Say it plainly:** people collapse the two into one in their heads. **That is exactly where the mental model breaks.**
-> - **Top row — ingestion — runs once**, before anybody asks anything. Documents in → chunked → each piece through the embedding model → vectors into a database. **Then it stops.**
-> - **Bottom row — retrieval — runs on every question.** Question becomes a vector → retriever ranks every stored vector by closeness → top matches come back → those chunks plus the question go to the model.
-> - **Point at the two orange boxes:** **the same embedding model appears in both rows.**
-> - **Flag it forward:** that is not a drawing shortcut. **We break it deliberately at the end.**
+> A RAG system is **two pipelines, not one.** People collapse them into one in their heads, and **that is exactly where the mental model breaks.**
+>
+> **The top row is ingestion, and it runs once** — before anybody asks anything. Documents go in, they get chunked into small pieces, each piece goes through an embedding model and becomes a vector, and the vectors land in a database. **Then it stops.**
+>
+> **The bottom row is retrieval, and it runs on every single question.** The question becomes a vector. A retriever ranks every stored vector by closeness. The top matches come back. And those chunks, plus the question, go to the model.
+>
+> Now look at the two orange boxes. **The same embedding model appears in both rows.**
+>
+> That is not a drawing shortcut. **We are going to break it deliberately at the end** to show you why it matters.
 
 
 ## Slide 15 — A chunk is a slice, not a section · **essentials**
@@ -408,13 +454,17 @@ Chunk size is therefore a real design decision, and there are techniques for cut
 
 > **Essentials edition — tighter narration:**
 >
-> **Next word: the chunk. The nuance is that it is cut by size, not meaning.**
+> Next word: **the chunk.**
 >
-> - Chunking is cutting documents into small pieces, and **you choose the size**.
-> - **The nuance:** a chunk is **a slice, not a section**. Chunks do not respect headings or arguments — a naive splitter cuts through the middle of a sentence without hesitating.
-> - **Why cut at all?** The chunk is **your unit of retrieval** — the smallest thing the system can hand back.
-> - **The concrete failure:** make a whole document one chunk, and a question about one line drags **the entire forty-page employee handbook** into the prompt because one sentence matched.
-> - **Close on:** you are back to stuffing the context window — the thing you were trying to avoid.
+> Chunking is cutting documents into small pieces, and **you choose the size.**
+>
+> Here is the nuance that matters. **A chunk is a slice, not a section.** Chunks are cut by size, not by meaning. They do not respect headings or arguments — a naive splitter will cut through the middle of a sentence without hesitating.
+>
+> So why cut at all? Because **the chunk is your unit of retrieval** — the smallest thing the system can hand back.
+>
+> Make a whole document one chunk, and a question about one line drags **the entire forty-page employee handbook** into the prompt, because one sentence in it matched.
+>
+> And now you are back to stuffing the context window — **which is the thing you were trying to avoid.**
 
 
 ## Slide 16 — This is not an LLM · **essentials**
@@ -440,16 +490,23 @@ That is the trick. Everything downstream depends on it.
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: different model, different job — and the output length never changes.**
+> Next box: **the embedding model.** And here is the thing that trips everybody up.
 >
-> - **Not an LLM.** Nothing is generated, no vocabulary to sample from, far smaller and cheaper. **Text in, a list of numbers out.** That is the whole interface.
-> - **Read the rows:** one word in. Eight words in. **337 words in.** Every time, **exactly 1,536 numbers**.
-> - **So why always the same length?** The model produces **one vector per token**, then **pools** them — averages them, roughly — into a single vector. **Pooling is the step that throws the length away.**
-> - **Why that matters:** any two pieces of text become **two lists of the same size** — and lists of the same size can be compared with arithmetic.
-> - **Three properties to give them:**
-> - **Unit length** — the norm is 1.0 to four decimal places, so **cosine similarity and a plain dot product give the same answer**. Cosine is not a preference; it is the cheapest thing that works.
-> - **A ceiling of about 8,000 tokens** — send more and the tail is **silently truncated**. No error. Another reason to chunk.
-> - **The dimensions are ordered by importance** — keep the first **512**, renormalise, rankings still hold. **A third of the storage.** It is also how we fake a convincing failure later.
+> **This is not an LLM.** Different model, different job. Nothing is generated. There is no vocabulary to sample from. It is far smaller and far cheaper. **Text goes in, a list of numbers comes out.** That is the whole interface.
+>
+> Look at the three rows. One word in. Eight words in. **Three hundred and thirty-seven words in.** And every single time, **exactly fifteen hundred and thirty-six numbers** come back.
+>
+> So why is it always the same length? Because of what the model actually does. It reads the text and produces **one vector per token**, the way any transformer does. Then it **pools** them — averages them, roughly — into **a single vector**. **Pooling is the step that throws the length away.**
+>
+> **And that fixed length is the property the whole system rests on.** Any two pieces of text, however different in length, become two lists of the same size — and two lists of the same size can be compared with arithmetic.
+>
+> Three things about those numbers that are worth carrying.
+>
+> **They come back unit length.** I checked — the norm is one, to four decimal places. Which means **cosine similarity and a plain dot product give you the same answer.** Cosine is not a preference here. It is the cheapest thing that works.
+>
+> **There is a ceiling** — about **eight thousand tokens**. Send more than that and the tail is **silently truncated.** No error, no warning. Another reason to chunk.
+>
+> **And the dimensions are ordered by importance.** Keep the first **five hundred and twelve**, renormalise, and the rankings still hold — **a third of the storage.** That is also how we are going to fake a convincing failure later on.
 
 
 ## Slide 17 — Similar meaning, similar numbers · **essentials**
@@ -474,14 +531,21 @@ That is the intuition. Now let's check whether it survives contact with a real e
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the one sentence the whole lesson rests on.**
+> So what is an embedding? **A list of numbers standing in for a piece of text.** Each number is called **a dimension** — that is two more words for your list.
 >
-> - An embedding is **a list of numbers standing in for a piece of text**. Each number is **a dimension** — two more words for their list.
-> - **Say this one slowly:** **text with similar meaning produces similar numbers.**
-> - **Make it concrete:** somebody types **"my card got declined"**. The article says **"payment failures"**. **Not one word in common** — keyword search returns nothing. An embedding puts them next to each other.
-> - **That is what you are buying.**
-> - **Be straight about the table:** it is a teaching device, **the numbers are invented**. Cat and kitten nearly on top of each other; dog shares domestication but differs on size; elephant far from all three.
-> - **Hand off:** real embeddings are not labelled and nobody knows what a single dimension means — **so let us check the intuition against a real model**.
+> And here is the sentence that matters more than any other today.
+>
+> **Text with similar meaning produces similar numbers.**
+>
+> That one sentence is why any of this works. Somebody types **"my card got declined."** The help article says **"payment failures."**
+>
+> **Not a single word in common.** A keyword search returns nothing at all. An embedding puts those two right next to each other, because they mean the same thing.
+>
+> **That is what you are buying.**
+>
+> Now, this table is a teaching device, and I want to be straight with you: **the numbers in it are invented.** Cat and kitten sit almost on top of each other. Dog shares the domestication value but differs on size. Elephant is far from all three.
+>
+> Real embeddings are not labelled, and nobody knows what any single dimension means. **So let us check whether that intuition survives contact with a real model.**
 
 
 ## Slide 18 — Does that actually hold? · **essentials**
@@ -511,14 +575,17 @@ This drawing would have two dimensions. Real embeddings have fifteen hundred and
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the intuition holds — but the tidy story does not survive intact.**
+> Eight ordinary words, embedded with a real model, every pair measured. **One point zero would mean identical.**
 >
-> - Eight ordinary words, every pair measured against a real model. **1.0 would be identical.**
-> - **cat → dog 0.60.** **cat → kitten 0.57.** Then a clear drop to the fruit and the drinks.
-> - **Call out the surprise:** the invented table said *kitten* should be closest. The real model says **dog**.
-> - **Why:** cat and dog co-occur in text constantly. "Kitten" is a narrower word.
-> - **Caveat to give them:** do not over-read the ordering *inside* a cluster. And real systems embed paragraphs, not single words.
-> - **Close on the bottom lines:** every group is **tighter inside than out**. That is a neighbourhood — and **nobody labelled any of it**.
+> Cat to dog: **zero point six.** Cat to kitten: **zero point five seven.** Then a clear drop to the fruit and the drinks.
+>
+> Now — honestly, **that contradicts the tidy table.** The table said *kitten* should be closest.
+>
+> The real model puts **dog** first, because cat and dog co-occur in text constantly, while "kitten" is a much narrower word. So do not over-read the ordering **inside** a cluster. And remember that real systems embed paragraphs, not single words.
+>
+> But look at the bottom two lines, because **that is where the claim holds.** Every group is **tighter inside than outside.**
+>
+> **That is a neighbourhood — and nobody labelled any of it.**
 
 
 ## Slide 19 — Try it: the neighbourhood map
@@ -584,14 +651,17 @@ For options: Pinecone, Weaviate, Chroma, and Qdrant are purpose-built vector dat
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: it stores the text as well as the numbers — and that is not optional.**
+> Last box in the top row: **the vector database.** It stores embeddings, and it finds the closest ones fast.
 >
-> - Last box in the top row. It **stores embeddings and finds the closest ones fast**.
-> - **Point at the table:** it stores **the original text alongside every vector**.
-> - **The split:** the vector is **how a chunk gets found**. The original text is **what actually gets used**.
-> - **The failure if you skip it:** store only the numbers and you have a beautiful index and **nothing to send a model** — you cannot turn a vector back into English.
-> - **The fourth column is metadata** — the source. It is what lets you tell a user **which file an answer came from**.
-> - **Options if they ask:** Pinecone, Weaviate, Chroma, Qdrant. **Chroma here** because it runs locally with no account. Already on Postgres? **pgvector**.
+> But the detail people miss is right there in the table. **It stores the original text alongside every vector.**
+>
+> The vector is **how a chunk gets found.** The original text is **what actually gets used.**
+>
+> Store only the numbers, and you have a beautiful index and **nothing to send a model** — because you cannot turn a vector back into English.
+>
+> That fourth column, the source, is **metadata**. And that is what lets you tell a user **which file an answer came from.**
+>
+> If you are wondering about options: Pinecone, Weaviate, Chroma, Qdrant. We use **Chroma** here because it runs locally with no account. And if you already run Postgres, **pgvector** is often the right answer.
 
 
 ## Slide 22 — Retrieval, in principle · **essentials**
@@ -608,7 +678,9 @@ Now someone asks a question. This is the bottom row.
 
 > **Essentials edition — tighter narration:**
 >
-> **Part three. All of that was preparation — nothing so far has actually answered a question.**
+> Part three. **Retrieval.**
+>
+> All of that was preparation. **Nothing so far has actually answered a question.**
 
 
 ## Slide 23 — The question takes the same road · **essentials**
@@ -639,14 +711,19 @@ How closeness is actually calculated is a later topic. For now: it is distance b
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the question goes through the identical path — and k always comes back full.**
+> A question arrives, and **it takes the same road the documents took.**
 >
-> - The question goes through **the same embedding model** — keep repeating that — and becomes a vector of the same length.
-> - The retriever scores **every stored vector** by closeness and returns the top matches.
-> - **How many come back is top k.** Last vocabulary word, and **you choose it**.
-> - **The half people miss:** **ask for five and you get five — whether or not any are good.**
-> - **A retriever has no concept of "nothing here fits."** It always returns k, neatly ranked.
-> - **Point at the winner:** the chunk says **"revenue"**, the question says **"sales"**. A keyword search misses that entirely. **Matching on meaning is what embeddings buy you.**
+> It goes through **the same embedding model** — and I am going to keep repeating that — and it becomes a vector of the same length.
+>
+> The retriever then scores **every stored vector** by closeness, and returns the top matches.
+>
+> How many come back is called **top k**. That is the last word worth collecting, and **you choose it.**
+>
+> But here is the half that people miss. **Ask for five and you get five — whether or not any of them are any good.**
+>
+> **A retriever has no concept of "nothing here fits."** It always returns k results, neatly ranked.
+>
+> And notice the winning chunk says **"revenue"** while the question says **"sales."** Different words entirely. A keyword search misses that. **Matching on meaning is what embeddings buy you.**
 
 
 ## Slide 24 — You choose how many come back · **short**
@@ -710,10 +787,11 @@ By the end of this you will have a folder on disk holding the vector representat
 
 > **Essentials edition — tighter narration:**
 >
-> **Part four. Follow five real articles all the way through, and show the numbers at each step.**
+> Part four. That is the theory — **now let us follow five real articles all the way through it.**
 >
-> - Text in one end, **a searchable database out the other**.
-> - **Set expectations:** at every step I show you what actually comes out — **the numbers are more interesting than the diagram**.
+> Text in one end. **A searchable database out the other.**
+>
+> And at each step I am going to show you what actually comes out, because **the numbers are more interesting than the diagram.**
 
 
 ## Slide 27 — You are here
@@ -876,13 +954,17 @@ And here is the property that makes metadata worth caring about: metadata surviv
 
 > **Essentials edition — tighter narration:**
 >
-> **Step one: reading the documents in. Land the two halves of a record.**
+> **Step one is reading the documents in.** Five files go in, and **five records** come out.
 >
-> - Five files go in, **five records** come out.
-> - **Half one — the text itself.** The whole file as one long run of characters. **68,000** for Google, **94,000** for Tesla.
-> - **Half two — where it came from.** Right now just the filename — and **we put it there ourselves**, so you can put anything alongside it: page numbers, authors, who is allowed to see it.
-> - **Why it matters:** that second half **survives chunking**. Every chunk inherits its parent's.
-> - **Close on:** that is how a system can tell you **which file an answer came from** when what it retrieved was a four-hundred-character fragment.
+> And each record has **two halves.**
+>
+> **The first half is the text itself** — the whole file, as one long run of characters. Sixty-eight thousand of them for Google. Ninety-four thousand for Tesla.
+>
+> **The second half is where it came from.** Right now that is just the filename — and **we put it there ourselves**, which means you can put anything you like alongside it. Page numbers. Authors. Who is allowed to see it.
+>
+> And that second half matters more than it looks, because **it survives chunking.** Every chunk inherits its parent's.
+>
+> **That is how a system can tell you which file an answer came from** — when the thing it actually retrieved was a four-hundred-character fragment.
 
 
 ## Slide 35 — Two things worth knowing
@@ -951,13 +1033,17 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 
 > **Essentials edition — tighter narration:**
 >
-> **Step two: cutting them up. Correct the mental model about chunk size.**
+> **Step two is cutting them up.** Five documents in, **five hundred and thirty-nine chunks** out.
 >
-> - Five documents in, **539 chunks** out.
-> - **Point at the spread:** smallest **15 characters**, largest **1,700**, average **643**. We asked for 800 and got almost nothing that is actually 800.
-> - **Why:** the splitter **breaks on blank lines first**, then glues pieces back up towards your target.
-> - **What it will never do:** cut a paragraph in half to hit the number. A long paragraph gives you a long chunk.
-> - **Close on:** **chunk size is a target, not a cap.**
+> Now look at the spread, because **this is where the mental model is usually wrong.**
+>
+> Smallest: **fifteen characters.** Largest: **seventeen hundred.** Average: **six hundred and forty-three.** We asked for eight hundred, and got almost nothing that is actually eight hundred.
+>
+> Here is why. The splitter **breaks on blank lines first**, and then glues the pieces back up towards your target.
+>
+> **What it will never do is cut a paragraph in half to hit the number.** So a long paragraph gives you a long chunk.
+>
+> **Chunk size is a target, not a cap.**
 
 
 ## Slide 38 — What chunk_overlap actually does · **essentials**
@@ -982,13 +1068,17 @@ So we change the default to a hundred, and re-run.
 
 > **Essentials edition — tighter narration:**
 >
-> **The part of chunking that matters. Show the seam breaking, then the fix.**
+> This is the part of chunking that actually matters, shown small enough to read.
 >
-> - **Overlap zero — point at the seam.** A sentence is **cut clean in half**.
-> - **Say the consequence:** neither half carries the whole fact, so neither is a good match. **The fact is in your database and unreachable.**
-> - **Overlap forty.** Chunk one now repeats the tail of chunk zero, so **the sentence on the seam survives intact somewhere**.
-> - **That is all overlap does** — each chunk repeats the last n characters of the one before.
-> - **Rule of thumb:** **ten to twenty percent** of chunk size. You pay in storage and embedding calls, and **it is almost always worth it**.
+> **Overlap zero.** Look at the seam — **a sentence is cut clean in half.**
+>
+> And here is the consequence. Neither half carries the whole fact, so neither one is a good match for a question about it. **The fact is sitting in your database, and it is unreachable.**
+>
+> **Overlap forty.** Chunk one now begins by repeating the tail of chunk zero — so **the sentence on the seam survives intact somewhere.**
+>
+> And that is all overlap does. Each chunk repeats the last n characters of the one before it.
+>
+> Rule of thumb: **ten to twenty percent of your chunk size.** You pay for the duplication in storage and in embedding calls, and **it is almost always worth it.**
 
 
 ## Slide 39 — Try it: watch the chunks re-cut · **short**
@@ -1076,13 +1166,17 @@ And the line to remember: the original text is not optional. Without it you have
 
 > **Essentials edition — tighter narration:**
 >
-> **Step three: chunks become vectors and get filed. Show what a stored row actually is.**
+> **Step three turns every chunk into numbers and files it away** — and those two things happen together, in one pass.
 >
-> - Embedding and storing **happen together, in one pass**. **547 vectors** on disk.
-> - **This is the vector database table from earlier, now real.**
-> - **The vector** — 1,536 numbers. **The original text.** **The source** — still saying docs slash google dot txt.
-> - **Call it out:** there is the metadata surviving, exactly as promised. In at the loader, through the splitter untouched, now attached to a chunk.
-> - **Close on:** **the original text is not optional.** Without it you have numbers and nothing to send a model.
+> **Five hundred and forty-seven vectors** on disk.
+>
+> Now look at what is kept per chunk, because **this is that vector database table from earlier — now real.**
+>
+> **The vector:** fifteen hundred and thirty-six numbers. **The original text.** And **the source**, still saying docs slash google dot txt.
+>
+> There it is, surviving exactly as promised. It went in at the loader, came through the splitter untouched, and it is now sitting in the database attached to a chunk.
+>
+> And the line to leave with: **the original text is not optional.** Without it you have numbers, and nothing to send a model.
 
 
 ## Slide 42 — The three arguments that matter · **short**
@@ -1135,14 +1229,17 @@ One thing to note about the scores. Zero point six six is the top match, and tha
 
 > **Essentials edition — tighter narration:**
 >
-> **Does it work? Show the retrieval landing on the right document, then defuse the score.**
+> So does it work? The store has **five hundred and forty-seven vectors** covering five companies. And the question is **"who founded SpaceX."**
 >
-> - **547 vectors** covering five companies. Question: **"who founded SpaceX"**.
-> - **Every single result comes from spacex dot txt.**
-> - **The near-miss worth naming:** **not one Tesla chunk** — despite Elon Musk appearing all over the Tesla article. That is exactly what would trip a keyword search.
-> - **Pre-empt the objection:** the top match is **0.66** and that feels low. **It is not.**
-> - Cosine between a short question and a long paragraph **rarely exceeds 0.7**.
-> - **Close on:** what matters is **the gap between the top results and the rest** — not the absolute number.
+> **Every single result comes from spacex dot txt.**
+>
+> **Not one Tesla chunk** — despite Elon Musk appearing all over the Tesla article. That is exactly the near-miss that would trip a keyword search.
+>
+> One note on the scores, because I know what you are thinking. **Zero point six six** is the top match, and that might feel low. **It is not.**
+>
+> Cosine similarity between a short question and a long paragraph **rarely exceeds zero point seven.**
+>
+> **What matters is the gap between the top results and the rest** — not the absolute number.
 
 
 ## Slide 44 — This is what reaches the model · **essentials**
@@ -1165,13 +1262,17 @@ I think this is the single most clarifying thing in the whole lesson. All the ma
 
 > **Essentials edition — tighter narration:**
 >
-> **Land this: the prompt is plain English. All the machinery exists to produce three paragraphs.**
+> And here is **the prompt.** Every character of it.
 >
-> - **Every character of the prompt is on screen.** An instruction, the word CONTEXT, **three paragraphs of ordinary English**, and the question. Just under 3,000 characters.
-> - **Point at what is missing:** **nothing numeric.** No vectors, no embeddings, no scores. **The model has no idea a vector database was involved.**
-> - **The misreading to correct:** vectors are **only used for finding**. Their job ends the instant the matching is done — then you are back in plain English.
-> - All the machinery — chunking, embeddings, 1,536 dimensions — **exists to produce those three paragraphs**.
-> - **Close on:** **the prompt at the end is boring, and it is meant to be.**
+> An instruction. The word CONTEXT. **Three paragraphs of ordinary English** lifted straight out of the article. And the question. Just under three thousand characters.
+>
+> Now notice what is **not** in it. **There is nothing numeric here.** No vectors. No embeddings. No scores. **The model has no idea a vector database was ever involved.**
+>
+> And this is the step everybody misreads. **Vectors are only used for finding.** Their job ends the instant the matching is done — and then you are back in plain English.
+>
+> All of the machinery — the chunking, the embeddings, the fifteen hundred dimensions — **exists to produce those three paragraphs.**
+>
+> **The prompt at the end is boring. And it is meant to be.**
 
 
 ## Slide 45 — Try it: ask, and watch the prompt build
@@ -1232,11 +1333,11 @@ Here is what makes it dangerous. Nothing crashes. There is no error message. Let
 
 > **Essentials edition — tighter narration:**
 >
-> **Part five. Set up the one failure that gives you no signal at all.**
+> Part five — and **this is the one to leave with.**
 >
-> - **This is the one to leave with.**
-> - Everything else that goes wrong in this stack **tells you**.
-> - **This one does not.**
+> Everything else that goes wrong in this stack **tells you.**
+>
+> **This one does not.**
 
 
 ## Slide 48 — The consistency rule · **essentials**
@@ -1257,13 +1358,15 @@ Let's break it and watch.
 
 > **Essentials edition — tighter narration:**
 >
-> **State the rule flatly, then show how ordinary the mistake is.**
+> Here is the rule. **Use the same embedding model, and the same dimension count, for your documents and for your queries.** Every time. No exceptions.
 >
-> - **The rule:** the **same embedding model** and the **same dimension count** for your documents and your queries. Every time. No exceptions.
-> - **Remind them you have been foreshadowing:** the two orange boxes, "write that choice down", "the same model, every time".
-> - **How it actually happens — and it is boring:** you embed your documents in January. Two months later you write the query side and reach for a model. Maybe cheaper. Maybe you just do not remember which you used.
-> - **The analogy:** embedding models are **separate languages**. **A vector written by one means nothing to another.**
-> - **The sting:** the numbers are the same shape, the same range, they look entirely normal — **and neither system will tell you.**
+> I have been foreshadowing this the whole way through — the two orange boxes, "write that choice down", "the same model, every time."
+>
+> And the way it goes wrong is **completely ordinary.** You embed your documents in January. Two months later you write the query side, and you reach for a model — maybe a cheaper one, maybe you just do not remember which one you used.
+>
+> Think of embedding models as **separate languages.** **A vector written by one means nothing at all to another.**
+>
+> And here is the sting. The numbers are the same shape. The same range. They look entirely normal. **And neither system will tell you.**
 
 
 ## Slide 49 — Same store. Same question. Nothing crashes. · **essentials**
@@ -1295,15 +1398,23 @@ That is why this is the mistake that breaks most first builds. Not because it is
 
 > **Essentials edition — tighter narration:**
 >
-> **The payoff slide. Break it live, then point at what did NOT happen.**
+> So let us **break it on purpose.**
 >
-> - **Make it a fair test:** the wrong model is asked for **the same 1,536 dimensions**, so the vector is **exactly the same shape**. The database has nothing to complain about.
-> - **Top block, right model:** all three results from spacex dot txt.
-> - **Bottom block:** same database, same question. **Only the model that embedded the question changed.**
-> - **The numbers:** scores **collapsed by a factor of ten**. Third result is from **microsoft dot txt** — for a question about SpaceX.
-> - **Now the important part — what did not happen.** **Nothing crashed.** No exception, no warning, no log line. Three results, ranked, formatted identically to the correct run.
-> - **Land it:** **every piece of monitoring you have says the system is fine** — and a model handed those chunks writes a confident, wrong answer.
-> - **Close on:** that is why this breaks first builds. Not because it is hard to fix — **because it is invisible until someone checks an answer by hand**.
+> And let us make it a fair test. The wrong model is asked for **the same fifteen hundred and thirty-six dimensions**, so the vector is **exactly the same shape.** The database has nothing to complain about.
+>
+> **Top block, the right model:** all three results from spacex dot txt.
+>
+> **Bottom block** — same database, same question. **Only the model that embedded the question changed.**
+>
+> **The scores collapsed by a factor of ten.** And the third result is from **microsoft dot txt**, returned for a question about SpaceX.
+>
+> Now notice **what did not happen.**
+>
+> **Nothing crashed.** No exception. No warning. No log line. Three results, ranked, formatted identically to the correct run.
+>
+> **Every piece of monitoring you have says the system is fine** — and a model handed those chunks writes a confident, wrong answer.
+>
+> And that is why this breaks first builds. Not because it is hard to fix — **because it is invisible until somebody checks an answer by hand.**
 
 
 ## Slide 50 — Try it: flip the model, break the system · **short**
@@ -1451,16 +1562,23 @@ And the last one, which is the one that will actually cost you an afternoon: one
 
 > **Essentials edition — tighter narration:**
 >
-> **The revision card. Read down it, do not elaborate.**
+> **The whole lesson, on one slide.** This is your revision card.
 >
-> - Models have a token limit; real document stores are **millions of times larger**. So you **retrieve** instead of sending everything.
-> - **Two pipelines.** Ingestion runs once. Retrieval runs per question.
-> - **Ingestion:** chunk, embed, **store the vectors with their text**.
-> - An embedding is a **fixed-length list of numbers** where **similar meaning gives similar numbers**.
-> - **Retrieval:** embed the question **the same way**, rank by closeness, take the top k.
-> - Send the model the question plus **the original text** — never the vectors.
-> - Overlap so sentences on the seam survive. Tell the database where to save.
-> - **And the one that costs you an afternoon:** one embedding model, one dimension count, everywhere. **Breaking that fails silently.**
+> Models have a token limit, and real document stores are **millions of times larger.** So you **retrieve the relevant pieces** instead of sending everything.
+>
+> A RAG system is **two pipelines** — ingestion runs once, retrieval runs on every question.
+>
+> **Ingestion:** chunk, embed, and store the vectors **with their text.**
+>
+> An embedding is a **fixed-length list of numbers**, where **similar meaning gives similar numbers.**
+>
+> **Retrieval:** embed the question **the same way**, rank by closeness, and take the top k.
+>
+> Send the model the question plus **the original text** — never the vectors.
+>
+> Overlap your chunks so sentences on the seam survive. And tell the database where to save, or the work is gone when the process ends.
+>
+> And the one that will actually cost you an afternoon: **one embedding model, one dimension count, everywhere. Breaking that fails silently.**
 
 
 ## Slide 55 — Next: the retrieval pipeline · **essentials**
@@ -1479,11 +1597,16 @@ Thanks for working through it.
 
 > **Essentials edition — tighter narration:**
 >
-> **Close it out. Summarise, then point them somewhere. Do not promise a sequel.**
+> **So that is Retrieval Augmented Generation.**
 >
-> - **Say what they now have.** A RAG system is **two pipelines**. Ingestion runs once: chunk, embed, **store the text with the numbers**. Retrieval runs per question: embed it **with the same model**, rank by closeness, send **the paragraphs, never the vectors**.
-> - **The one thing to remember:** **one embedding model, one dimension count, everywhere.** Break that and nothing crashes — it just quietly returns the wrong thing.
-> - **What they can do now:** draw both pipelines from memory, say what every box is for, and predict roughly what a retriever will hand back.
-> - **Light pointer, not homework:** it is all at **ragverse dot d i y** — the five playgrounds to take apart, the code if you want to build it, and the longer version if you want every aside.
-> - **Best next step for them:** point it at documents they actually care about. Everything here works unchanged.
-> - **Thank them and stop.**
+> A RAG system is **two pipelines.** Ingestion runs once: chunk your documents, embed each chunk, and **store the text alongside the numbers.** Retrieval runs on every question: embed the question **with that same model**, rank by closeness, and send the model **the paragraphs — never the vectors.**
+>
+> And if you take one thing away, take this: **one embedding model, one dimension count, everywhere.** Break that and nothing crashes. It just quietly starts returning the wrong thing.
+>
+> You can now draw both pipelines from memory, say what every box is for, and predict roughly what a retriever is going to hand back. That is genuinely most of it.
+>
+> If you want to go further, it is all at **ragverse dot d i y** — five playgrounds you can take apart in the browser, all of the code if you want to build it yourself, and a longer version if you want every aside.
+>
+> And the most useful thing you can do with it is **point it at documents you actually care about.** Everything here works unchanged.
+>
+> **Thanks for watching.**
