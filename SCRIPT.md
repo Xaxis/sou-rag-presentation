@@ -22,7 +22,7 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 Welcome. Before anything else, a quick word on who is talking.
 
-I am Wil Neeley. I have been working in AI for about a decade, which means I started well before GPTs made any of this fashionable — back when you built your own models and your own data pipelines because there was nothing to call. More recently I have been working on incentivised data training structures with NEAR AI: the mechanisms that reward people for contributing the data and the compute that models are actually trained on. And running through all of it, I have built a lot of retrieval and ingestion systems, on a lot of different stacks.
+I am Wil. I have been working in AI for about a decade, which means I started well before GPTs made any of this fashionable — back when you built your own models and your own data pipelines because there was nothing to call. More recently I have been working on incentivised data training structures with NEAR AI: the mechanisms that reward people for contributing the data and the compute that models are actually trained on. And running through all of it, I have built a lot of retrieval and ingestion systems, on a lot of different stacks.
 
 I mention that for one reason. This is not a lesson I read and repeated. It is the shape of a system I have built more than once — and every mistake in it is a mistake I have made.
 
@@ -41,7 +41,7 @@ Let's start with why this problem exists at all.
 
 > **Essentials edition — tighter narration:**
 >
-> Quick word on who is talking. I am **Wil Neeley**.
+> Quick word on who is talking. I am **Wil**.
 >
 > **About a decade in AI** — well before GPTs, back when you built your own models and your own data pipelines.
 >
