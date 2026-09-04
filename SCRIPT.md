@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 32 slides · ~28 min |
-| Short | 40 slides · ~35 min |
+| Essentials | 32 slides · ~29 min |
+| Short | 40 slides · ~36 min |
 | Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
@@ -49,13 +49,15 @@ Let's start with why this problem exists at all.
 >
 > Which matters for one reason. **This is not a lesson I read and repeated.** It is a system I have built more than once, and every mistake in it is one I have made.
 >
-> So — we are going to understand Retrieval Augmented Generation. Every piece of it.
->
 > Here is the problem in one line. **How do you give a language model access to a hundred thousand documents, without ever putting a hundred thousand documents in the prompt?**
 >
 > That is the problem. Everything after it is mechanics.
 >
-> One thing before we start. Everything is at **ragverse dot d i y** — the slides, five playgrounds you can drive yourself, and all the code. Open it in another tab if you want to follow along. The address stays in the corner of every slide.
+> So here is where we are going. **Why RAG exists**, and why waiting for a bigger model will not fix it. **The shape of the system** — two pipelines, one diagram. **What an embedding really is**, tested against a real model.
+>
+> Then **five real documents pushed all the way through**, so you see what each step produces. And at the end, **the mistake that breaks most first builds** — the one that raises no error at all.
+>
+> One thing before we start. Everything is at **ragverse dot d i y** — these slides, five playgrounds you can drive yourself, and all the code. Open it in another tab now if you want to follow along.
 
 
 ## Slide 2 — What you will be able to do
