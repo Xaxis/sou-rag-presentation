@@ -16,6 +16,14 @@ const DIST = path.join(ROOT, 'dist');
 const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+/* The narration is rendered as markdown in the deck and the speaker window,
+   where **bold** marks the numbers and phrases that have to land. The reading
+   view escapes its text, so it needs the same few inline rules or the asterisks
+   show up literally. */
+const inlineMd = (t) => esc(t)
+  .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  .replace(/(^|[\s(])\*([^*\s][^*]*)\*(?=[\s.,;:!?)]|$)/g, '$1<em>$2</em>')
+  .replace(/`([^`]+)`/g, '<code>$1</code>');
 // counts read as words in prose and as numerals in tables
 const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
                'eight', 'nine', 'ten'];
@@ -330,7 +338,7 @@ function buildRead(all, edit) {
         const line = p.replace(/\s+/g, ' ');
         return stage.test(line)
           ? `<p class="read-stage">${esc(line)}</p>`
-          : `<p>${esc(line)}</p>`;
+          : `<p>${inlineMd(line)}</p>`;
       }).join('\n');
 
     const heading = talk && s.talkTitle ? esc(s.talkTitle) : s.titleHtml;
