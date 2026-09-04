@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 32 slides · ~33 min |
-| Short | 40 slides · ~40 min |
+| Essentials | 32 slides · ~35 min |
+| Short | 40 slides · ~42 min |
 | Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
@@ -791,6 +791,8 @@ By the end of this you will have a folder on disk holding the vector representat
 >
 > Text in one end. **A searchable database out the other.**
 >
+> **Three steps.** Read the documents in. Cut them up. Turn the pieces into numbers and file them away.
+>
 > And at each step I am going to show you what actually comes out, because **the numbers are more interesting than the diagram.**
 
 
@@ -954,17 +956,19 @@ And here is the property that makes metadata worth caring about: metadata surviv
 
 > **Essentials edition — tighter narration:**
 >
-> **Step one is reading the documents in.** Five files go in, and **five records** come out.
+> **Step one. Read the documents in.**
 >
-> And each record has **two halves.**
+> Five files go in, and **five records** come out. And each record has **two halves.**
 >
 > **The first half is the text itself** — the whole file, as one long run of characters. Sixty-eight thousand of them for Google. Ninety-four thousand for Tesla.
 >
 > **The second half is where it came from.** Right now that is just the filename — and **we put it there ourselves**, which means you can put anything you like alongside it. Page numbers. Authors. Who is allowed to see it.
 >
-> And that second half matters more than it looks, because **it survives chunking.** Every chunk inherits its parent's.
+> **Remember that second half**, because in a moment we are going to cut these five documents into hundreds of pieces — and **every single piece will carry it.**
 >
-> **That is how a system can tell you which file an answer came from** — when the thing it actually retrieved was a four-hundred-character fragment.
+> **That is how a system can tell you which file an answer came from**, when the thing it actually retrieved was a four-hundred-character fragment.
+>
+> So. Five documents. **Ninety thousand characters each, give or take.** Far too big to be useful. Let us cut them up.
 
 
 ## Slide 35 — Two things worth knowing
@@ -1033,7 +1037,11 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 
 > **Essentials edition — tighter narration:**
 >
-> **Step two is cutting them up.** Five documents in, **five hundred and thirty-nine chunks** out.
+> **Step two. Cut them up.**
+>
+> I have asked for chunks of eight hundred characters, and **with overlap switched off for the moment** — I will come back to that in a second.
+>
+> Five documents in, **five hundred and thirty-nine chunks** out.
 >
 > Now look at the spread, because **this is where the mental model is usually wrong.**
 >
@@ -1044,6 +1052,8 @@ Chunk size is a target, not a hard cap. RecursiveCharacterTextSplitter handles t
 > **What it will never do is cut a paragraph in half to hit the number.** So a long paragraph gives you a long chunk.
 >
 > **Chunk size is a target, not a cap.**
+>
+> Now — about that overlap setting I switched off. **It is the one that decides whether this whole system actually works.** Let me show you why.
 
 
 ## Slide 38 — What chunk_overlap actually does · **essentials**
@@ -1068,17 +1078,19 @@ So we change the default to a hundred, and re-run.
 
 > **Essentials edition — tighter narration:**
 >
-> This is the part of chunking that actually matters, shown small enough to read.
+> Here is the same splitter on a small piece of the Tesla article, blown up so you can read the seam.
 >
-> **Overlap zero.** Look at the seam — **a sentence is cut clean in half.**
+> **Overlap zero — that is what produced the five hundred and thirty-nine chunks a moment ago.** Look at the seam. **A sentence is cut clean in half.**
 >
 > And here is the consequence. Neither half carries the whole fact, so neither one is a good match for a question about it. **The fact is sitting in your database, and it is unreachable.**
 >
-> **Overlap forty.** Chunk one now begins by repeating the tail of chunk zero — so **the sentence on the seam survives intact somewhere.**
+> **Now overlap forty.** Chunk one begins by repeating the tail of chunk zero — so **the sentence on the seam survives intact somewhere.**
 >
 > And that is all overlap does. Each chunk repeats the last n characters of the one before it.
 >
-> Rule of thumb: **ten to twenty percent of your chunk size.** You pay for the duplication in storage and in embedding calls, and **it is almost always worth it.**
+> Rule of thumb: **ten to twenty percent of your chunk size.** These example chunks are small, so forty characters is enough to show it. **On the real run I use a hundred**, against a chunk size of eight hundred.
+>
+> **And that is what takes us from five hundred and thirty-nine chunks to five hundred and forty-seven.** Eight extra pieces, because the seams now repeat a little text. **That is the whole price** — a bit more storage, a few more embedding calls — and it is almost always worth paying.
 
 
 ## Slide 39 — Try it: watch the chunks re-cut · **short**
@@ -1166,17 +1178,21 @@ And the line to remember: the original text is not optional. Without it you have
 
 > **Essentials edition — tighter narration:**
 >
-> **Step three turns every chunk into numbers and files it away** — and those two things happen together, in one pass.
+> **Step three. Turn those five hundred and forty-seven chunks into numbers, and file them away.**
+>
+> And those two things happen together, in one pass — the embedding and the storing.
 >
 > **Five hundred and forty-seven vectors** on disk.
 >
-> Now look at what is kept per chunk, because **this is that vector database table from earlier — now real.**
+> Now look at what is kept for each one, because **this is that vector database table from earlier — now real.**
 >
 > **The vector:** fifteen hundred and thirty-six numbers. **The original text.** And **the source**, still saying docs slash google dot txt.
 >
-> There it is, surviving exactly as promised. It went in at the loader, came through the splitter untouched, and it is now sitting in the database attached to a chunk.
+> **There it is** — the thing I asked you to remember two slides ago. It went in at the loader, came through the splitter untouched, and it is now sitting in the database attached to a chunk.
 >
 > And the line to leave with: **the original text is not optional.** Without it you have numbers, and nothing to send a model.
+>
+> **That is the ingestion pipeline finished.** Five articles went in; five hundred and forty-seven searchable vectors came out. **So let us ask it something.**
 
 
 ## Slide 42 — The three arguments that matter · **short**
@@ -1229,7 +1245,7 @@ One thing to note about the scores. Zero point six six is the top match, and tha
 
 > **Essentials edition — tighter narration:**
 >
-> So does it work? The store has **five hundred and forty-seven vectors** covering five companies. And the question is **"who founded SpaceX."**
+> The store has **five hundred and forty-seven vectors** covering five companies. And the question is **"who founded SpaceX."**
 >
 > **Every single result comes from spacex dot txt.**
 >
@@ -1240,6 +1256,8 @@ One thing to note about the scores. Zero point six six is the top match, and tha
 > Cosine similarity between a short question and a long paragraph **rarely exceeds zero point seven.**
 >
 > **What matters is the gap between the top results and the rest** — not the absolute number.
+>
+> But the retrieved chunks are not the answer. **They are what gets sent.** So let us look at exactly what reaches the model.
 
 
 ## Slide 44 — This is what reaches the model · **essentials**
@@ -1273,6 +1291,8 @@ I think this is the single most clarifying thing in the whole lesson. All the ma
 > All of the machinery — the chunking, the embeddings, the fifteen hundred dimensions — **exists to produce those three paragraphs.**
 >
 > **The prompt at the end is boring. And it is meant to be.**
+>
+> So — **that is a complete, working system, end to end.** Documents in, a real answer out, with sources. Which makes this exactly the right moment to show you **the one way it falls apart without telling you.**
 
 
 ## Slide 45 — Try it: ask, and watch the prompt build
@@ -1360,7 +1380,7 @@ Let's break it and watch.
 >
 > Here is the rule. **Use the same embedding model, and the same dimension count, for your documents and for your queries.** Every time. No exceptions.
 >
-> I have been foreshadowing this the whole way through — the two orange boxes, "write that choice down", "the same model, every time."
+> I have been foreshadowing this all the way through. **The two orange boxes** on the diagram — the same model in both rows. And when the question took the same road as the documents, I said I would **keep repeating it.** This is why.
 >
 > And the way it goes wrong is **completely ordinary.** You embed your documents in January. Two months later you write the query side, and you reach for a model — maybe a cheaper one, maybe you just do not remember which one you used.
 >
@@ -1597,16 +1617,14 @@ Thanks for working through it.
 
 > **Essentials edition — tighter narration:**
 >
-> **So that is Retrieval Augmented Generation.**
+> **So — that is Retrieval Augmented Generation.**
 >
-> A RAG system is **two pipelines.** Ingestion runs once: chunk your documents, embed each chunk, and **store the text alongside the numbers.** Retrieval runs on every question: embed the question **with that same model**, rank by closeness, and send the model **the paragraphs — never the vectors.**
+> Not a niche technique. **The default way a language model is given anything it was not trained on** — and now you know what is happening underneath every product that does it.
 >
-> And if you take one thing away, take this: **one embedding model, one dimension count, everywhere.** Break that and nothing crashes. It just quietly starts returning the wrong thing.
+> You can draw both pipelines from memory. You can say what every box is for. You can predict roughly what a retriever will hand back, and **you know the one failure that will not announce itself.** That is genuinely most of it.
 >
-> You can now draw both pipelines from memory, say what every box is for, and predict roughly what a retriever is going to hand back. That is genuinely most of it.
+> If you want to go further, it is all at **ragverse dot d i y** — five playgrounds you can take apart in the browser, the code if you want to build it yourself, and a longer version if you want every aside.
 >
-> If you want to go further, it is all at **ragverse dot d i y** — five playgrounds you can take apart in the browser, all of the code if you want to build it yourself, and a longer version if you want every aside.
->
-> And the most useful thing you can do with it is **point it at documents you actually care about.** Everything here works unchanged.
+> And the most useful thing you can do with it is **point it at documents you actually care about.** Everything you have seen today works unchanged.
 >
 > **Thanks for watching.**
