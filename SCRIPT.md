@@ -178,10 +178,16 @@ That is the entire idea. I mean that literally — everything else in this sessi
 >
 > The model does not get everything. **It gets the right few pages.**
 >
+> And I want to plant this early, because people hear "RAG" and file it away as **one technique among many**. It is not.
+>
+> **Almost every language-model product you have used is doing this underneath.** A model that searches the web and cites what it found. An assistant that answers from your own files. A support bot that links the article it used.
+>
+> **Retrieval is the default way a model is given anything it was not trained on.** If you have used an LLM product that knew something it could not have been trained on, you have used one of these.
+>
 > That is the entire idea. Everything after this is mechanics.
 
 
-## Slide 7 — You have almost certainly used one · **essentials**
+## Slide 7 — Where you have met one — and why · **essentials**
 
 **Section:** 01 · Why anyone builds one
 
@@ -205,11 +211,11 @@ Fine-tuning teaches a model a style. A format, a voice, a way of reasoning about
 
 > **Essentials edition — tighter narration:**
 >
-> So why does anyone build one? Start with this: **you have almost certainly used one already.**
+> So let us make that concrete, and then answer the obvious question.
 >
-> The support chatbot that answered you and then **linked the exact help article**. A model that searches the web and **cites what it found**. A coding assistant that answers about **your** repository rather than a generic one.
+> You have met these. The support chatbot that answered you and then **linked the exact help article**. A coding assistant that answers about **your** repository rather than a generic one. Internal Q and A over a company's own policies.
 >
-> Teams build them for three reasons.
+> Now — why do teams build them? **Three reasons.**
 >
 > **Your data.** Nothing was trained on your contracts or your tickets. Ask anyway and a model will invent something plausible.
 >
