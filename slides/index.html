@@ -922,7 +922,7 @@ Now someone asks a question. This is the bottom row.
   <aside class="brief">
 Part three: retrieval.
 
-All of that was preparation. Nothing we have built has answered a question yet.
+All of that was preparation. Nothing so far has actually answered a question.
   </aside>
 </section>
 
@@ -1073,9 +1073,9 @@ Five Wikipedia articles go in. A searchable vector database comes out. About six
 By the end of this you will have a folder on disk holding the vector representation of every paragraph in your documents.
   </aside>
   <aside class="brief">
-Part four. That is the theory — now we build it.
+Part four. That is the theory. Now let us follow five real articles all the way through it.
 
-Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
+Text in one end, a searchable database out the other — and at each step I will show you what actually comes out, because the numbers are more interesting than the diagram.
   </aside>
 </section>
 
@@ -1117,7 +1117,7 @@ And again: ingestion runs once. When we finish, you will not run this code again
 </section>
 
 <!-- ==================================================== 25 -->
-<section>
+<section data-only="workalong">
   <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; Set up</span>
   <h2>The project</h2>
   <pre><code class="language-text">rag-for-beginners/
@@ -1152,7 +1152,7 @@ A virtual environment that was created but never activated is the single most co
 </section>
 
 <!-- ==================================================== 26 -->
-<section>
+<section data-only="workalong">
   <span class="eyebrow"><b>01</b> &nbsp;·&nbsp; Packages</span>
   <h2>Five packages, one line</h2>
   <pre><code class="language-bash">$ pip install langchain langchain-text-splitters \
@@ -1187,7 +1187,7 @@ If you are in this repo rather than typing from scratch, there is a requirements
 </section>
 
 <!-- ==================================================== 27 -->
-<section data-track="core">
+<section data-track="core" data-only="workalong">
   <span class="eyebrow"><b>02</b> &nbsp;·&nbsp; The API key</span>
   <h2>One secret, in one place</h2>
   <pre><code class="language-bash">OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxx</code></pre>
@@ -1265,7 +1265,7 @@ That is a real data-cleaning step, and it is invisible until you look at your ch
 </section>
 
 <!-- ==================================================== 29 -->
-<section>
+<section data-only="workalong">
   <span class="eyebrow"><b>04</b> &nbsp;·&nbsp; The shell</span>
   <h2>Imports first, prove it runs</h2>
   <pre><code class="language-python">from pathlib import Path
@@ -1385,13 +1385,17 @@ Note the two guard clauses. One checks the folder exists; the other checks we ac
        spacex.txt                 55,954 characters
        tesla.txt                  93,916 characters
 
-     <span class="dim">.page_content</span>   'Google LLC ( , GOO-gəl) is an American multinational...'
-     <span class="dim">.metadata</span>       {'source': 'docs/google.txt'}</div>
+     <span class="dim mode-wa">.page_content</span><span class="dim mode-talk">the text     </span>   'Google LLC ( , GOO-gəl) is an American multinational...'
+     <span class="dim mode-wa">.metadata</span><span class="dim mode-talk">its source</span>       <span class="mode-wa">{'source': 'docs/google.txt'}</span><span class="mode-talk">docs/google.txt</span></div>
   <div class="callout">
-    <span class="label">Learn these two attributes now</span>
-    <code>.page_content</code> is the entire text of the file as one long string.
+    <span class="label mode-wa">Learn these two attributes now</span>
+    <span class="mode-wa"><code>.page_content</code> is the entire text of the file as one long string.
     <code>.metadata</code> is a dictionary — here, the file we read it from.
-    This object shows up everywhere from here on.
+    This object shows up everywhere from here on.</span>
+    <span class="label mode-talk">Two halves, and you need both</span>
+    <span class="mode-talk">Every record is <strong>the text itself</strong> — the whole file as one
+    long run of characters — and <strong>where it came from</strong>. The second half is what
+    lets an answer cite its source.</span>
   </div>
   <aside class="notes" data-markdown>
 Here is what comes back. Five files in, five Document objects out.
@@ -1405,9 +1409,9 @@ Dot metadata is a dictionary. Right now it holds one key, source, pointing at th
 And here is the property that makes metadata worth caring about: metadata survives everything. When a document gets chunked in a moment, every single chunk inherits its parent's metadata. That is how a RAG system can tell a user which file an answer came from, even though the thing it retrieved was a four-hundred-character fragment.
   </aside>
   <aside class="brief">
-Step one is loading the files, and here is what comes back: five files in, five Document objects out. Two attributes, and you will meet them everywhere from here.
+Step one is reading the documents in. Five files go in, and five records come out — and each record has two halves.
 
-Page content is the whole file as one long string. Metadata is a dictionary — right now just the file it came from, and we put that there ourselves, so you can put anything you like in it.
+The text itself: the whole file, as one long run of characters. And where it came from — right now just the filename, and we put that there ourselves, which means you can put anything you like alongside it. Page numbers, authors, who is allowed to see it.
 
 That matters because metadata survives chunking. Every chunk inherits its parent's. It is how the system can tell you which file an answer came from when what it actually retrieved was a four-hundred-character fragment.
   </aside>
@@ -1511,11 +1515,14 @@ You will also see the chunks are not all eight hundred. The splitter cuts on the
      <span class="hi">79 of 539 chunks came out longer than the 800 target</span></div>
   <div class="callout">
     <span class="label">Why</span>
-    <code>CharacterTextSplitter</code> splits on the <strong>separator first</strong>, then
+    <span class="mode-wa"><code>CharacterTextSplitter</code> splits on the <strong>separator first</strong>, then
     merges pieces up to <code>chunk_size</code>. It never breaks a paragraph in half to hit
     the number. So you will see warnings — they are warnings, not errors.
     <br><span class="muted"><code>RecursiveCharacterTextSplitter</code> handles this better and
-    is what you would use in a real project. We stay on the simple one so the mechanics show.</span>
+    is what you would use in a real project. We stay on the simple one so the mechanics show.</span></span>
+    <span class="mode-talk">The splitter breaks on <strong>blank lines first</strong>, then glues the
+    pieces back together up towards your target. What it will never do is cut a paragraph in
+    half to hit the number — so a long paragraph gives you a long chunk.</span>
   </div>
   <aside class="notes" data-markdown>
 Five hundred and thirty-nine chunks, from five documents.
@@ -1543,12 +1550,12 @@ The splitter cuts on the separator first, then merges back up towards your size.
 <section data-track="essential" data-talk-title="What overlap actually does" data-talk-eyebrow="08 · Overlap">
   <span class="eyebrow"><b>06</b> &nbsp;·&nbsp; Overlap</span>
   <h2>What <code>chunk_overlap</code> actually does</h2>
-  <div class="term"><span class="dim">chunk_overlap = 0</span>
+  <div class="term"><span class="dim mode-wa">chunk_overlap = 0</span><span class="dim mode-talk">overlap = 0 characters</span>
   [0] Tesla was incorporated in July 2003 by Martin Eberhard and Marc
       Tarpenning as Tesla Motors. <span class="hi">Its name is a tribute to the</span>
   [1] <span class="hi">inventor Nikola Tesla.</span> In February 2004 Elon Musk led Tesla's...
 
-<span class="dim">chunk_overlap = 40</span>
+<span class="dim mode-wa">chunk_overlap = 40</span><span class="dim mode-talk">overlap = 40 characters</span>
   [0] Tesla was incorporated in July 2003 by Martin Eberhard and Marc
       Tarpenning as Tesla Motors. Its name is a tribute to the
   [1] <span class="ok">Motors. Its name is a tribute to the</span> inventor Nikola Tesla. In...</div>
@@ -1593,11 +1600,11 @@ That is all overlap does — each chunk repeats the last n characters of the one
     </div>
     <div class="ix-controls two-up">
       <div class="ix-ctl">
-        <label>chunk_size <b><span id="ck-size-v">400</span> chars</b></label>
+        <label><span class="mode-wa">chunk_size</span><span class="mode-talk">chunk size</span> <b><span id="ck-size-v">400</span> chars</b></label>
         <input type="range" id="ck-size" aria-label="Chunk size in characters" min="120" max="1200" step="20" value="400">
       </div>
       <div class="ix-ctl">
-        <label>chunk_overlap <b><span id="ck-over-v">0</span> chars</b></label>
+        <label><span class="mode-wa">chunk_overlap</span><span class="mode-talk">overlap</span> <b><span id="ck-over-v">0</span> chars</b></label>
         <input type="range" id="ck-over" aria-label="Chunk overlap in characters" min="0" max="300" step="10" value="0">
       </div>
     </div>
@@ -1726,7 +1733,7 @@ Underneath, the folder structure. Chroma dot sqlite three holds the text, the me
 And the line to remember: the original text is not optional. Without it you have numbers and nothing to send an LLM. That is why this database stores both.
   </aside>
   <aside class="brief">
-Step three is embed and store, and that one call does both jobs. Five hundred and forty-seven vectors on disk. Look at what is kept per chunk — this is that vector database table from earlier, now real.
+Step three turns every chunk into numbers and files it away — and those two things happen together, in one pass. Five hundred and forty-seven vectors on disk. Look at what is kept per chunk — this is that vector database table from earlier, now real.
 
 The vector, fifteen hundred and thirty-six numbers. The original text. And the metadata, still saying docs slash google dot txt. There it is surviving, exactly as promised — in at the loader, through the splitter untouched, now attached to a chunk in the database.
 
@@ -1735,7 +1742,7 @@ The line to leave with: the original text is not optional. Without it you have n
 </section>
 
 <!-- ==================================================== 38 -->
-<section data-track="core">
+<section data-track="core" data-only="workalong">
   <span class="eyebrow"><b>07</b> &nbsp;·&nbsp; The three arguments</span>
   <h2>The three arguments that matter</h2>
   <table>
@@ -2304,7 +2311,7 @@ Eight. Documents with model A, queries with model B. The symptom is that there i
     <li>A vector database stores those numbers and searches them fast.</li>
     <li>Retrieval: embed the question the same way, rank by closeness, take the top <em>k</em>.</li>
     <li>Send the model the question plus the <strong>original text</strong>. Never the vectors.</li>
-    <li>Set <code>chunk_overlap</code> so sentences on the seam survive. Set <code>persist_directory</code> or you lose the work.</li>
+    <li><span class="mode-wa">Set <code>chunk_overlap</code> so sentences on the seam survive. Set <code>persist_directory</code> or you lose the work.</span><span class="mode-talk">Overlap your chunks so sentences on the seam survive. Tell the database where to save, or you lose the work.</span></li>
     <li><strong>One embedding model, one dimension count, everywhere.</strong> Breaking this fails silently.</li>
   </ol>
   <aside class="notes" data-markdown>
@@ -2339,7 +2346,7 @@ Ingestion: chunk, embed, store the vectors with their text. An embedding is a fi
 
 Retrieval: embed the question the same way, rank by closeness, take the top k. Send the model the question plus the original text — never the vectors.
 
-Set overlap so sentences on the seam survive. Set persist directory or you lose the work.
+Overlap the chunks so sentences on the seam survive. Tell the database where to save, or the work is gone when the process ends.
 
 And the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking that fails silently.
   </aside>

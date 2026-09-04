@@ -6,8 +6,8 @@ in `slides/index.html` - **edit the deck, not this file**, then re-run
 
 | | |
 |---|---|
-| Essentials | 32 slides · ~27 min |
-| Short | 40 slides · ~34 min |
+| Essentials | 32 slides · ~28 min |
+| Short | 40 slides · ~35 min |
 | Full lesson | 55 slides · ~91 min |
 | Live demos | 11 slides carry a command |
 
@@ -596,7 +596,7 @@ Now someone asks a question. This is the bottom row.
 >
 > Part three: retrieval.
 >
-> All of that was preparation. Nothing we have built has answered a question yet.
+> All of that was preparation. Nothing so far has actually answered a question.
 
 
 ## Slide 23 — The question takes the same road · **essentials**
@@ -697,9 +697,9 @@ By the end of this you will have a folder on disk holding the vector representat
 
 > **Essentials edition — tighter narration:**
 >
-> Part four. That is the theory — now we build it.
+> Part four. That is the theory. Now let us follow five real articles all the way through it.
 >
-> Five articles in, a searchable vector database out, in about sixty lines of Python. Well under a cent in embeddings.
+> Text in one end, a searchable database out the other — and at each step I will show you what actually comes out, because the numbers are more interesting than the diagram.
 
 
 ## Slide 27 — You are here
@@ -862,9 +862,9 @@ And here is the property that makes metadata worth caring about: metadata surviv
 
 > **Essentials edition — tighter narration:**
 >
-> Step one is loading the files, and here is what comes back: five files in, five Document objects out. Two attributes, and you will meet them everywhere from here.
+> Step one is reading the documents in. Five files go in, and five records come out — and each record has two halves.
 >
-> Page content is the whole file as one long string. Metadata is a dictionary — right now just the file it came from, and we put that there ourselves, so you can put anything you like in it.
+> The text itself: the whole file, as one long run of characters. And where it came from — right now just the filename, and we put that there ourselves, which means you can put anything you like alongside it. Page numbers, authors, who is allowed to see it.
 >
 > That matters because metadata survives chunking. Every chunk inherits its parent's. It is how the system can tell you which file an answer came from when what it actually retrieved was a four-hundred-character fragment.
 
@@ -1058,7 +1058,7 @@ And the line to remember: the original text is not optional. Without it you have
 
 > **Essentials edition — tighter narration:**
 >
-> Step three is embed and store, and that one call does both jobs. Five hundred and forty-seven vectors on disk. Look at what is kept per chunk — this is that vector database table from earlier, now real.
+> Step three turns every chunk into numbers and files it away — and those two things happen together, in one pass. Five hundred and forty-seven vectors on disk. Look at what is kept per chunk — this is that vector database table from earlier, now real.
 >
 > The vector, fifteen hundred and thirty-six numbers. The original text. And the metadata, still saying docs slash google dot txt. There it is surviving, exactly as promised — in at the loader, through the splitter untouched, now attached to a chunk in the database.
 >
@@ -1438,7 +1438,7 @@ And the last one, which is the one that will actually cost you an afternoon: one
 >
 > Retrieval: embed the question the same way, rank by closeness, take the top k. Send the model the question plus the original text — never the vectors.
 >
-> Set overlap so sentences on the seam survive. Set persist directory or you lose the work.
+> Overlap the chunks so sentences on the seam survive. Tell the database where to save, or the work is gone when the process ends.
 >
 > And the one that will actually cost you an afternoon: one embedding model, one dimension count, everywhere. Breaking that fails silently.
 
