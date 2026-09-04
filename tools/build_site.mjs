@@ -334,8 +334,14 @@ function buildRead(all, edit) {
     }
 
     const notes = notesFor(s, length, talk).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
-      .map((p) => {
-        const line = p.replace(/\s+/g, ' ');
+      .map((block) => {
+        // the narration is talking points: a block of "- " lines is a list
+        if (/^-\s/.test(block)) {
+          const items = block.split('\n').map((l) => l.replace(/^-\s*/, '').trim())
+            .filter(Boolean).map((l) => `<li>${inlineMd(l)}</li>`).join('');
+          return `<ul class="read-points">${items}</ul>`;
+        }
+        const line = block.replace(/\s+/g, ' ');
         return stage.test(line)
           ? `<p class="read-stage">${esc(line)}</p>`
           : `<p>${inlineMd(line)}</p>`;

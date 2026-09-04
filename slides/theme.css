@@ -590,3 +590,7 @@ button.ix-chip {
     animation: none !important;
   }
 }
+
+/* Narration written as talking points rather than a script. */
+.deck-points { margin: 0.2em 0 0.9em; padding-left: 1.15em; }
+.deck-points li { margin-bottom: 0.5em; line-height: 1.55; }

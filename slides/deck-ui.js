@@ -154,13 +154,29 @@
     if (!notes) { body.innerHTML = '<p class="deck-none">No narration for this slide.</p>'; return; }
 
     var text = notes.textContent.replace(/\r/g, '').trim();
-    var html = text.split(/\n\s*\n/).map(function (p) {
-      var line = p.trim().replace(/\s+/g, ' ');
-      if (!line) return '';
-      var esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    function esc(t) {
+      return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    // the same few inline rules the deck and the speaker window get
+    function md(t) {
+      return esc(t)
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/(^|[\s(])\*([^*\s][^*]*)\*(?=[\s.,;:!?)]|$)/g, '$1<em>$2</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+    var html = text.split(/\n\s*\n/).map(function (block) {
+      block = block.trim();
+      if (!block) return '';
+      if (/^-\s/.test(block)) {
+        return '<ul class="deck-points">' + block.split('\n')
+          .map(function (l) { return l.replace(/^-\s*/, '').trim(); })
+          .filter(Boolean)
+          .map(function (l) { return '<li>' + md(l) + '</li>'; }).join('') + '</ul>';
+      }
+      var line = block.replace(/\s+/g, ' ');
       return STAGE.test(line)
-        ? '<p class="deck-stage">' + esc + '</p>'
-        : '<p>' + esc + '</p>';
+        ? '<p class="deck-stage">' + esc(line) + '</p>'
+        : '<p>' + md(line) + '</p>';
     }).join('');
     body.innerHTML = html;
     body.scrollTop = 0;
